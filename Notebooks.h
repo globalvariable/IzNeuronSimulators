@@ -1,9 +1,9 @@
-#define FRAMES_H
+#ifndef NOTEBOOKS_H
+#define NOTEBOOKS_H
 
 #include "Graphs.h"
-#ifndef NETWORK_H
-#include "Network.h"
-#endif
+#include "Network/Network.h"
+
 
 #define MAX_NUM_OF_FRAME_FOR_NEURON_DYNAMICS 10
 #define NUM_OF_GRAPH_PER_FRAME 4
@@ -46,3 +46,4 @@ void refresh_all_neuron_dynamics_graph(void);
 void assign_neuron_dynamics_button_func(void);
 void refresh_neuron_dynamics_button_func(void);
 
+#endif

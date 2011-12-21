@@ -1,8 +1,11 @@
+#ifndef NEURON_H
+#define NEURON_H
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <gtk/gtk.h>
 
-#define NEURON_H
+
 
 #define EVENT_BUFF_SIZE_PER_NEURON 120
 #define MAX_OUTPUT_PER_NEURON 100
@@ -66,3 +69,4 @@ bool reset_neuron_params(neuron *nrn, double v, double a, double b, double c, do
 
 void clear_neuron_event_buffer(neuron *nrn);
 
+#endif

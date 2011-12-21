@@ -1,3 +1,4 @@
+#ifndef GRAPHS_H
 #define GRAPHS_H
 
 #include <gtkdatabox.h>
@@ -5,9 +6,7 @@
 #include <gtkdatabox_lines.h>
 #include <gtkdatabox_grid.h>
 
-#ifndef LOGS_H
 #include "Logs.h"
-#endif
 
 
 GtkWidget *box_input_neurons;
@@ -33,4 +32,4 @@ GdkColor color_bg_neuron_dynamics;
 GdkColor color_neuron_dynamics_line;
 GdkColor color_neuron_dynamics_grid;
 
-
+#endif

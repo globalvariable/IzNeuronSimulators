@@ -1,3 +1,6 @@
+#ifndef GUI_H
+#define GUI_H
+
 #include "RTHandler.h"
 #include "Notebooks.h"
 
@@ -109,4 +112,4 @@ void reset_all_neurons_button_func(void);
 
 void submit_number_of_frames_for_neuron_dynamics_button_func(void);
 
-
+#endif

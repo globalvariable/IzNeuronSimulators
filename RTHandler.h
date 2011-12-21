@@ -1,3 +1,4 @@
+#ifndef RTHANDLER_H
 #define RTHANDLER_H
 
 #include <rtai_serial.h>
@@ -15,3 +16,5 @@ int EndTask;
 int NeuroSimThread;
 
 void *NeuroSimHandler(void *args);
+
+#endif

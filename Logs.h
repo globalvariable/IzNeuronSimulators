@@ -1,8 +1,7 @@
+#ifndef LOGS_H
 #define LOGS_H
 
-#ifndef NEURON_H
-#include "Neuron.h"
-#endif
+#include "IzNeuron/Neuron.h"
 
 #define MAX_BUFF_SIZE_FOR_NEURON_DYNAMICS_LOGGING 10000
 
@@ -18,4 +17,6 @@ void turn_neuron_dynamics_logging_off(void);
 
 void clear_neuron_dynamics_log(neuron *nrn);
 
+
+#endif
 

@@ -1,11 +1,8 @@
+#ifndef NETWORK_H
 #define NETWORK_H
 
-#ifndef NEURON_H
-#include "Neuron.h"
-#endif
-#ifndef LOGS_H
-#include "Logs.h"
-#endif
+#include "../IzNeuron/Neuron.h"
+#include "../Logs.h"
 
 GPtrArray *ptrArrayAllNetwork;
 
@@ -22,3 +19,5 @@ bool finalize_network_construction(void);
 neuron* is_neuron_allocated(int layer, int nrn_grp, int nrn);
 bool reset_neurons_in_group(int nrn_grp, int layer, double v, double a, double b, double c,double d, double I_inject, bool inhibitory, int randomize_params, double C, double E_excitatory, double E_inhibitory, double v_resting, double v_threshold, double v_peak, double k, double tau_excitatory, double tau_inhibitory);
 bool reset_neuron(int nrn_num, int nrn_grp, int layer, double v, double a, double b, double c,double d, double I_inject, bool inhibitory, int randomize_params, double C, double E_excitatory, double E_inhibitory, double v_resting, double v_threshold, double v_peak, double k, double tau_excitatory, double tau_inhibitory);
+
+#endif

@@ -1,8 +1,7 @@
+#ifndef PARKERSOCHACKI_H
 #define PARKERSOCHACKI_H
 
-#ifndef NEURON_H
-#include "Neuron.h"
-#endif
+#include "IzNeuron/Neuron.h"
 
 #include <math.h>
 
@@ -29,3 +28,6 @@ int parker_sochacki_update(double dt, int p);
 double newton_raphson_peak_detection(int p, double dt);
 int schedule_events(double dt);
 void clear_parker_sochacki_polynomials(void); /// For debugging, delete when testing complete
+
+
+#endif

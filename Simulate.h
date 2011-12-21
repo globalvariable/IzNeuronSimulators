@@ -1,13 +1,11 @@
+#ifndef SIMULATE_H
 #define SIMULATE_H
 
-#ifndef NETWORK_H
-#include "Network.h"
-#endif
-#include "ParkerSochacki.h"
 
-#ifndef LOGS_H
+#include "Network/Network.h"
+#include "ParkerSochacki/ParkerSochacki.h"
 #include "Logs.h"
-#endif
+
 
 
 bool non_rt_simulation_ongoing;
@@ -19,3 +17,5 @@ unsigned int simulation_given_step_size_ns;
 
 void simulate_parker_sochacki(void);
 
+
+#endif
