@@ -1,6 +1,6 @@
  #include "ParkerSochacki.h"
 
-static neuron *nrn;
+static Neuron *nrn;
 
 static double v;
 static double u;
@@ -23,14 +23,14 @@ static double I_inject;
 //static bool inhibitory;     //unnecessary
 static double k_v_threshold;
 	// Axons	
-static neuron **axon_to;
+static Neuron **axon_to;
 static unsigned int *axonal_delay;
 static double *axonal_weight;
 static int num_of_output;
 
 	// Sorted Event Buffer
 static unsigned int *event_time;
-static neuron **event_from;   // interrogate ptrArrayEventFrom->len to reach buffer size from anywhere
+static Neuron **event_from;   // interrogate ptrArrayEventFrom->len to reach buffer size from anywhere
 static double *event_weight;
 static int event_buffer_write_idx;
 static int num_of_event;	
@@ -40,11 +40,11 @@ static int n_event_outside_step;
 static int event_start_idx;
 
 static unsigned int event_time_outside_step[EVENT_BUFF_SIZE_PER_NEURON];
-static neuron *event_from_outside_step[EVENT_BUFF_SIZE_PER_NEURON]; 
+static Neuron *event_from_outside_step[EVENT_BUFF_SIZE_PER_NEURON]; 
 static double event_weight_outside_step[EVENT_BUFF_SIZE_PER_NEURON];
 
 static unsigned int event_time_inside_step[EVENT_BUFF_SIZE_PER_NEURON];
-static neuron *event_from_inside_step[EVENT_BUFF_SIZE_PER_NEURON]; 
+static Neuron *event_from_inside_step[EVENT_BUFF_SIZE_PER_NEURON]; 
 static double event_weight_inside_step[EVENT_BUFF_SIZE_PER_NEURON];
 
 static double v_prev_for_iter;
@@ -87,7 +87,7 @@ bool parker_sochacki_set_order_tolerance(int arg_max_ps_order, double arg_ps_err
 	return TRUE;
 }
 
-int parker_sochacki_evaluate_neuron_dyn(neuron *arg_nrn)   
+int parker_sochacki_evaluate_neuron_dyn(Neuron *arg_nrn)   
 {
 /*	unsigned int a,b, c;
 	a = 1;	
@@ -151,7 +151,7 @@ int parker_sochacki_evaluate_neuron_dyn(neuron *arg_nrn)
 	return 0;
 }
 
-int parker_sochacki_init_params(neuron *arg_nrn)    // ----> scope of arg_nrn is this function. if you use nrn, it will suppress static neuron *nrn all the time in this function. Then it would be impossible to access static nrn. 
+int parker_sochacki_init_params(Neuron *arg_nrn)    // ----> scope of arg_nrn is this function. if you use nrn, it will suppress static neuron *nrn all the time in this function. Then it would be impossible to access static nrn. 
 {
 	nrn = arg_nrn;
 
@@ -257,7 +257,7 @@ int parker_sochacki_sort_synaptic_events(void)
 	
 	int i,j; 		///  insertion sorting
 	unsigned int temp_t; 
-	neuron * temp_from; 
+	Neuron * temp_from; 
 	double temp_w;
 	for(i=1; i<n_event_inside_step; i++)
 	{
@@ -472,7 +472,7 @@ int parker_sochacki_update(double dt, int p)
 int schedule_events(double dt)
 {
 	int i, write_idx;
-	neuron * post_syn_nrn;
+	Neuron * post_syn_nrn;
 	for (i=0; i < num_of_output; i++)
 	{
 		post_syn_nrn = axon_to[i];
