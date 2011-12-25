@@ -1,7 +1,76 @@
 #include "Event.h"
 
+static MainEventBuffer *main_event_buffer;    // Use dynamic allocation for each neuron.    Layer ----> Neuron Group ---> Neuron   3D array. 
 
-int schedule_events(Neuron *nrn, int layer, int neuron_group, int neuron_num, double dt_part, TimeStamp integration_start_time);
+bool initialize_main_event_buffer(void)
+{
+	main_event_buffer == NULL;
+	main_event_buffer = g_new0(MainEventBuffer, 1);
+	if (main_event_buffer == NULL)
+	{
+		printf("Event: ERROR: Couldn' t create main event buffer\n");
+		return FALSE;
+	}	
+	return TRUE;
+
+}
+
+bool add_layer_event_buffer_to_main_event_buffer(int layer)
+{
+	LayerEventBuffer		*ptr_layer_event_buffer = NULL;
+	
+	if ((layer > main_event_buffer->layer_event_buffer_count) || (layer < 0) )
+	{
+		printf ("Event: ERROR: Couldn't add layer  event buffer %d.\n", layer);
+		printf ("Event: ERROR: Layer number shouldn't be larger than %d and smaller than 0\n", all_network->count);
+		return FALSE;
+	}
+	
+	if (layer == main_event_buffer->layer_event_buffer_count)		// New & valid synapse list layer request from user
+	{
+		ptr_layer_event_buffer = g_new0(LayerEventBuffer, 1);
+		if (ptr_layer_event_buffer == NULL)
+		{
+			printf("Event: ERROR: Couldn' t create layer event buffer %d\n", layer);
+			return FALSE;
+		}
+		main_event_buffer->layer_event_buffer[layer] = ptr_layer_event_buffer;
+		main_event_buffer->layer_event_buffer_count++;		
+	}
+	
+	// if it is an existing layer, do not do anything
+	return TRUE;
+}	
+
+bool add_neuron_group_event_buffer_to_layer_event_buffer(int layer, int num_of _neuron)
+{
+	LayerEventBuffer		*ptr_layer_event_buffer = NULL;
+	NeuroGroupEventBuffer	*ptr_neuron_group_event_buffer = NULL;
+	NeuronEventBuffer		*ptr_neuron_event_buffer =NULL;
+	
+	ptr_neuron_group_event_buffer = g_new0(NeuroGroupEventBuffer, 1);
+	if (ptr_neuron_group_syn_list == NULL)
+	{
+		printf("Synapse: ERROR: Couldn' t create neuron group  event buffer\n");
+		return FALSE;
+	}
+	ptr_layer_event_buffer = main_event_buffer->layer_event_buffer[layer];			
+	ptr_layer_event_buffer->neuron_groups_event_buffer[ptr_layer_event_buffer->neuron_group_event_buffer_count] = ptr_neuron_group_event_buffer;
+	ptr_layer_event_buffer->neuron_group_event_buffer_count++;
+		
+	ptr_neuron_group_event_buffer->neuron_event_buffer = g_new0(NeuronEventBuffer, num_of_neuron);
+	if (ptr_neuron_group_event_buffer->neuron_event_buffer == NULL)
+	{
+		printf("Synapse: ERROR: Couldn' t create %d neuron  event buffer\n", num_of_neuron);
+		return FALSE;
+	}
+	ptr_neuron_group_event_buffer->neuron_event_buffer_count = num_of_neuron;
+	
+	return TRUE;
+}
+
+
+int schedule_events(Neuron *nrn, int layer, int neuron_group, int neuron_num, double dt_part, TimeStamp integration_start_time)
 {
 	int i;
 	NeuronSynapseList *neuron_synapse_list;
@@ -18,7 +87,7 @@ int schedule_events(Neuron *nrn, int layer, int neuron_group, int neuron_num, do
 	synapse_weight = neuron_synapse_list->weight;
 	num_of_synapses = neuron_synapse_list->num_of_synapses;
 	
-	for (i = 0; i < num_of_synapses, i++)
+	for (i = 0; i < num_of_synapses; i++)
 	{
 		scheduled_event_time = synapse_delay[i]+integration_start_time+ (dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE);
 		if (!insert_synaptic_event(synapse_to[i]->layer, synapse_to[i]->neuron_group, synapse_to[i]->neuron_num, scheduled_event_time, synapse_weight[i], nrn))
@@ -83,16 +152,30 @@ int insert_synaptic_event(int layer, int neuron_group, int neuron_num, TimeStamp
 		}
 		else
 		{
-			event_times[idx+1] = scheduled_event_time;	// insert here & break;
-			event_weights[idx+1] = weight;
-			events_from[idx+1] = event_from;
-			break;
+			if (idx + 1 == event_buff_size)	// reached end of buffer	
+			{		
+				event_times[0] = scheduled_event_time;	// insert here & break;
+				event_weights[0] = weight;
+				events_from[0] = event_from;
+				break;
+			}
+			else
+			{
+				event_times[idx+1] = scheduled_event_time;	// insert here & break;
+				event_weights[idx+1] = weight;
+				events_from[idx+1] = event_from;	
+				break;		
+			}
 		}
 		idx --;
 		if (idx == 0)
 			idx = event_buff_size -1;
 	} while (idx != end_idx);
 	
-	(*ptr_event_buffer_write_idx)++
-	pthread_mutex_unlock(lock);	
+	if ((*ptr_event_buffer_write_idx + 1) == event_buff_size)
+		*ptr_event_buffer_write_idx = 0;
+	else
+		(*ptr_event_buffer_write_idx)++;
+	pthread_mutex_unlock(mutex_event_buff);	
+	return 1;
 }

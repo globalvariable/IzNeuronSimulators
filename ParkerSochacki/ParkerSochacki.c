@@ -16,7 +16,7 @@ struct __ParkerSochackiPolynomialVals
 	
 };      // Use dynamic allocation for each neuron.    Layer ----> Neuron Group ---> Neuron   3D array. 
 
-ParkerSochackiPolynomialVals ***ps_pol_vals;
+static ParkerSochackiPolynomialVals ***ps_pol_vals;
 
 static int parker_sochacki_max_order;
 static double parker_sochacki_error_tolerance;
@@ -26,7 +26,7 @@ static double newton_raphson_error_tolerance;
 
 bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance, int max_nr_iter,  double nr_error_tolerance)
 {
-	if (arg_max_ps_order < 10) || (arg_ps_error_tolerance < 0) || (arg_max_nr_iter < 10) || (arg_nr_error_tolerance < 0)
+	if ((max_ps_order < 10) || (ps_error_tolerance < 0) || (max_nr_iter < 10) || (nr_error_tolerance < 0))
 	{
 		printf("ERROR: ParkerSochachki: Invalid computation adjustment.\n");
 		printf("ERROR: ParkerSochachki: It should be such that:\nMin Parker-Sochacki Order Limit is 10\nMin Parker-Sochacki Error Tolerance is 0\nMin Newton-Raphson Iteration Limit is 10\nMin NewtonRaphson Error Tolerance is 0\n\n");
@@ -48,16 +48,22 @@ bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_toler
 
 int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int neuron_num, TimeStamp integration_start_time, TimeStamp integration_end_time)
 {
-	double *E_pol_vals;		// Dynamically allocate
+	double *v_pol_vals;			// size should be parker_sochacki_max_order + 1
+	double *u_pol_vals;
+	double *conductance_excitatory_pol_vals;
+	double *conductance_inhibitory_pol_vals;
+	double *chi_pol_vals;
+	double *E_pol_vals;		
 	double *a_pol_vals;
 	double *conductance_decay_rate_excitatory_pol_vals;
 	double *conductance_decay_rate_inhibitory_pol_vals;
+	
 	double dt_part;
 	double dt;
 	int p;
 	ParkerSochackiPolynomialVals *polynomial_vals;
 	
-	polynomial_vals = ps_pol_vals[layer][neuron_group][neuron_num];
+	polynomial_vals = &(ps_pol_vals[layer][neuron_group][neuron_num]);
 
 	v_pol_vals = polynomial_vals->v_pol_vals;			
 	u_pol_vals = polynomial_vals->u_pol_vals;
@@ -75,7 +81,7 @@ int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int ne
 	conductance_inhibitory_pol_vals[0] =  nrn->conductance_inhibitory;
 	chi_pol_vals[0] = nrn->k*nrn->v - conductance_excitatory_pol_vals[0] - conductance_inhibitory_pol_vals[0] - nrn->k_v_threshold;
 //	(chi = kv - eta - gamma - k*v_t)
-	dt = (integration_end_time - integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE     // for 1ms step size
+	dt = (integration_end_time - integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE;     // for 1ms step size
 	p=parker_sochacki_step(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, dt);
 //	printf("%f\t %d\n ", nrn->v, p);
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
@@ -97,7 +103,7 @@ int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int ne
 	return 0;
 }
 
-int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double dt);
+int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double dt)
 {
 	double dt_pow;
 	int i,p;
@@ -111,7 +117,7 @@ int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, d
 	E_excitatory = nrn->E_excitatory;
 	E_inhibitory =  nrn->E_inhibitory;
 	
-	v_pol_vals[1] =nrn->E*( v_pol_vals[0] * chi_pol_vals[0] + E_excitatory * conductance_excitatory_pol_vals[0] + E_inhibitory * conductance_inhibitory_pol_vals[0]  - u_pol_vals[0]+ I_inject);  // eqtn 27
+	v_pol_vals[1] =nrn->E*( v_pol_vals[0] * chi_pol_vals[0] + E_excitatory * conductance_excitatory_pol_vals[0] + E_inhibitory * conductance_inhibitory_pol_vals[0]  - u_pol_vals[0]+ nrn->I_inject);  // eqtn 27
 	u_pol_vals[1] = nrn->a * (b * v_pol_vals[0] - u_pol_vals[0]);
 	conductance_excitatory_pol_vals[1] = nrn->decay_rate_excitatory * conductance_excitatory_pol_vals[0];  // decay_rate_excitatory already negatized during initialization
 	conductance_inhibitory_pol_vals[1] = nrn->decay_rate_inhibitory * conductance_inhibitory_pol_vals[0];   //decay_rate_inhibitory already negatized during initialization
@@ -122,6 +128,12 @@ int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, d
 	conductance_excitatory_prev_for_iter = conductance_excitatory_pol_vals[0] + conductance_excitatory_pol_vals[1] * dt;
 	conductance_inhibitory_prev_for_iter = conductance_inhibitory_pol_vals[0] + conductance_inhibitory_pol_vals[1] * dt;
 	chi_prev_for_iter = chi_pol_vals[0] + chi_pol_vals[1] * dt;
+	
+	v_curr_for_iter = v_prev_for_iter;
+	u_curr_for_iter = v_prev_for_iter;
+	conductance_excitatory_curr_for_iter = conductance_excitatory_prev_for_iter;
+	conductance_inhibitory_curr_for_iter = conductance_inhibitory_prev_for_iter;
+	chi_curr_for_iter = chi_prev_for_iter; 
 	
 	dt_pow= dt*dt;
 
@@ -239,35 +251,26 @@ int parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_
 	return 0;
 }
 
-void clear_parker_sochacki_polynomials(void) /// For debugging, delete when testing complete
+void clear_parker_sochacki_polynomials(int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group) /// For debugging, delete when testing complete
 {
-	int i = 0;
-	v_prev_for_iter = 0;
-	u_prev_for_iter = 0;
-	conductance_excitatory_prev_for_iter = 0;
-	conductance_inhibitory_prev_for_iter = 0;
-	chi_prev_for_iter = 0;
-
-	v_curr_for_iter = 0;
-	u_curr_for_iter = 0;
-	conductance_excitatory_curr_for_iter = 0;
-	conductance_inhibitory_curr_for_iter = 0;
-	chi_curr_for_iter = 0;
-
-
-	for (i=0; i<MAX_PARKER_SOCHACKI_ORDER+1; i++)
+	int i, j, k, m = 0;
+	for (i = 0; i< num_of_layers; i++)
 	{
-		v_pol_vals[i] = 0;
-		u_pol_vals[i] = 0;
-		conductance_excitatory_pol_vals[i] = 0;
-		conductance_inhibitory_pol_vals[i] = 0;
-		chi_pol_vals[i] = 0;
+		for (j = 0; j< num_of_neuron_groups[i]; j++)
+		{
+			for (k = 0; k< num_of_neurons_in_group[i][j]; k++)
+			{
+				for (m=0; m<parker_sochacki_max_order+1; m++)
+				{				
+					ps_pol_vals[i][j][k].v_pol_vals[m] = 0;
+					ps_pol_vals[i][j][k].u_pol_vals[m] = 0;
+					ps_pol_vals[i][j][k].conductance_excitatory_pol_vals[m] = 0;
+					ps_pol_vals[i][j][k].conductance_inhibitory_pol_vals[m] = 0;
+					ps_pol_vals[i][j][k].chi_pol_vals[m] = 0;
+				}
+			}					
+		}
 	}
-
-	E_pol_vals = NULL;
-	a_pol_vals = NULL;
-	conductance_decay_rate_excitatory_pol_vals = NULL;
-	conductance_decay_rate_inhibitory_pol_vals = NULL;
 	return;
 }
 

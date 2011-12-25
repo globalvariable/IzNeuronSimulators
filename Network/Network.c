@@ -1,119 +1,164 @@
  #include "Network.h"
 
-bool create_neural_network(int num_of_layer)
+
+static AllNetwork	*all_network;
+
+
+bool initialize_network(void)
 {
-	int i;
-	GPtrArray *NetworkLayer;	
-
-	ptrArrayAllNetwork = g_ptr_array_new();
-	for (i=0; i<num_of_layer; i++)
-	{	
-		NetworkLayer = g_ptr_array_new();
-		g_ptr_array_add  (ptrArrayAllNetwork, NetworkLayer);
-	}
-
-	LayerConnectionsMatrix = g_new0(int *, num_of_layer);
-	for (i=0; i<num_of_layer; i++)
-	{	
-		LayerConnectionsMatrix[i] = g_new0(int, num_of_layer);
+	all_network == NULL;
+	all_network = g_new0(AllNetwork, 1);
+	if (all_network == NULL)
+	{
+		printf("Network: ERROR: Couldn' t create network\n");
+		return FALSE;
 	}	
-	
-	printf("Network created with %d layers\n", ptrArrayAllNetwork->len);
-	printf("Layer Connection Matrix with %d x %d is created\n", num_of_layer, num_of_layer);
 	return TRUE;
 }
 
-bool add_neuron_group_to_layer(int num_neuron, int layer, double v, double a, double b, double c,double d, double I_inject, bool inhibitory, int randomize_params, double C, double E_excitatory, double E_inhibitory, double v_resting, double v_threshold, double v_peak, double k, double tau_excitatory, double tau_inhibitory, int logging_buff_size)
-{
+bool add_neurons_to_layer(int num_of_neuron, int layer, double v, double a, double b, double c,double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory, int randomize_params)
+{		
 	int i;
-	neuron *nrn;
-	GPtrArray *ptrArrayLayer, *ptrArrayNeuronGroup; 
-	ptrArrayNeuronGroup = g_ptr_array_new();
-
-	if ((layer >= ptrArrayAllNetwork->len) || (layer < 0) )
-	{
-		printf ("Couldn't add %d neurons to layer %d.\n", num_neuron , layer);
-		printf ("Invalid layer number\n");
-		return FALSE;
-	}
 	if (num_neuron <= 0)
 	{
-		printf("Num of neurons to add should be greater than ZERO\n");
+		printf("Network: ERROR: Num of neurons to add should be greater than ZERO\n");
 		return FALSE;
 	}
-	ptrArrayLayer = g_ptr_array_index(ptrArrayAllNetwork,layer);	
-	g_ptr_array_add  (ptrArrayLayer, ptrArrayNeuronGroup);	
-	for (i=0; i<num_neuron; i++)
+	
+	if (!add_layer_to_network(layer))
+		return FALSE;
+		
+	if (!add_layer_synapse_list_to_main_synapse_list(layer))
+		return FALSE;
+		
+	if (!add_neuron_group_to_layer(layer, num_of_neuron))
+		return FALSE;
+		
+	if (!add_neuron_group_synapse_list_to_layer_synapse_list(layer, num_of _neuron))
+		return FALSE;
+		
+	if (!add_layer_to_layer_connections_matrix(all_network->layer_count)	
+		return FALSE;
+	
+	return TRUE;
+}
+
+bool add_layer_to_network(int layer)
+{
+	Layer		*ptr_layer = NULL;
+	
+	if ((layer > all_network->layer_count) || (layer < 0) )
 	{
-		nrn = create_neuron( v, a, b, c, d, I_inject, inhibitory, C, E_excitatory, E_inhibitory, v_resting, v_threshold, v_peak, k, tau_excitatory, tau_inhibitory, logging_buff_size);
-		if (nrn == NULL)
+		printf ("Network: ERROR: Couldn't add layer %d to netwok.\n", layer);
+		printf ("Network: ERROR: Layer number shouldn't be larger than %d or smaller than 0\n", all_network->count);
+		return FALSE;
+	}
+	
+	if (layer == all_network->layer_count)		// New & valid layer request from user
+	{
+		ptr_layer = g_new0(Layer, 1);
+		if (ptr_layer == NULL)
 		{
+			printf("Network: ERROR: Couldn' t create layer %d\n", layer);
 			return FALSE;
 		}
-		g_ptr_array_add  (ptrArrayNeuronGroup, nrn);
+		all_network->layers[layer] = ptr_layer;
+		all_network->layer_count++;		
+	}
+	
+	// if it is an existing layer, do not do anything
+	return TRUE;
+}	
+
+bool add_neuron_group_to_layer(int layer, int num_of_neuron)
+{
+	Layer		*ptr_layer = NULL;
+	NeuronGroup	*ptr_neuron_group = NULL;
+	Neuron		*ptr_neuron =NULL;
+	
+	ptr_neuron_group = g_new0(NeuronGroup, 1);
+	if (ptr_neuron_group == NULL)
+	{
+		printf("Network: ERROR: Couldn' t create neuron group %d\n", ptr_layer->neuron_group_count);
+		return FALSE;
+	}	
+	ptr_layer = all_network->layers[layer];			
+	ptr_layer->neuron_groups[ptr_layer->neuron_group_count] = ptr_neuron_group;
+	ptr_layer->neuron_group_count++;
+		
+	ptr_neuron_group->neurons = g_new0(Neuron, num_of_neuron);
+	if (ptr_neuron_group->neurons == NULL)
+	{
+		printf("Network: ERROR: Couldn' t create %d neurons\n", num_of_neuron);
+		return FALSE;
+	}
+	ptr_neuron_group->neuron_count = num_of_neuron;
+	
+	for (i=0; i<num_of_neuron, i++)
+	{
+		if( !initialize_neuron(&(ptr_neuron_group->neurons[i]), layer, 0, i, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
+			return FALSE;
 	}
 	return TRUE;
 }
 
-bool connect_layer_to_layer(int ThisLayer, int TargetLayer, double weight_excitatory_max, double weight_excitatory_min, double weight_inhibitory_max, double weight_inhibitory_min, unsigned int EPSP_delay_min, unsigned int EPSP_delay_max, unsigned int IPSP_delay_min, unsigned int IPSP_delay_max, float connection_probability)
+bool connect_layer_to_layer(int ThisLayer, int TargetLayer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, float connection_probability);
 {
-	neuron *nrn;
-	GPtrArray *ptrArrayThisLayer;
-	GPtrArray *ptrArrayTargetLayer;
-	GPtrArray *ptrArrayThisNeuronGroup;
-	GPtrArray *ptrArrayTargetNeuronGroup;
-
+	Layer		*ptr_this_layer = NULL;
+	Layer		*ptr_target_layer = NULL;	
+	NeuronGroup	*ptr_this_neuron_group = NULL;
+	NeuronGroup	*ptr_target_neuron_group = NULL;	
+	Neuron		*ptr_this_neuron = NULL;
+	Neuron		*ptr_target_neuron = NULL;
 	int counter_neurons = 0, counter_synapses = 0;
-	ptrArrayThisLayer = g_ptr_array_index(ptrArrayAllNetwork,ThisLayer);
-	ptrArrayTargetLayer = g_ptr_array_index(ptrArrayAllNetwork,TargetLayer);
-
-	if ((ptrArrayAllNetwork->len <= ThisLayer) || (ptrArrayAllNetwork->len <= TargetLayer) || (ThisLayer<0) || (TargetLayer<0))
+	
+	if ((all_network->layer_count <= ThisLayer) || (all_network->layer_count <= TargetLayer) || (ThisLayer<0) || (TargetLayer<0))
 	{
-		printf ("Couldn't connect layer %d to layer %d.\n", ThisLayer , TargetLayer);
-		printf ("Layer # entered is greater than max layer # %d or less than zero.\n", ptrArrayAllNetwork->len-1);
+		printf ("Network: ERROR: Couldn't connect layer %d to layer %d.\n", ThisLayer , TargetLayer);
+		printf ("Network: ERROR: Layer # entered is greater than max layer # %d or less than zero.\n", all_network->layer_count-1);
 		return FALSE;
 	}
 	if (is_layer_free(ptrArrayThisLayer))
 	{
-		printf ("Couldn't connect layer %d to layer %d.\n", ThisLayer , TargetLayer);
-		printf ("Source Layer %d has NO NEURON.\n", ThisLayer);
 		return FALSE;		
 	}
 	if (is_layer_free(ptrArrayTargetLayer))
 	{
-		printf ("Couldn't connect layer %d to layer %d.\n", ThisLayer, TargetLayer);
-		printf ("Target Layer %d has NO NEURON.\n", TargetLayer);
 		return FALSE;		
 	}
 	if ((EPSP_delay_min>EPSP_delay_max) ||  (IPSP_delay_min >  IPSP_delay_max) || (weight_excitatory_min > weight_excitatory_max) || (weight_inhibitory_min > weight_inhibitory_max) || (weight_excitatory_min<=0) || (weight_inhibitory_min<=0) || (EPSP_delay_min < 1000000)  || (IPSP_delay_min <1000000)) 
 	{
-		printf ("Minimum Maximum Value Inconsistency in synaptic weights of delays\n");
+		printf ("Network: ERROR: Minimum Maximum Value Inconsistency in synaptic weights of delays\n");
 		return FALSE;
 	}
 
-	if (LayerConnectionsMatrix[ThisLayer][TargetLayer])
+	if (layer_connections_matrix.connections[ThisLayer][TargetLayer])
 	{
 		printf ("Layer %d is already connected to layer %d\n", ThisLayer, TargetLayer);
 		return FALSE;		
 	}
-
+	
+	ptr_this_layer  = all_network->layers[ThisLayer];
+	ptr_target_layer  = all_network->layers[TargetLayer];	
+	
 	int i,j,k,m;
 
 	srand ( time(NULL) );
 			
-	for (i=0; i<ptrArrayThisLayer ->len; i++)
+	for (i=0; i<ptr_this_layer->neuron_group_count; i++)
 	{
-		ptrArrayThisNeuronGroup = g_ptr_array_index(ptrArrayThisLayer,i);
-		for (j=0; j<ptrArrayThisNeuronGroup->len; j++)
+		ptr_this_neuron_group = ptr_this_layer->neuron_groups[i];
+		for (j=0; j<ptr_this_neuron_group->neuron_count; j++)
 		{
-			nrn = g_ptr_array_index(ptrArrayThisNeuronGroup,j);
+			ptr_this_neuron = &(ptr_this_neuron_group->neurons[i]);
 			counter_neurons++;
-			for (k=0; k<ptrArrayTargetLayer->len; k++)
+			for (k=0; k< ptr_target_layer->neuron_group_count; k++)
 			{
-				ptrArrayTargetNeuronGroup = g_ptr_array_index(ptrArrayTargetLayer,k);
-				for (m=0; m<ptrArrayTargetNeuronGroup->len; m++)
-				{				
-					if (nrn == g_ptr_array_index(ptrArrayTargetNeuronGroup,m))
+				ptr_target_neuron_group = ptr_target_layer->neuron_groups[k];
+				for (m=0; m<ptr_target_neuron_group->neuron_count; m++)
+				{		
+					ptr_target_neuron = &(ptr_target_neuron_group->neurons[m]);
+					if (ptr_this_neuron == ptr_target_neuron)
 						continue; // Do not connect the neuron to itself
 					if (   ( rand() /  ((float) RAND_MAX))  <= connection_probability )
 					{
@@ -149,8 +194,12 @@ bool connect_layer_to_layer(int ThisLayer, int TargetLayer, double weight_excita
 
 bool is_layer_free (GPtrArray *layer)
 {
-	if (layer->len == 0)
+	if (all_network->layer_count == 0)
+	{
+		printf ("Network: BUG: A layer created previously cannot be free.\n");
+		printf ("Network: BUG: Take a look at add_neuron_group_to_layer func.\n");
 		return TRUE;
+	{
 	else
 		return FALSE;	
 }

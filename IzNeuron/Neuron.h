@@ -33,6 +33,6 @@ struct __Neuron
 	double		k_v_threshold;		
 };
 
-Neuron *create_neuron(double v, double a, double b, double c, double d, double I_inject, bool inhibitory, double C, double E_excitatory, double E_inhibitory, double v_resting, double v_threshold, double v_peak, double k, double tau_excitatory, double tau_inhibitory);
+bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num; double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
 
 #endif

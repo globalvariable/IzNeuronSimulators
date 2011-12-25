@@ -1,21 +1,15 @@
 #include "Neuron.h"
 
-Neuron *create_neuron(double v, double a, double b, double c, double d, double I_inject, bool inhibitory, double C, double E_excitatory, double E_inhibitory, double v_resting, double v_threshold, double v_peak, double k, double tau_excitatory, double tau_inhibitory) 
+bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num; double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
-	Neuron * nrn;
-	nrn = g_new0 (Neuron, 1);
-	if (nrn == NULL) 
-	{	
-		printf ("ERROR : Couldn't allocate neuron\n");
-		return NULL;
-	}
 	if ((a<=0) || ((inhibitory!=0) && (inhibitory!=1)) ||(C<=0) ||  (k<=0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
-		printf("ERROR : Invalid parameter submission\n");
-		printf ("ERROR : Didn''t create neuron\n");
-		return NULL;
+		printf("ERROR : Invalid parameter submission for neuron initialization\n");
+		return FALSE;
 	}	
-	
+	nrn->layer = layer;
+	nrn->neuron_group = neuron_group;
+	nrn->neuron_num = neuron_num;
 	nrn->v = v - v_resting; 
 	nrn->u = b * nrn->v;		
 	nrn->a = a;
@@ -37,7 +31,7 @@ Neuron *create_neuron(double v, double a, double b, double c, double d, double I
 	nrn->conductance_inhibitory = 0;
 	nrn->k_v_threshold = k * nrn->v_threshold;
 
-	return nrn;
+	return TRUE;
 }
 
 
