@@ -1,6 +1,6 @@
 #include "Neuron.h"
 
-bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num; double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
 	if ((a<=0) || ((inhibitory!=0) && (inhibitory!=1)) ||(C<=0) ||  (k<=0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{

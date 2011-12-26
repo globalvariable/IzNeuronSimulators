@@ -1,10 +1,12 @@
 #ifndef NEURON_H
 #define NEURON_H
 
+typedef struct __Neuron Neuron;
+
 #include <stdbool.h>
 #include <gtk/gtk.h>
-
-typedef struct __Neuron Neuron;
+#include "../Event/Event.h"
+#include "../Synapse/Synapse.h"
 
 struct __Neuron
 {
@@ -30,9 +32,11 @@ struct __Neuron
 	double		decay_rate_inhibitory;
 	double		conductance_excitatory;
 	double		conductance_inhibitory;
-	double		k_v_threshold;		
+	double		k_v_threshold;	
+	NeuronSynapseList	*syn_list;
+	NeuronEventBuffer	*event_buff;
 };
 
-bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num; double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
+bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
 
 #endif

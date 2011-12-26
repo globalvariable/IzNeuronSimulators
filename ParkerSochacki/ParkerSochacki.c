@@ -88,7 +88,7 @@ int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int ne
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
 		
-		if (!schedule_events(nrn, layer, neuron_group, neuron_num, dt_part, integration_start_time))
+		if (!schedule_events(nrn, dt_part, integration_start_time))
 			return 0;
 
 		parker_sochacki_update(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, dt_part, p);

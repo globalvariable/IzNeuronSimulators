@@ -1,12 +1,9 @@
  #include "Network.h"
 
 
-static AllNetwork	*all_network;
-
-
 bool initialize_network(void)
 {
-	all_network == NULL;
+	all_network = NULL;
 	all_network = g_new0(AllNetwork, 1);
 	if (all_network == NULL)
 	{
@@ -18,8 +15,7 @@ bool initialize_network(void)
 
 bool add_neurons_to_layer(int num_of_neuron, int layer, double v, double a, double b, double c,double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory, int randomize_params)
 {		
-	int i;
-	if (num_neuron <= 0)
+	if (num_of_neuron <= 0)
 	{
 		printf("Network: ERROR: Num of neurons to add should be greater than ZERO\n");
 		return FALSE;
@@ -27,17 +23,18 @@ bool add_neurons_to_layer(int num_of_neuron, int layer, double v, double a, doub
 	
 	if (!add_layer_to_network(layer))
 		return FALSE;
-		
 	if (!add_layer_synapse_list_to_main_synapse_list(layer))
 		return FALSE;
-		
+	if (!add_layer_event_buffer_to_main_event_buffer(layer))
+		return FALSE;
+
 	if (!add_neuron_group_to_layer(layer, num_of_neuron))
 		return FALSE;
-		
-	if (!add_neuron_group_synapse_list_to_layer_synapse_list(layer, num_of _neuron))
+	if (!add_neuron_group_synapse_list_to_layer_synapse_list(layer, num_of_neuron))
 		return FALSE;
-		
-	if (!add_layer_to_layer_connections_matrix(all_network->layer_count)	
+	if (!add_neuron_group_event_buffer_to_layer_event_buffer(layer, num_of_neuron))
+		return FALSE;		
+	if (!add_layer_to_layer_connections_matrix(all_network->layer_count))	
 		return FALSE;
 	
 	return TRUE;
@@ -50,7 +47,7 @@ bool add_layer_to_network(int layer)
 	if ((layer > all_network->layer_count) || (layer < 0) )
 	{
 		printf ("Network: ERROR: Couldn't add layer %d to netwok.\n", layer);
-		printf ("Network: ERROR: Layer number shouldn't be larger than %d or smaller than 0\n", all_network->count);
+		printf ("Network: ERROR: Layer number shouldn't be larger than %d or smaller than 0\n", all_network->layer_count);
 		return FALSE;
 	}
 	
@@ -72,6 +69,7 @@ bool add_layer_to_network(int layer)
 
 bool add_neuron_group_to_layer(int layer, int num_of_neuron)
 {
+	int i;
 	Layer		*ptr_layer = NULL;
 	NeuronGroup	*ptr_neuron_group = NULL;
 	Neuron		*ptr_neuron =NULL;
@@ -94,7 +92,7 @@ bool add_neuron_group_to_layer(int layer, int num_of_neuron)
 	}
 	ptr_neuron_group->neuron_count = num_of_neuron;
 	
-	for (i=0; i<num_of_neuron, i++)
+	for (i=0; i<num_of_neuron; i++)
 	{
 		if( !initialize_neuron(&(ptr_neuron_group->neurons[i]), layer, 0, i, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 			return FALSE;
@@ -102,7 +100,7 @@ bool add_neuron_group_to_layer(int layer, int num_of_neuron)
 	return TRUE;
 }
 
-bool connect_layer_to_layer(int ThisLayer, int TargetLayer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, float connection_probability);
+bool connect_layer_to_layer(int ThisLayer, int TargetLayer, );
 {
 	Layer		*ptr_this_layer = NULL;
 	Layer		*ptr_target_layer = NULL;	
@@ -126,7 +124,7 @@ bool connect_layer_to_layer(int ThisLayer, int TargetLayer, SynapticWeight weigh
 	{
 		return FALSE;		
 	}
-	if ((EPSP_delay_min>EPSP_delay_max) ||  (IPSP_delay_min >  IPSP_delay_max) || (weight_excitatory_min > weight_excitatory_max) || (weight_inhibitory_min > weight_inhibitory_max) || (weight_excitatory_min<=0) || (weight_inhibitory_min<=0) || (EPSP_delay_min < 1000000)  || (IPSP_delay_min <1000000)) 
+	if ((EPSP_delay_min>EPSP_delay_max) ||  (IPSP_delay_min >  IPSP_delay_max) || (weight_excitatory_min > weight_excitatory_max) || (weight_inhibitory_min > weight_inhibitory_max) || (weight_excitatory_min<=0) || (weight_inhibitory_min<=0) || (EPSP_delay_min < MINIMUM_EPSP_DELAY)  || (IPSP_delay_min <MINIMUM_IPSP_DELAY)) 
 	{
 		printf ("Network: ERROR: Minimum Maximum Value Inconsistency in synaptic weights of delays\n");
 		return FALSE;
@@ -141,10 +139,8 @@ bool connect_layer_to_layer(int ThisLayer, int TargetLayer, SynapticWeight weigh
 	ptr_this_layer  = all_network->layers[ThisLayer];
 	ptr_target_layer  = all_network->layers[TargetLayer];	
 	
-	int i,j,k,m;
+	int i,j,k,m, ret_val;
 
-	srand ( time(NULL) );
-			
 	for (i=0; i<ptr_this_layer->neuron_group_count; i++)
 	{
 		ptr_this_neuron_group = ptr_this_layer->neuron_groups[i];
@@ -160,34 +156,20 @@ bool connect_layer_to_layer(int ThisLayer, int TargetLayer, SynapticWeight weigh
 					ptr_target_neuron = &(ptr_target_neuron_group->neurons[m]);
 					if (ptr_this_neuron == ptr_target_neuron)
 						continue; // Do not connect the neuron to itself
-					if (   ( rand() /  ((float) RAND_MAX))  <= connection_probability )
+					retval = create_synapse(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, connection_probability);	
+					if (retval < 0)
 					{
-						if (nrn->num_of_output >= MAX_OUTPUT_PER_NEURON)
-						{
-							printf("ERROR: Max number of output per neuron set as %d\n", MAX_OUTPUT_PER_NEURON);
-							printf("ERROR: Tried to access %d th output to connect neuron\n", nrn->num_of_output+1);
-							return FALSE;
-						}
-						nrn->axon_to[nrn->num_of_output] = g_ptr_array_index(ptrArrayTargetNeuronGroup,m);
-
-						if (nrn->inhibitory)
-						{
-							nrn->axonal_delay[nrn->num_of_output]  = (unsigned int)((IPSP_delay_max-IPSP_delay_min) * (rand()/((double)RAND_MAX))) + IPSP_delay_min; 
-							nrn->axonal_weight[nrn->num_of_output] = -( (weight_inhibitory_max-weight_inhibitory_min) * (rand()/ ((double)RAND_MAX) )) - weight_inhibitory_min;
-						}
-						else
-						{
-							nrn->axonal_delay[nrn->num_of_output]  = (unsigned int)((EPSP_delay_max-EPSP_delay_min) * (rand()/((double)RAND_MAX))) + EPSP_delay_min; 
-							nrn->axonal_weight[nrn->num_of_output] = (weight_excitatory_max-weight_excitatory_min) * (rand()/ ((double)RAND_MAX) ) + weight_excitatory_min;
-						}					
-						nrn->num_of_output++;
-						counter_synapses++;
+						return FALSE;
 					}
+					else if (retval > 0)
+					{
+						counter_synapses++;
+					}					
 				}
 			}
 		}
 	}
-	LayerConnectionsMatrix[ThisLayer][TargetLayer] = 1;
+	layer_connections_matrix.connections[ThisLayer][TargetLayer] = 1;
 	printf ("Connection of %d neurons in layer %d with %d synapses to layer %d is successful\n",counter_neurons, ThisLayer, counter_synapses, TargetLayer);	
 	return TRUE;
 }
