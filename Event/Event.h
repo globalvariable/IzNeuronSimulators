@@ -1,9 +1,6 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-typedef struct 	__MainEventBuffer			MainEventBuffer;
-typedef struct 	__LayerEventBuffer 		LayerEventBuffer;
-typedef struct 	__NeuronGroupEventBuffer	NeuronGroupEventBuffer;
 typedef struct 	__NeuronEventBuffer		NeuronEventBuffer;
 
 #include "../../BlueSpike/TimeStamp.h"
@@ -14,25 +11,6 @@ typedef struct 	__NeuronEventBuffer		NeuronEventBuffer;
 #include <pthread.h>
 
 // Lock this struct while multicore cpu is utilized. Multiple thread can write in to this buffer.
-
-struct __MainEventBuffer
-{
-	LayerEventBuffer	**layer_event_buffer;
-	int 				layer_event_buffer_count;
-};
-
-struct __LayerEventBuffer
-{
-	NeuronGroupEventBuffer	**neuron_group_event_buffer;
-	int 					neuron_group_event_buffer_count;
-};
-
-struct __NeuronGroupEventBuffer
-{
-	NeuronEventBuffer	*neuron_event_buffer;
-	int 				neuron_event_buffer_count;
-};
-
 struct __NeuronEventBuffer
 {
 	pthread_mutex_t 	mutex;
@@ -44,14 +22,9 @@ struct __NeuronEventBuffer
 	int				read_idx;   		// No need to lock this struct while this neuron reading its buffer to evaluate its dynamics. It should handle the events from buffer_prev_idx (including) to buffer_write_idx (excluding)
 };
 
-//MainEventBuffer *main_event_buffer;    // Use dynamic allocation for each neuron.    Layer ----> Neuron Group ---> Neuron   3D array. 
-
 /// Functions
-bool initialize_main_event_buffer(void);
-bool add_layer_event_buffer_to_main_event_buffer(int layer);
-bool add_neuron_group_event_buffer_to_layer_event_buffer(int layer, int num_of_neuron);
 int schedule_events(Neuron *nrn, double dt_part, TimeStamp integration_start_time);
 int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double weight, Neuron *event_from);
 bool increment_neuron_event_buffer_size(Neuron *neuron);
-
+void clear_neuron_event_buffer(Neuron *neuron);
 #endif

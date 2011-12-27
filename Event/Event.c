@@ -1,84 +1,5 @@
 #include "Event.h"
 
-static MainEventBuffer *main_event_buffer;    // Use dynamic allocation for each neuron.    Layer ----> Neuron Group ---> Neuron   3D array. 
-
-bool initialize_main_event_buffer(void)
-{
-	main_event_buffer = NULL;
-	main_event_buffer = g_new0(MainEventBuffer, 1);
-	if (main_event_buffer == NULL)
-	{
-		printf("Event: ERROR: Couldn' t create main event buffer\n");
-		return FALSE;
-	}	
-	return TRUE;
-
-}
-
-bool add_layer_event_buffer_to_main_event_buffer(int layer)
-{
-	LayerEventBuffer		*ptr_layer_event_buffer = NULL;
-	
-	if ((layer > main_event_buffer->layer_event_buffer_count) || (layer < 0) )
-	{
-		printf ("Event: ERROR: Couldn't add layer  event buffer %d.\n", layer);
-		printf ("Event: ERROR: Layer number shouldn't be larger than %d and smaller than 0\n", main_event_buffer->layer_event_buffer_count);
-		return FALSE;
-	}
-	
-	if (layer == main_event_buffer->layer_event_buffer_count)		// New & valid event buffer layer request from user
-	{
-		ptr_layer_event_buffer = g_new0(LayerEventBuffer, 1);
-		if (ptr_layer_event_buffer == NULL)
-		{
-			printf("Event: ERROR: Couldn' t create layer event buffer %d\n", layer);
-			return FALSE;
-		}
-		main_event_buffer->layer_event_buffer[layer] = ptr_layer_event_buffer;
-		main_event_buffer->layer_event_buffer_count++;		
-	}
-	
-	// if it is an existing layer, do not do anything
-	return TRUE;
-}	
-
-bool add_neuron_group_event_buffer_to_layer_event_buffer(int layer, int num_of_neuron)
-{
-	int i;
-	LayerEventBuffer		*ptr_layer_event_buffer = NULL;
-	NeuronGroupEventBuffer	*ptr_neuron_group_event_buffer = NULL;
-	NeuronEventBuffer		*ptr_neuron_event_buffer ;
-	Neuron				*neuron;			
-	
-	ptr_neuron_group_event_buffer = g_new0(NeuronGroupEventBuffer, 1);
-	if (ptr_neuron_group_event_buffer == NULL)
-	{
-		printf("Event: ERROR: Couldn' t create neuron group  event buffer\n");
-		return FALSE;
-	}
-	ptr_layer_event_buffer = main_event_buffer->layer_event_buffer[layer];			
-	ptr_layer_event_buffer->neuron_group_event_buffer[ptr_layer_event_buffer->neuron_group_event_buffer_count] = ptr_neuron_group_event_buffer;
-		
-	ptr_neuron_group_event_buffer->neuron_event_buffer = g_new0(NeuronEventBuffer, num_of_neuron);
-	if (ptr_neuron_group_event_buffer->neuron_event_buffer == NULL)
-	{
-		printf("Event: ERROR: Couldn' t create %d neuron  event buffer\n", num_of_neuron);
-		return FALSE;
-	}
-	ptr_neuron_group_event_buffer->neuron_event_buffer_count = num_of_neuron;
-	
-	for (i = 0; i < num_of_neuron; i++)
-	{
-		neuron = &(all_network->layers[layer]->neuron_groups[ptr_layer_event_buffer->neuron_group_event_buffer_count]->neurons[i]);			// For faster data reach in event scheduling and insertion
-		ptr_neuron_event_buffer = &(ptr_neuron_group_event_buffer->neuron_event_buffer[i]);	
-		neuron->event_buff = ptr_neuron_event_buffer;	
-	}	
-	
-	ptr_layer_event_buffer->neuron_group_event_buffer_count++;	
-	return TRUE;
-}
-
-
 int schedule_events(Neuron *nrn, double dt_part, TimeStamp integration_start_time)
 {
 	int i;
@@ -191,7 +112,6 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 
 bool increment_neuron_event_buffer_size(Neuron *neuron)
 {
-	int i;
 	int layer = neuron->layer;
 	int neuron_group = neuron->neuron_group;
 	int neuron_num = neuron->neuron_num;
@@ -201,7 +121,7 @@ bool increment_neuron_event_buffer_size(Neuron *neuron)
 	Neuron 			**from = NULL;			
 	SynapticWeight		*weight = NULL;		
 
-	ptr_neuron_event_buffer = &(main_event_buffer->layer_event_buffer[layer]->neuron_group_event_buffer[neuron_group]->neuron_event_buffer[neuron_num]);
+	ptr_neuron_event_buffer = neuron->event_buff;
 	
 	time = g_new0(TimeStamp, ptr_neuron_event_buffer->buff_size+1);
 	from = g_new0(Neuron*, ptr_neuron_event_buffer->buff_size+1);
@@ -229,3 +149,17 @@ bool increment_neuron_event_buffer_size(Neuron *neuron)
 	return TRUE;
 }
 
+void clear_neuron_event_buffer(Neuron *neuron)
+{
+	int i;
+	NeuronEventBuffer	*ptr_neuron_event_buffer;
+	ptr_neuron_event_buffer = neuron->event_buff;
+	
+	for (i=0; i< ptr_neuron_event_buffer->buff_size; i++)
+	{
+		ptr_neuron_event_buffer->time[i] = 0;
+		ptr_neuron_event_buffer->from[i] = 0;
+		ptr_neuron_event_buffer->weight[i] = 0;
+	}
+
+}		

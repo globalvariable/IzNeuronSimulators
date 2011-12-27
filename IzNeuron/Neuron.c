@@ -34,4 +34,36 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	return TRUE;
 }
 
+bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
+{
+	Neuron		*ptr_neuron = NULL;
 
+	ptr_neuron = get_neuron_address(layer, neuron_group, neuron_num);
+	if (ptr_neuron == NULL)
+		return FALSE;
+	printf ("--------------Interrogating Neuron Dynamics ---------\n");		
+	printf ("address:%u\n",  (unsigned int)ptr_neuron);	
+	printf ("layer:%d\n",  ptr_neuron->layer);
+	printf ("neuron group:%d\n",  ptr_neuron->neuron_group);	
+	printf ("neuron num:%d\n",  ptr_neuron->neuron_num);
+	printf ("v:\t%f\n",  ptr_neuron->v);
+	printf ("u:\t%f\n",  ptr_neuron->u);	
+	printf ("a:\t%f\n",  ptr_neuron->a);
+	printf ("b:\t%f\n",  ptr_neuron->b);	
+	printf ("c:\t%f\n",  ptr_neuron->c);
+	printf ("d:\t%f\n",  ptr_neuron->d);					
+	printf ("k:\t%f\n",  ptr_neuron->k);
+	printf ("E:\t%f\n",  ptr_neuron->E);	
+	printf ("v_resting:\t%f\n",  ptr_neuron->v_resting);
+	printf ("v_threshold:\t%f\n",  ptr_neuron->v_threshold+ptr_neuron->v_resting);					
+	printf ("v_peak:\t%f\n",  ptr_neuron->v_peak+ptr_neuron->v_resting );
+	printf ("I_inject:\t%f\n",  ptr_neuron->I_inject);
+	printf ("inhibitory:\t%d\n",  ptr_neuron->inhibitory);
+	printf ("E_excitatory:\t%f\n",  ptr_neuron->E_excitatory);
+	printf ("E_inhibitory:\t%f\n",  ptr_neuron->E_inhibitory);	
+	printf ("decay_rate_excitatory:\t%f\n",  ptr_neuron->decay_rate_excitatory);
+	printf ("decay_rate_inhibitory:\t%f\n",  ptr_neuron->decay_rate_inhibitory);					
+	printf ("conductance_excitatory:\t%f\n",  ptr_neuron->conductance_excitatory);
+	printf ("conductance_inhibitory:\t%f\n",  ptr_neuron->conductance_inhibitory);
+	printf ("--------------Interrogating Neuron Dynamics Complete---------\n");		
+}
