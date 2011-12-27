@@ -141,6 +141,6 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 		}
 		printf ("-------------- Interrogating Parker Sochacki Ploynomial Values...Complete ---------\n");				
 	}	
-	
+	return TRUE;
 				
 }
