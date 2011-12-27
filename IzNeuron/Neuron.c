@@ -37,12 +37,16 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 {
 	Neuron		*ptr_neuron = NULL;
-
+	NeuronEventBuffer *ptr_neuron_event_buffer;
+	NeuronSynapseList	*ptr_neuron_syn_list;
+	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
+	char c;
+	int i;
 	ptr_neuron = get_neuron_address(layer, neuron_group, neuron_num);
 	if (ptr_neuron == NULL)
 		return FALSE;
 	printf ("--------------Interrogating Neuron Dynamics ---------\n");		
-	printf ("address:%u\n",  (unsigned int)ptr_neuron);	
+	printf ("address:%u\n",  (NeuronAddress)ptr_neuron);	
 	printf ("layer:%d\n",  ptr_neuron->layer);
 	printf ("neuron group:%d\n",  ptr_neuron->neuron_group);	
 	printf ("neuron num:%d\n",  ptr_neuron->neuron_num);
@@ -65,5 +69,78 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	printf ("decay_rate_inhibitory:\t%f\n",  ptr_neuron->decay_rate_inhibitory);					
 	printf ("conductance_excitatory:\t%f\n",  ptr_neuron->conductance_excitatory);
 	printf ("conductance_inhibitory:\t%f\n",  ptr_neuron->conductance_inhibitory);
-	printf ("--------------Interrogating Neuron Dynamics Complete---------\n");		
+	printf ("--------------Interrogating Neuron Dynamics...Complete---------\n");
+	
+	printf ("Interrogate event buffer as well? [ (Y)es / (N)o / (Q)uit ]\n");
+	c = getchar();
+	if ((c == 'q') || (c =='Q'))
+	{
+		return TRUE;
+	}	
+	if ((c == 'y') || (c =='Y'))
+	{
+		ptr_neuron_event_buffer = ptr_neuron->event_buff;
+		printf ("--------------Interrogating Event Buffer ---------\n");				
+		printf ("Event buffer size: %d\n", ptr_neuron_event_buffer->buff_size);
+		printf ("Write Index: %d\n", ptr_neuron_event_buffer->write_idx);		
+		printf ("Read Index: %d\n", ptr_neuron_event_buffer->read_idx);
+		printf ("Event TimeStamp / Event From / Synaptic Weight\n");		
+		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
+		{
+			printf ("%llu\t\t", ptr_neuron_event_buffer->time[i]);
+			printf ("%u\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
+			printf ("%.5f\n", ptr_neuron_event_buffer->weight[i]);				
+		}
+		printf ("--------------Interrogating Event Buffer...Complete ---------\n");						
+	}	
+	
+	printf ("Interrogate synapse list as well? [ (Y)es / (N)o / (Q)uit ]\n");
+	c = getchar();
+	if ((c == 'q') || (c =='Q'))
+	{
+		return TRUE;
+	}	
+	if ((c == 'y') || (c =='Y'))
+	{
+		ptr_neuron_syn_list = ptr_neuron->syn_list;
+		printf ("--------------Interrogating Synapse List ---------\n");				
+		printf ("Number of Synapses: %d\n", ptr_neuron_syn_list->num_of_synapses);
+		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
+		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
+		{
+			printf ("%u\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
+			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		
+			printf ("%.5f\n", ptr_neuron_syn_list->weight[i]);				
+		}
+		printf ("--------------Interrogating Synapse List....Complete ---------\n");				
+	}		
+	printf ("Interrogate Parker Sochaki Polynomials as well? [ (Y)es / (N)o / (Q)uit ]\n");
+	c = getchar();
+	if ((c == 'q') || (c =='Q'))
+	{
+		return TRUE;
+	}	
+	if ((c == 'y') || (c =='Y'))
+	{
+		ptr_ps_vals = ptr_neuron->ps_vals;
+		printf ("--------------   Interrogating Parker Sochacki Ploynomial Values ---------\n");				
+		printf ("Maximum ParkerSochaki Order: %d\n", get_maximum_parker_sochaki_order());
+		printf ("Order equals to zero shows maximum order that the iterations reached.\n");		
+		printf ("v / u / excitatory_conductance / inhibitory_conductance / chi / E / a / excitatory_conductance_decay_rate / inhibitory_conductance_decay_rate\n");		
+		for (i = 0; i < get_maximum_parker_sochaki_order(); i++)
+		{
+			printf("%.5f\t", ptr_ps_vals->v_pol_vals[i]); 
+			printf("%.5f\t", ptr_ps_vals->u_pol_vals[i]);
+			printf("%.5f\t", ptr_ps_vals->conductance_excitatory_pol_vals[i]);
+			printf("%.5f\t", ptr_ps_vals->conductance_inhibitory_pol_vals[i]); 
+			printf("%.5f\t", ptr_ps_vals->chi_pol_vals[i]); 
+			printf("%.5f\t", ptr_ps_vals->E_pol_vals[i]);
+			printf("%.5f\t", ptr_ps_vals->a_pol_vals[i]); 
+			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals[i]); 
+			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals[i]); 			
+		}
+		printf ("-------------- Interrogating Parker Sochacki Ploynomial Values...Complete ---------\n");				
+	}	
+	
+				
 }

@@ -59,4 +59,16 @@ int create_synapse(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight we
 	return 0;
 }
 
-
+void destroy_neuron_synapse_list(Neuron *neuron)
+{
+	NeuronSynapseList	*ptr_neuron_syn_list;
+	
+	ptr_neuron_syn_list = neuron->syn_list;	
+	
+	g_free(ptr_neuron_syn_list->to);
+	g_free(ptr_neuron_syn_list->delay);	
+ 	g_free(ptr_neuron_syn_list->weight);
+ 	
+	ptr_neuron_syn_list->num_of_synapses = 0;
+	return;
+}

@@ -197,6 +197,45 @@ bool increment_layer_connections_matrix_size(void)
 	return TRUE;
 }		
 
+bool decrement_layer_connections_matrix_size(void)
+{
+	int 	**local_connections_matrix;
+	int 	i,j;
+	
+	if (layer_connections_matrix.matrix_size > 0)
+	{
+		local_connections_matrix = g_new0(int *, layer_connections_matrix.matrix_size-1);   // if argument 2 of g_new0 is zero, it will return NULL
+		if (local_connections_matrix == NULL)
+		{
+			printf("Synapse: ERROR: Couldn' t create connections_matrix\n");
+			return FALSE;		
+		}	
+		for (i = 0; i <  layer_connections_matrix.matrix_size-1; i++)
+		{
+			local_connections_matrix[i] = g_new0(int,  layer_connections_matrix.matrix_size-1);
+			if (local_connections_matrix[i] == NULL)
+			{
+				printf("Synapse: ERROR: Couldn' t create connections_matrix\n");
+				return FALSE;		
+			}			
+			for (j = 0; j <  layer_connections_matrix.matrix_size-1; j++)
+			{
+				local_connections_matrix[i][j] = layer_connections_matrix.connections[i][j];
+			}		
+		}	
+		for (i=0; i<layer_connections_matrix.matrix_size; i++)
+		{
+			g_free(layer_connections_matrix.connections[i]);
+		} 		
+		g_free(layer_connections_matrix.connections);	
+		
+		layer_connections_matrix.connections = local_connections_matrix;
+		layer_connections_matrix.matrix_size--;
+	}	
+
+	return TRUE;
+}
+
 bool is_layer_free (int layer)
 {
 	if ((layer >= all_network->layer_count) || (layer < 0))
@@ -313,4 +352,36 @@ void interrogate_network(void)
 			printf("Layer: %d\t Neuron Group: %d\t has %d\t neurons.\n", i, j, ptr_neuron_group->neuron_count);
 		}
 	}	
+}
+
+
+bool destroy_network(void)
+{
+	int i, j, k;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	Neuron		*ptr_neuron;
+	
+	for (i=0; i<all_network->layer_count; i++)
+	{
+		ptr_layer = all_network->layers[i];
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			{
+				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				destroy_neuron_event_buffer(ptr_neuron);
+				destroy_neuron_synapse_list(ptr_neuron);	
+				destroy_neuron_parker_sochacki_pol_vals(ptr_neuron);		
+			}
+			g_free(ptr_neuron_group->neurons);					
+		}
+		g_free(ptr_layer->neuron_groups);
+		if (!decrement_layer_connections_matrix_size())
+			return FALSE;
+	}
+	g_free(all_network->layers);
+	g_free(all_network);
+	return TRUE;
 }

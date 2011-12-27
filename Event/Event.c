@@ -163,3 +163,20 @@ void clear_neuron_event_buffer(Neuron *neuron)
 	}
 
 }		
+
+void destroy_neuron_event_buffer(Neuron *neuron)
+{
+	NeuronEventBuffer *ptr_neuron_event_buffer;
+	
+	ptr_neuron_event_buffer = neuron->event_buff;
+
+	g_free(ptr_neuron_event_buffer->time);
+	g_free(ptr_neuron_event_buffer->from);	
+ 	g_free(ptr_neuron_event_buffer->weight);
+
+	ptr_neuron_event_buffer->buff_size = 0;
+	ptr_neuron_event_buffer->write_idx = 0;	
+	ptr_neuron_event_buffer->read_idx = 0;	
+
+	return;
+}

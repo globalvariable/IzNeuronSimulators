@@ -27,4 +27,5 @@ int schedule_events(Neuron *nrn, double dt_part, TimeStamp integration_start_tim
 int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double weight, Neuron *event_from);
 bool increment_neuron_event_buffer_size(Neuron *neuron);
 void clear_neuron_event_buffer(Neuron *neuron);
+void destroy_neuron_event_buffer(Neuron *neuron);
 #endif

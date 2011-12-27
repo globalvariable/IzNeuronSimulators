@@ -1,28 +1,11 @@
  #include "ParkerSochacki.h"
 
-typedef struct 	__ParkerSochackiPolynomialVals 	ParkerSochackiPolynomialVals;
+static int parker_sochacki_max_order = 0;
+static double parker_sochacki_error_tolerance = 0;
+static int newton_raphson_max_iter = 0;
+static double newton_raphson_error_tolerance = 0;
 
-struct __ParkerSochackiPolynomialVals
-{
-	double *v_pol_vals;			// size should be parker_sochacki_max_order + 1
-	double *u_pol_vals;
-	double *conductance_excitatory_pol_vals;
-	double *conductance_inhibitory_pol_vals;
-	double *chi_pol_vals;
-	double *E_pol_vals;		// Dynamically allocate
-	double *a_pol_vals;
-	double *conductance_decay_rate_excitatory_pol_vals;
-	double *conductance_decay_rate_inhibitory_pol_vals;
-	
-};      // Use dynamic allocation for each neuron.    Layer ----> Neuron Group ---> Neuron   3D array. 
-
-static ParkerSochackiPolynomialVals ***ps_pol_vals;
-
-static int parker_sochacki_max_order;
-static double parker_sochacki_error_tolerance;
-static int newton_raphson_max_iter;
-static double newton_raphson_error_tolerance;
-
+static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void);
 
 bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance, int max_nr_iter,  double nr_error_tolerance)
 {
@@ -39,14 +22,129 @@ bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_toler
 	newton_raphson_max_iter = max_nr_iter;
 	newton_raphson_error_tolerance = nr_error_tolerance;
 	
-	// ALLOCATE ParkerSochackiPolynomialVals    ARRAY SIZE Should be "parker_sochacki_max_order + 1"
-	// CALCULATE E_pol_vals, a_pol_vals etc...
-	
+	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons())
+		return TRUE;
+	else
+		return FALSE;
+}
+
+int get_maximum_parker_sochaki_order(void)
+{
+	return parker_sochacki_max_order;
+}
+
+static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void)
+{
+	int i, j, k, m;
+	Layer		*ptr_layer = NULL;
+	NeuronGroup	*ptr_neuron_group = NULL;
+	Neuron		*ptr_neuron = NULL;
+	ParkerSochackiPolynomialVals	*ptr_ps_vals;
+	for (i=0; i<all_network->layer_count; i++)
+	{
+		ptr_layer = all_network->layers[i];
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			{
+				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				ptr_ps_vals = ptr_neuron->ps_vals;
+
+				g_free(ptr_ps_vals->v_pol_vals);			
+				g_free(ptr_ps_vals->u_pol_vals);
+				g_free(ptr_ps_vals->conductance_excitatory_pol_vals);
+				g_free(ptr_ps_vals->conductance_inhibitory_pol_vals);
+				g_free(ptr_ps_vals->chi_pol_vals);
+				g_free(ptr_ps_vals->E_pol_vals);		
+				g_free(ptr_ps_vals->a_pol_vals);
+				g_free(ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals);
+				g_free(ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals);			
+					
+				// size should be parker_sochacki_max_order + 1
+				ptr_ps_vals->v_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->v_pol_vals == NULL) { return FALSE; }  		
+				ptr_ps_vals->u_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->u_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->conductance_excitatory_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->conductance_excitatory_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->conductance_inhibitory_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->conductance_inhibitory_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->chi_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->chi_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->E_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->E_pol_vals == NULL) { return FALSE; }  		
+				ptr_ps_vals->a_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->a_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals == NULL) { return FALSE; }  
+				ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals == NULL) { return FALSE; }  
+				for (m = 0; m < parker_sochacki_max_order + 1; m++)
+				{
+					ptr_ps_vals->E_pol_vals[m] = ptr_neuron->E/(m +1);
+					ptr_ps_vals->a_pol_vals[m] = ptr_neuron->a/(m+1);
+					ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals[m] = ptr_neuron->decay_rate_excitatory/(m+1);
+					ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals[m] = ptr_neuron->decay_rate_inhibitory/(m+1);	
+				}
+			}					
+		}
+	}	
 	return TRUE;
 }
 
+int evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
+{
 
-int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int neuron_num, TimeStamp integration_start_time, TimeStamp integration_end_time)
+	TimeStamp 		integration_start_ns;
+
+	NeuronEventBuffer	*neuron_event_buffer;
+	
+	TimeStamp		*event_times;			
+//	Neuron 			**event_from;		no need to handle this to evaluate neuron dynamics	
+	SynapticWeight		*event_weights;			
+	int 				event_buff_size;			
+	int				*ptr_event_buffer_write_idx;  		
+	int				*ptr_event_buffer_read_idx; 		
+
+	int				idx, end_idx;	
+	TimeStamp		event_time;	
+				
+	neuron_event_buffer = nrn->event_buff;
+	event_times = neuron_event_buffer->time;
+	event_weights = neuron_event_buffer->weight;
+	event_buff_size = neuron_event_buffer->buff_size;
+	ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);
+	ptr_event_buffer_read_idx = &(neuron_event_buffer->read_idx);
+			
+	integration_start_ns = start_time;   // required to know it to schedule events for outputs  (parker_sochacki_step_start_time+ dt_part)
+	
+	idx = *ptr_event_buffer_read_idx;
+	end_idx = *ptr_event_buffer_write_idx;
+
+	while (idx != end_idx)		// There is a check for event buffer overflow in schedule_events()
+	{
+		event_time = event_times[idx];
+		if (event_time >= end_time)	// Do not handle if it is at start of next step or later than that
+			break;
+		if (event_time < start_time)	// this function handles sorted synaptic events. the events are sorted during buffering
+		{
+			printf ("Simulate: BUG: evaluate_neuron_dyn - Simulate.c\n");
+			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);		
+			printf ("Simulate: BUG: There must be a problem at event sorting\n");	
+			return 0;
+		}
+		parker_sochacki_integration(nrn, integration_start_ns, event_time);
+		if (event_weights[idx] > 0)
+			nrn->conductance_excitatory += event_weights[idx];
+		else if (event_weights[idx] < 0)
+			nrn->conductance_inhibitory -= event_weights[idx];	
+		else
+			printf ("BUG: evaluate_neuron_dyn - Simulate.c  -----> Weight cannot be zero\n");	
+		integration_start_ns = event_time;
+		idx++;
+		if (idx == event_buff_size)
+			idx = 0;
+	}
+	parker_sochacki_integration(nrn, integration_start_ns, end_time);
+	*ptr_event_buffer_read_idx = end_idx;			// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
+	return 1;
+}
+
+
+
+int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time)
 {
 	double *v_pol_vals;			// size should be parker_sochacki_max_order + 1
 	double *u_pol_vals;
@@ -61,9 +159,10 @@ int parker_sochacki_integration(Neuron *nrn, int layer, int neuron_group, int ne
 	double dt_part;
 	double dt;
 	int p;
+	
 	ParkerSochackiPolynomialVals *polynomial_vals;
 	
-	polynomial_vals = &(ps_pol_vals[layer][neuron_group][neuron_num]);
+	polynomial_vals = nrn->ps_vals;
 
 	v_pol_vals = polynomial_vals->v_pol_vals;			
 	u_pol_vals = polynomial_vals->u_pol_vals;
@@ -253,24 +352,51 @@ int parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_
 
 void clear_parker_sochacki_polynomials(int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group) /// For debugging, delete when testing complete
 {
-	int i, j, k, m = 0;
-	for (i = 0; i< num_of_layers; i++)
+	int i, j, k, m;
+	Layer		*ptr_layer = NULL;
+	NeuronGroup	*ptr_neuron_group = NULL;
+	Neuron		*ptr_neuron = NULL;
+	ParkerSochackiPolynomialVals	*ptr_ps_vals;
+	for (i=0; i<all_network->layer_count; i++)
 	{
-		for (j = 0; j< num_of_neuron_groups[i]; j++)
+		ptr_layer = all_network->layers[i];
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
 		{
-			for (k = 0; k< num_of_neurons_in_group[i][j]; k++)
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
 			{
-				for (m=0; m<parker_sochacki_max_order+1; m++)
-				{				
-					ps_pol_vals[i][j][k].v_pol_vals[m] = 0;
-					ps_pol_vals[i][j][k].u_pol_vals[m] = 0;
-					ps_pol_vals[i][j][k].conductance_excitatory_pol_vals[m] = 0;
-					ps_pol_vals[i][j][k].conductance_inhibitory_pol_vals[m] = 0;
-					ps_pol_vals[i][j][k].chi_pol_vals[m] = 0;
+				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				ptr_ps_vals = ptr_neuron->ps_vals;
+				for (m = 0; m < parker_sochacki_max_order + 1; m++)
+				{
+					ptr_ps_vals->v_pol_vals[m] = 0;
+					ptr_ps_vals->u_pol_vals[m] = 0;
+					ptr_ps_vals->conductance_excitatory_pol_vals[m] = 0;
+					ptr_ps_vals->conductance_inhibitory_pol_vals[m] = 0;
+					ptr_ps_vals->chi_pol_vals[m] = 0;
 				}
 			}					
 		}
-	}
+	}	
 	return;
 }
+
+void destroy_neuron_parker_sochacki_pol_vals(Neuron *neuron)
+{
+	ParkerSochackiPolynomialVals	*ptr_ps_vals;
+
+	ptr_ps_vals = neuron->ps_vals;
+
+	g_free(ptr_ps_vals->v_pol_vals);			
+	g_free(ptr_ps_vals->u_pol_vals);
+	g_free(ptr_ps_vals->conductance_excitatory_pol_vals);
+	g_free(ptr_ps_vals->conductance_inhibitory_pol_vals);
+	g_free(ptr_ps_vals->chi_pol_vals);
+	g_free(ptr_ps_vals->E_pol_vals);		
+	g_free(ptr_ps_vals->a_pol_vals);
+	g_free(ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals);
+	g_free(ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals);
+	
+	return;
+}		
 

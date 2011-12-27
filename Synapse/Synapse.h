@@ -23,5 +23,5 @@ struct __NeuronSynapseList
 ///////       Fuctions
 
 int create_synapse(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, float connection_probability);
-
+void destroy_neuron_synapse_list(Neuron *neuron);
 #endif
