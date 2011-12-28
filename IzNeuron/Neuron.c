@@ -40,14 +40,15 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	NeuronEventBuffer *ptr_neuron_event_buffer;
 	NeuronSynapseList	*ptr_neuron_syn_list;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
-	char c;
 	int i;
 	
 	
 	ptr_neuron = get_neuron_address(layer, neuron_group, neuron_num);
 	if (ptr_neuron == NULL)
+	{
+		printf("Neuron: ERROR: Neuron to interrogate was not found (Layer: %d Neuron_Group: %d Neuron: %d)\n", layer, neuron_group, neuron_num);
 		return FALSE;
-
+	}
 	ptr_neuron_event_buffer = ptr_neuron->event_buff;		
 	ptr_neuron_syn_list = ptr_neuron->syn_list;
 	ptr_ps_vals = ptr_neuron->ps_vals;
@@ -57,7 +58,7 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	printf ("layer:%d\n",  ptr_neuron->layer);
 	printf ("neuron group:%d\n",  ptr_neuron->neuron_group);	
 	printf ("neuron num:%d\n",  ptr_neuron->neuron_num);
-	printf ("v:\t%f\n",  ptr_neuron->v);
+	printf ("v:\t%f\n",  ptr_neuron->v+ptr_neuron->v_resting);
 	printf ("u:\t%f\n",  ptr_neuron->u);	
 	printf ("a:\t%f\n",  ptr_neuron->a);
 	printf ("b:\t%f\n",  ptr_neuron->b);	
@@ -67,26 +68,20 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	printf ("E:\t%f\n",  ptr_neuron->E);	
 	printf ("v_resting:\t%f\n",  ptr_neuron->v_resting);
 	printf ("v_threshold:\t%f\n",  ptr_neuron->v_threshold+ptr_neuron->v_resting);					
-	printf ("v_peak:\t%f\n",  ptr_neuron->v_peak+ptr_neuron->v_resting );
+	printf ("v_peak:\t\t%f\n",  ptr_neuron->v_peak+ptr_neuron->v_resting );
 	printf ("I_inject:\t%f\n",  ptr_neuron->I_inject);
 	printf ("inhibitory:\t%d\n",  ptr_neuron->inhibitory);
-	printf ("E_excitatory:\t%f\n",  ptr_neuron->E_excitatory);
-	printf ("E_inhibitory:\t%f\n",  ptr_neuron->E_inhibitory);	
+	printf ("E_excitatory:\t%f\n",  ptr_neuron->E_excitatory+ptr_neuron->v_resting);
+	printf ("E_inhibitory:\t%f\n",  ptr_neuron->E_inhibitory+ptr_neuron->v_resting);	
 	printf ("decay_rate_excitatory:\t%f\n",  ptr_neuron->decay_rate_excitatory);
 	printf ("decay_rate_inhibitory:\t%f\n",  ptr_neuron->decay_rate_inhibitory);					
 	printf ("conductance_excitatory:\t%f\n",  ptr_neuron->conductance_excitatory);
 	printf ("conductance_inhibitory:\t%f\n",  ptr_neuron->conductance_inhibitory);
 	printf ("--------------Interrogating Neuron Dynamics...Complete---------\n");
 	
-	printf ("Interrogate event buffer as well? [ (Y)es / (N)o / (Q)uit ]\n");
-	c = getchar();
-	if ((c == 'q') || (c =='Q'))
-	{
-		return TRUE;
-	}	
-	if ((c == 'y') || (c =='Y'))
-	{
-		printf ("--------------Interrogating Event Buffer ---------\n");				
+	printf ("--------------Interrogating Event Buffer ---------\n");		
+	if (ptr_neuron_event_buffer != NULL)
+	{ 
 		printf ("Event buffer size: %d\n", ptr_neuron_event_buffer->buff_size);
 		printf ("Write Index: %d\n", ptr_neuron_event_buffer->write_idx);		
 		printf ("Read Index: %d\n", ptr_neuron_event_buffer->read_idx);
@@ -97,18 +92,16 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 			printf ("%u\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
 			printf ("%.5f\n", ptr_neuron_event_buffer->weight[i]);				
 		}
-		printf ("--------------Interrogating Event Buffer...Complete ---------\n");						
-	}	
-	
-	printf ("Interrogate synapse list as well? [ (Y)es / (N)o / (Q)uit ]\n");
-	c = getchar();
-	if ((c == 'q') || (c =='Q'))
+	}
+	else
 	{
-		return TRUE;
-	}	
-	if ((c == 'y') || (c =='Y'))
+		printf ("Event buffer is not allocated yet\n");			
+	}		
+	printf ("--------------Interrogating Event Buffer...Complete ---------\n");							
+
+	printf ("--------------Interrogating Synapse List ---------\n");				
+	if (ptr_neuron_syn_list != NULL)
 	{
-		printf ("--------------Interrogating Synapse List ---------\n");				
 		printf ("Number of Synapses: %d\n", ptr_neuron_syn_list->num_of_synapses);
 		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
 		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
@@ -117,17 +110,16 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		
 			printf ("%.5f\n", ptr_neuron_syn_list->weight[i]);				
 		}
-		printf ("--------------Interrogating Synapse List....Complete ---------\n");				
-	}		
-	printf ("Interrogate Parker Sochaki Polynomials as well? [ (Y)es / (N)o / (Q)uit ]\n");
-	c = getchar();
-	if ((c == 'q') || (c =='Q'))
+	}
+	else
 	{
-		return TRUE;
-	}	
-	if ((c == 'y') || (c =='Y'))
-	{
-		printf ("--------------   Interrogating Parker Sochacki Ploynomial Values ---------\n");				
+		printf ("Synapse list is not allocated yet\n");					
+	}
+	printf ("--------------Interrogating Synapse List....Complete ---------\n");				
+		
+	printf ("--------------   Interrogating Parker Sochacki Ploynomial Values ---------\n");
+	if (ptr_ps_vals != NULL)	
+	{				
 		printf ("Maximum ParkerSochaki Order: %d\n", get_maximum_parker_sochaki_order());
 		printf ("Order equals to zero shows maximum order that the iterations reached.\n");		
 		printf ("v / u / excitatory_conductance / inhibitory_conductance / chi / E / a / excitatory_conductance_decay_rate / inhibitory_conductance_decay_rate\n");		
@@ -143,8 +135,13 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals[i]); 
 			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals[i]); 			
 		}
-		printf ("-------------- Interrogating Parker Sochacki Ploynomial Values...Complete ---------\n");				
-	}	
+	}
+	else
+	{
+		printf ("Parker-Sochacki Polynomials were not allocated yet\n");							
+	}
+	printf ("-------------- Interrogating Parker Sochacki Ploynomial Values...Complete ---------\n");				
+		
 	return TRUE;
 				
 }
