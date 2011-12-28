@@ -42,9 +42,16 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
 	char c;
 	int i;
+	
+	
 	ptr_neuron = get_neuron_address(layer, neuron_group, neuron_num);
 	if (ptr_neuron == NULL)
 		return FALSE;
+
+	ptr_neuron_event_buffer = ptr_neuron->event_buff;		
+	ptr_neuron_syn_list = ptr_neuron->syn_list;
+	ptr_ps_vals = ptr_neuron->ps_vals;
+					
 	printf ("--------------Interrogating Neuron Dynamics ---------\n");		
 	printf ("address:%u\n",  (NeuronAddress)ptr_neuron);	
 	printf ("layer:%d\n",  ptr_neuron->layer);
@@ -79,7 +86,6 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	}	
 	if ((c == 'y') || (c =='Y'))
 	{
-		ptr_neuron_event_buffer = ptr_neuron->event_buff;
 		printf ("--------------Interrogating Event Buffer ---------\n");				
 		printf ("Event buffer size: %d\n", ptr_neuron_event_buffer->buff_size);
 		printf ("Write Index: %d\n", ptr_neuron_event_buffer->write_idx);		
@@ -102,7 +108,6 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	}	
 	if ((c == 'y') || (c =='Y'))
 	{
-		ptr_neuron_syn_list = ptr_neuron->syn_list;
 		printf ("--------------Interrogating Synapse List ---------\n");				
 		printf ("Number of Synapses: %d\n", ptr_neuron_syn_list->num_of_synapses);
 		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
@@ -122,7 +127,6 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	}	
 	if ((c == 'y') || (c =='Y'))
 	{
-		ptr_ps_vals = ptr_neuron->ps_vals;
 		printf ("--------------   Interrogating Parker Sochacki Ploynomial Values ---------\n");				
 		printf ("Maximum ParkerSochaki Order: %d\n", get_maximum_parker_sochaki_order());
 		printf ("Order equals to zero shows maximum order that the iterations reached.\n");		
@@ -144,3 +148,5 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	return TRUE;
 				
 }
+
+
