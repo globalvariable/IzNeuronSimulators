@@ -2,26 +2,21 @@
 
 static int parker_sochacki_max_order = 0;
 static double parker_sochacki_error_tolerance = 0;
-static int newton_raphson_max_iter = 0;
-static double newton_raphson_error_tolerance = 0;
 
 static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void);
 
-bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance, int max_nr_iter,  double nr_error_tolerance)
+bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance)
 {
-	if ((max_ps_order < 10) || (ps_error_tolerance < 0) || (max_nr_iter < 10) || (nr_error_tolerance < 0))
+	if ((max_ps_order < 10) || (ps_error_tolerance < 0))
 	{
 		printf("ERROR: ParkerSochachki: Invalid computation adjustment.\n");
-		printf("ERROR: ParkerSochachki: It should be such that:\nMin Parker-Sochacki Order Limit is 10\nMin Parker-Sochacki Error Tolerance is 0\nMin Newton-Raphson Iteration Limit is 10\nMin NewtonRaphson Error Tolerance is 0\n\n");
+		printf("ERROR: ParkerSochachki: It should be such that:\nMin Parker-Sochacki Order Limit is 10\nMin Parker-Sochacki Error Tolerance is 0\n");
 		return FALSE;
 	}
 
 	parker_sochacki_max_order = max_ps_order;
 	parker_sochacki_error_tolerance = ps_error_tolerance;
 
-	newton_raphson_max_iter = max_nr_iter;
-	newton_raphson_error_tolerance = nr_error_tolerance;
-	
 	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons())
 		return TRUE;
 	else
@@ -85,7 +80,7 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 	return TRUE;
 }
 
-int evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
+TimeStamp evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
 {
 
 	TimeStamp 		integration_start_ns;
@@ -101,7 +96,8 @@ int evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
 
 	int				idx, end_idx;	
 	TimeStamp		event_time;	
-				
+	TimeStamp		spike_time = 0;	
+	
 	neuron_event_buffer = nrn->event_buff;
 	event_times = neuron_event_buffer->time;
 	event_weights = neuron_event_buffer->weight;
@@ -126,7 +122,7 @@ int evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
 			printf ("Simulate: BUG: There must be a problem at event sorting\n");	
 			return 0;
 		}
-		parker_sochacki_integration(nrn, integration_start_ns, event_time);
+		spike_time = parker_sochacki_integration(nrn, integration_start_ns, event_time);
 		if (event_weights[idx] > 0)
 			nrn->conductance_excitatory += event_weights[idx];
 		else if (event_weights[idx] < 0)
@@ -138,14 +134,14 @@ int evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
 		if (idx == event_buff_size)
 			idx = 0;
 	}
-	parker_sochacki_integration(nrn, integration_start_ns, end_time);
+	spike_time = parker_sochacki_integration(nrn, integration_start_ns, end_time);
 	*ptr_event_buffer_read_idx = end_idx;			// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
-	return 1;
+	return spike_time ;	// Assume that only once a spike can be generated per step (0.25 ms).
 }
 
 
 
-int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time)
+TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time)
 {
 	double *v_pol_vals;			// size should be parker_sochacki_max_order + 1
 	double *u_pol_vals;
@@ -156,13 +152,13 @@ int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, T
 	double *a_pol_vals;
 	double *conductance_decay_rate_excitatory_pol_vals;
 	double *conductance_decay_rate_inhibitory_pol_vals;
-	
+	TimeStamp spike_time = 0;
 	double dt_part;
 	double dt;
 	int p;
 	
 	ParkerSochackiPolynomialVals *polynomial_vals;
-	
+
 	polynomial_vals = nrn->ps_vals;
 
 	v_pol_vals = polynomial_vals->v_pol_vals;			
@@ -187,12 +183,12 @@ int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, T
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
+		spike_time = (integration_start_time+dt_part*1000000);
 		printf("---------------->  Spike time%.15f\n", ((integration_start_time)/1000000.0)+dt_part);		
 		if (!schedule_events(nrn, dt_part, integration_start_time))
 			return 0;
 
 		parker_sochacki_update(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, dt_part, p);
-		
 		v_pol_vals[0] = nrn->c;    ///   v = c
 		u_pol_vals[0] = nrn->u + nrn->d;  ///  u = u + d
 		conductance_excitatory_pol_vals[0] =   nrn->conductance_excitatory;
@@ -200,7 +196,7 @@ int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, T
 		chi_pol_vals[0] = nrn->k*nrn->c - conductance_excitatory_pol_vals[0] - conductance_inhibitory_pol_vals[0] - nrn->k_v_threshold;    //   used c instead of v since both same but v has not been updated
 		p=parker_sochacki_step(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, dt-dt_part);
 	}
-	return 0;
+	return spike_time;
 }
 
 int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double dt)
@@ -300,7 +296,7 @@ double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, d
 	dt_part = -v_pol_vals[0]/v_pol_vals[1];	//
 	dx_old = 100.0;
 	
-	for(i=0; i < newton_raphson_max_iter; i++)
+	for(i=0; i < NEWTON_RAPHSON_MAX_ITERATION; i++)
 	{
 		v_curr_for_iter = v_pol_vals[p] * dt_part + v_pol_vals[p-1];
 		dv = v_pol_vals[p];
@@ -311,13 +307,13 @@ double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, d
 		}
 		dx = v_curr_for_iter / dv;
 		dt_part -=dx;
-		if (fabs(dx) < newton_raphson_error_tolerance)
+		if (fabs(dx) < NEWTON_RAPHSON_ERROR_TOLERANCE)
 			break;
-		if (fabs(dx+dx_old) < newton_raphson_error_tolerance)	
+		if (fabs(dx+dx_old) < NEWTON_RAPHSON_ERROR_TOLERANCE)	
 			break;
 		dx_old =dx;	// For oscillation		
 	}
-	if (i == newton_raphson_max_iter)
+	if (i == NEWTON_RAPHSON_MAX_ITERATION)
 		printf ("Newton-Raphson error tolerance failure\n");
 	if (dt_part > dt)
 	{
