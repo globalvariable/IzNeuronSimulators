@@ -49,6 +49,7 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 			for (k=0; k<ptr_neuron_group->neuron_count; k++)
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				ptr_neuron->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 				ptr_ps_vals = ptr_neuron->ps_vals;
 
 				g_free(ptr_ps_vals->v_pol_vals);			
@@ -186,7 +187,7 @@ int parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, T
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
-		
+		printf("---------------->  Spike time%.15f\n", ((integration_start_time)/1000000.0)+dt_part);		
 		if (!schedule_events(nrn, dt_part, integration_start_time))
 			return 0;
 
@@ -323,7 +324,6 @@ double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, d
 		printf("Newton-Raphson divergence\n");
 		dt_part = dt/2;
 	}
-//	printf("---------------->  Spike time%.15f\n", ((parker_sochacki_integ_start_time)/1000000.0)+dt_part);
 	return dt_part;
 }
 
@@ -396,6 +396,8 @@ void destroy_neuron_parker_sochacki_pol_vals(Neuron *neuron)
 	g_free(ptr_ps_vals->a_pol_vals);
 	g_free(ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals);
 	g_free(ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals);
+	
+	g_free(ptr_ps_vals);
 	
 	return;
 }		

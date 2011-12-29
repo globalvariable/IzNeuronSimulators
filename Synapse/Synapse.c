@@ -68,7 +68,7 @@ void destroy_neuron_synapse_list(Neuron *neuron)
 	g_free(ptr_neuron_syn_list->to);
 	g_free(ptr_neuron_syn_list->delay);	
  	g_free(ptr_neuron_syn_list->weight);
- 	
-	ptr_neuron_syn_list->num_of_synapses = 0;
+ 	g_free(ptr_neuron_syn_list);	
+
 	return;
 }

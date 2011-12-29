@@ -30,7 +30,8 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->conductance_excitatory = 0;
 	nrn->conductance_inhibitory = 0;
 	nrn->k_v_threshold = k * nrn->v_threshold;
-
+	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
 	return TRUE;
 }
 
@@ -125,15 +126,15 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 		printf ("v / u / excitatory_conductance / inhibitory_conductance / chi / E / a / excitatory_conductance_decay_rate / inhibitory_conductance_decay_rate\n");		
 		for (i = 0; i < get_maximum_parker_sochaki_order(); i++)
 		{
-			printf("%.5f\t", ptr_ps_vals->v_pol_vals[i]); 
-			printf("%.5f\t", ptr_ps_vals->u_pol_vals[i]);
-			printf("%.5f\t", ptr_ps_vals->conductance_excitatory_pol_vals[i]);
-			printf("%.5f\t", ptr_ps_vals->conductance_inhibitory_pol_vals[i]); 
-			printf("%.5f\t", ptr_ps_vals->chi_pol_vals[i]); 
-			printf("%.5f\t", ptr_ps_vals->E_pol_vals[i]);
-			printf("%.5f\t", ptr_ps_vals->a_pol_vals[i]); 
-			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals[i]); 
-			printf("%.5f\t", ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals[i]); 			
+			printf("%.5f\t\t", ptr_ps_vals->v_pol_vals[i]); 
+			printf("%.5f\t\t", ptr_ps_vals->u_pol_vals[i]);
+			printf("%.5f\t\t", ptr_ps_vals->conductance_excitatory_pol_vals[i]);
+			printf("%.5f\t\t", ptr_ps_vals->conductance_inhibitory_pol_vals[i]); 
+			printf("%.5f\t\t", ptr_ps_vals->chi_pol_vals[i]); 
+			printf("%.5f\t\t", ptr_ps_vals->E_pol_vals[i]);
+			printf("%.5f\t\t", ptr_ps_vals->a_pol_vals[i]); 
+			printf("%.5f\t\t", ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals[i]); 
+			printf("%.5f\n", ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals[i]); 			
 		}
 	}
 	else

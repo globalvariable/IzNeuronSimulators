@@ -174,9 +174,7 @@ void destroy_neuron_event_buffer(Neuron *neuron)
 	g_free(ptr_neuron_event_buffer->from);	
  	g_free(ptr_neuron_event_buffer->weight);
 
-	ptr_neuron_event_buffer->buff_size = 0;
-	ptr_neuron_event_buffer->write_idx = 0;	
-	ptr_neuron_event_buffer->read_idx = 0;	
-
+	g_free(ptr_neuron_event_buffer);
+	
 	return;
 }
