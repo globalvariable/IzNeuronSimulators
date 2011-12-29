@@ -11,6 +11,11 @@ typedef unsigned int NeuronAddress;
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
 
+#define MAX_V_VALUE	150
+#define MIN_V_VALUE	-100
+#define MAX_U_VALUE	150
+#define MIN_U_VALUE	-100
+
 struct __Neuron
 {
 	int 			layer;
