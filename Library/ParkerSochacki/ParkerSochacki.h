@@ -8,7 +8,7 @@ typedef unsigned int ParkerSochackiStepSize;
 #include "../IzNeuron/Neuron.h"
 #include "../Event/Event.h"
 #include "../Synapse/Synapse.h"
-#include "../../BlueSpike/TimeStamp.h"
+#include "../../../BlueSpike/TimeStamp.h"
 
 #include <math.h>
 

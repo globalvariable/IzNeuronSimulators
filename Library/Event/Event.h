@@ -3,7 +3,7 @@
 
 typedef struct 	__NeuronEventBuffer		NeuronEventBuffer;
 
-#include "../../BlueSpike/TimeStamp.h"
+#include "../../../BlueSpike/TimeStamp.h"
 #include "../IzNeuron/Neuron.h"
 #include "../Network/Network.h"
 #include "../Synapse/Synapse.h"
