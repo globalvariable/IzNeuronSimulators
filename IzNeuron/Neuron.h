@@ -13,8 +13,8 @@ typedef unsigned int NeuronAddress;
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
-#define MAX_U_VALUE	150
-#define MIN_U_VALUE	-100
+#define MAX_U_VALUE	200
+#define MIN_U_VALUE	-200
 
 struct __Neuron
 {
