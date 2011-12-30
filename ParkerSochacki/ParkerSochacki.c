@@ -183,7 +183,7 @@ TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_t
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
-		spike_time = (integration_start_time+dt_part*1000000);
+		spike_time = integration_start_time+((TimeStamp)((dt_part*1000000)+0.5));
 		printf("---------------->  Spike time%.15f\n", ((integration_start_time)/1000000.0)+dt_part);		
 		if (!schedule_events(nrn, dt_part, integration_start_time))
 			return 0;
