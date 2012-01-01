@@ -27,7 +27,7 @@ struct __NeuronGroup
 	int 		neuron_count;
 };
 
-extern AllNetwork	*all_network;
+AllNetwork	*all_network;
 
 bool add_neurons_to_layer(int num_of_neuron, int layer, double v, double a, double b, double c,double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, 
 							double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory, int randomize_params);
