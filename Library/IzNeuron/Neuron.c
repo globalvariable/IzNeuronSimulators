@@ -30,6 +30,9 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->conductance_excitatory = 0;
 	nrn->conductance_inhibitory = 0;
 	nrn->k_v_threshold = k * nrn->v_threshold;
+	g_free(nrn->syn_list);
+	g_free(nrn->event_buff);	
+	g_free(nrn->ps_vals);
 	nrn->syn_list = g_new0(NeuronSynapseList,1);
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
