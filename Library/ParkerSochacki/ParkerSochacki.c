@@ -35,6 +35,9 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 	NeuronGroup	*ptr_neuron_group = NULL;
 	Neuron		*ptr_neuron = NULL;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;
+	
+	if (!is_network_allocated())
+		returrn FALSE;
 	for (i=0; i<all_network->layer_count; i++)
 	{
 		ptr_layer = all_network->layers[i];
@@ -44,7 +47,6 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 			for (k=0; k<ptr_neuron_group->neuron_count; k++)
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
-				ptr_neuron->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 				ptr_ps_vals = ptr_neuron->ps_vals;
 
 				g_free(ptr_ps_vals->v_pol_vals);			

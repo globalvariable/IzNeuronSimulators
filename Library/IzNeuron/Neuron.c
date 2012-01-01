@@ -32,6 +32,7 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->k_v_threshold = k * nrn->v_threshold;
 	nrn->syn_list = g_new0(NeuronSynapseList,1);
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
+	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 	return TRUE;
 }
 

@@ -450,7 +450,7 @@ bool destroy_network(void)
 	NeuronGroup	*ptr_neuron_group;
 	Neuron		*ptr_neuron;
 	
-	if (all_network != NULL)
+	if (is_network_allocated())
 	{
 		for (i=0; i<all_network->layer_count; i++)
 		{
@@ -473,10 +473,6 @@ bool destroy_network(void)
 		}
 		g_free(all_network->layers);
 		g_free(all_network);
-	}
-	else
-	{
-		printf("Network: INFO: all_network is already free\n"); 
 	}
 	return TRUE;
 }
