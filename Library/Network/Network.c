@@ -450,27 +450,34 @@ bool destroy_network(void)
 	NeuronGroup	*ptr_neuron_group;
 	Neuron		*ptr_neuron;
 	
-	for (i=0; i<all_network->layer_count; i++)
+	if (all_network != NULL)
 	{
-		ptr_layer = all_network->layers[i];
-		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		for (i=0; i<all_network->layer_count; i++)
 		{
-			ptr_neuron_group = ptr_layer->neuron_groups[j];
-			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			ptr_layer = all_network->layers[i];
+			for (j=0; j<ptr_layer->neuron_group_count; j++)
 			{
-				ptr_neuron = &(ptr_neuron_group->neurons[k]);
-				destroy_neuron_event_buffer(ptr_neuron);
-				destroy_neuron_synapse_list(ptr_neuron);	
-				destroy_neuron_parker_sochacki_pol_vals(ptr_neuron);		
+				ptr_neuron_group = ptr_layer->neuron_groups[j];
+				for (k=0; k<ptr_neuron_group->neuron_count; k++)
+				{
+					ptr_neuron = &(ptr_neuron_group->neurons[k]);
+					destroy_neuron_event_buffer(ptr_neuron);
+					destroy_neuron_synapse_list(ptr_neuron);	
+					destroy_neuron_parker_sochacki_pol_vals(ptr_neuron);		
+				}
+				g_free(ptr_neuron_group->neurons);					
 			}
-			g_free(ptr_neuron_group->neurons);					
+			g_free(ptr_layer->neuron_groups);
+			if (!decrement_layer_connections_matrix_size())
+				return FALSE;
 		}
-		g_free(ptr_layer->neuron_groups);
-		if (!decrement_layer_connections_matrix_size())
-			return FALSE;
+		g_free(all_network->layers);
+		g_free(all_network);
 	}
-	g_free(all_network->layers);
-	g_free(all_network);
+	else
+	{
+		printf("Network: INFO: all_network is already free\n"); 
+	}
 	return TRUE;
 }
 
