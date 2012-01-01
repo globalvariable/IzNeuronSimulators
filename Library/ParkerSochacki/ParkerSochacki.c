@@ -37,7 +37,7 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;
 	
 	if (!is_network_allocated())
-		returrn FALSE;
+		return FALSE;
 	for (i=0; i<all_network->layer_count; i++)
 	{
 		ptr_layer = all_network->layers[i];
