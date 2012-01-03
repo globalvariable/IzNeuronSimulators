@@ -7,10 +7,10 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 
 bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance)
 {
-	if ((max_ps_order < 10) || (ps_error_tolerance < 0))
+	if ((max_ps_order < 0) || (ps_error_tolerance < 0))
 	{
 		printf("ERROR: ParkerSochachki: Invalid computation adjustment.\n");
-		printf("ERROR: ParkerSochachki: It should be such that:\nMin Parker-Sochacki Order Limit is 10\nMin Parker-Sochacki Error Tolerance is 0\n");
+		printf("ERROR: ParkerSochachki: It should be such that:\nMin Parker-Sochacki Order Limit is 0\nMin Parker-Sochacki Error Tolerance is 0\n");
 		return FALSE;
 	}
 
@@ -23,9 +23,14 @@ bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_toler
 		return FALSE;
 }
 
-int get_maximum_parker_sochaki_order(void)
+int get_maximum_parker_sochacki_order(void)
 {
 	return parker_sochacki_max_order;
+}
+
+double get_maximum_parker_sochacki_error_tolerance(void)
+{
+	return parker_sochacki_error_tolerance;
 }
 
 static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void)
