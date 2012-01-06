@@ -103,7 +103,7 @@ TimeStamp evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_t
 
 	int				idx, end_idx;	
 	TimeStamp		event_time;	
-	TimeStamp		spike_time = 0;	
+	TimeStamp		spike_time;	
 	
 	neuron_event_buffer = nrn->event_buff;
 	event_times = neuron_event_buffer->time;
@@ -159,7 +159,7 @@ TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_t
 	double *a_pol_vals;
 	double *conductance_decay_rate_excitatory_pol_vals;
 	double *conductance_decay_rate_inhibitory_pol_vals;
-	TimeStamp spike_time = 0;
+	TimeStamp		spike_time = MAX_TIME_STAMP;	
 	double dt_part;
 	double dt;
 	int p;

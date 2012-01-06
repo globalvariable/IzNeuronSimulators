@@ -12,7 +12,7 @@ typedef unsigned int ParkerSochackiStepSize;
 
 #include <math.h>
 
-#define PARKER_SOCHACKI_EMBEDDED_STEP_SIZE 1000000.0   // 1 milliseconds
+#define PARKER_SOCHACKI_EMBEDDED_STEP_SIZE 1000000.0   // 1 milliseconds		// it is for double usage. take a look its usage before changing this.
 
 #define NEWTON_RAPHSON_MAX_ITERATION 100
 #define NEWTON_RAPHSON_ERROR_TOLERANCE 1e-20  // 1 milliseconds
