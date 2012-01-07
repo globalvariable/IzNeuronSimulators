@@ -63,6 +63,17 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 				g_free(ptr_ps_vals->a_pol_vals);
 				g_free(ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals);
 				g_free(ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals);			
+
+				ptr_ps_vals->v_pol_vals = NULL;			
+				ptr_ps_vals->u_pol_vals = NULL;
+				ptr_ps_vals->conductance_excitatory_pol_vals = NULL;
+				ptr_ps_vals->conductance_inhibitory_pol_vals = NULL;
+				ptr_ps_vals->chi_pol_vals = NULL;
+				ptr_ps_vals->E_pol_vals = NULL;		
+				ptr_ps_vals->a_pol_vals = NULL;
+				ptr_ps_vals->conductance_decay_rate_excitatory_pol_vals = NULL;
+				ptr_ps_vals->conductance_decay_rate_inhibitory_pol_vals = NULL;
+
 					
 				// size should be parker_sochacki_max_order + 1
 				ptr_ps_vals->v_pol_vals = g_new0(double, parker_sochacki_max_order + 1); if (ptr_ps_vals->v_pol_vals == NULL) { return FALSE; }  		
