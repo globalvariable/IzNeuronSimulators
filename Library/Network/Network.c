@@ -134,7 +134,7 @@ bool add_neuron_group_to_layer(int layer, int num_of_neuron, double v, double a,
 		return FALSE;
 	}
 	ptr_neuron_group->neuron_count = num_of_neuron;
-	
+
 	for (i=0; i<num_of_neuron; i++)
 	{
 		if( !initialize_neuron(&(ptr_neuron_group->neurons[i]), layer, 0, i, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
