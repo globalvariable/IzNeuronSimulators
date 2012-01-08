@@ -17,6 +17,8 @@ bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_toler
 	parker_sochacki_max_order = max_ps_order;
 	parker_sochacki_error_tolerance = ps_error_tolerance;
 
+	printf ("ParkerSochachki: INFO: Set values as Max Order: %d, Error Tolerance: %f\n", parker_sochacki_max_order,  parker_sochacki_error_tolerance);
+
 	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons())
 		return TRUE;
 	else

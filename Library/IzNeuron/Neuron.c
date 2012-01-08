@@ -65,7 +65,7 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	printf ("u:\t%f\n",  ptr_neuron->u);	
 	printf ("a:\t%f\n",  ptr_neuron->a);
 	printf ("b:\t%f\n",  ptr_neuron->b);	
-	printf ("c:\t%f\n",  ptr_neuron->c);
+	printf ("c:\t%f\n",  ptr_neuron->c+ptr_neuron->v_resting);
 	printf ("d:\t%f\n",  ptr_neuron->d);					
 	printf ("k:\t%f\n",  ptr_neuron->k);
 	printf ("E:\t%f\n",  ptr_neuron->E);	
