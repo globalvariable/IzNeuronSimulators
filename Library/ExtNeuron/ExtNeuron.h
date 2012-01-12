@@ -7,12 +7,14 @@ typedef unsigned int ExtNeuronAddress;
 #include <stdbool.h>
 #include <gtk/gtk.h>
 #include "../Synapse/Synapse.h"
+#include "../../../BlueSpike/Library/Misc/Misc.h"
 
 struct __ExtNeuron
 {
+	bool inhibitory;
 	NeuronSynapseList	*syn_list;
 };
 
-bool initialize_ext_neuron(ExtNeuron *nrn); 
+bool initialize_ext_neuron(ExtNeuron *nrn, bool inhibitory);
 
 #endif

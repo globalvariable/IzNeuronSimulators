@@ -14,13 +14,13 @@ struct __ExtNetwork
 	int 		layer_count;
 };
 
-struct __Layer
+struct __ExtLayer
 {
 	ExtNeuronGroup	**neuron_groups;
 	int 				neuron_group_count;
 };
 
-struct __NeuronGroup
+struct __ExtNeuronGroup
 {
 	ExtNeuron	*neurons;
 	int 			neuron_count;
@@ -29,7 +29,7 @@ struct __NeuronGroup
 
 
 
-bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer);
+bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer, bool inhibitory);
 
 
 #endif
