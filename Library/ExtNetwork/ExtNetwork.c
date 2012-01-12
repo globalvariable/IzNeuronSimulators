@@ -37,7 +37,7 @@ bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_n
 
 	if (!add_neuron_group_to_external_network_layer(ext_network, layer, num_of_neuron, inhibitory))
 		return FALSE;
-		
+	return TRUE;	
 }
 
 static bool increment_number_of_external_network_layers(ExtNetwork *ext_network)
