@@ -30,18 +30,18 @@ bool add_neurons_to_layer(int num_of_neuron, int layer, double v, double a, doub
 		printf ("Network: ERROR: Layer number shouldn't be larger than %d or smaller than 0\n", all_network->layer_count);
 		return FALSE;
 	}
-	
-	if (layer == all_network->layer_count)		// New & valid layer request from user
-	{
-		if (!increment_number_of_layers())
-			return FALSE;
-	}	
 
 	if (num_of_neuron <= 0)
 	{
 		printf("Network: ERROR: Num of neurons to add should be greater than ZERO\n");
 		return FALSE;
 	}
+	
+	if (layer == all_network->layer_count)		// New & valid layer request from user
+	{
+		if (!increment_number_of_layers())
+			return FALSE;
+	}	
 	
 	if (!add_neuron_group_to_layer(layer, num_of_neuron, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 		return FALSE;
