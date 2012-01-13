@@ -5,16 +5,56 @@ static bool increment_number_of_external_network_layers(ExtNetwork *ext_network)
 static bool add_neuron_group_to_external_network_layer(ExtNetwork *ext_network, int layer, int num_of_neuron, bool inhibitory);
 static bool increment_number_of_neuron_group_in_external_network_layer(ExtNetwork *ext_network, int layer);
 
+ExtNetwork* allocate_external_network(ExtNetwork *network)
+{
+	if (!is_allocated(network, FALSE, "ExtNetwork", "allocate_external_network", 0, NULL, EXPECTS_ALLOCATED))
+	{
+		network =	g_new0(ExtNetwork, 1);
+		if (!is_allocated(network, TRUE, "ExtNetwork", "allocate_external_network", ALLOCATION_FAILED, NULL, EXPECTS_ALLOCATED))
+			return NULL;	
+		printf("ExtNetwork: INFO: Created external network.\n");
+		return network;		
+	}
+	else
+	{
+		network = deallocate_external_network(network);
+		network = allocate_external_network(network);
+		return network;			
+	}
+}
 
+ExtNetwork* deallocate_external_network(ExtNetwork *network)
+{
+	ExtLayer		*ptr_layer = NULL;
+	ExtNeuronGroup	*ptr_neuron_group = NULL;
+	int i, j;
+	
+	if (!is_allocated(network, TRUE, "ExtNetwork", "deallocate_external_network", ALLOCATION_WARNING, NULL, EXPECTS_ALLOCATED))
+		return NULL;		
+
+	for (i = 0; i < network->layer_count; i++)
+	{
+		ptr_layer = network->layers[i];
+		for (j = 0; j < ptr_layer->neuron_group_count; j++)
+		{
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			g_free(ptr_neuron_group->neurons);
+		}
+		g_free(ptr_layer->neuron_groups);		
+	}
+	g_free(network->layers);
+	g_free(network);
+	printf("ExtNetwork: INFO: Destroyed existing external network.\n");	
+	return NULL;		
+}
 
 bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer, bool inhibitory)
 {
-	is_allocated(ext_network, TRUE, "ExtNetwork", "add_neurons_to_external_network_layer", ALLOCATION_WARNING, NULL, EXPECTS_ALLOCATED);
-
-	ext_network = g_new0(ExtNetwork, 1);
-	if (!is_allocated(ext_network, TRUE, "ExtNetwork", "add_neurons_to_external_network_layer", ALLOCATION_FAILED, NULL, EXPECTS_ALLOCATED))
-		return FALSE;	
-	printf("ExtNetwork: INFO: Created external network\n");	
+	if (ext_network == NULL)
+	{
+		printf("ExtNetwork: ERROR: external_network was not allocated\n.");
+		return FALSE;
+	}
 
 	if ((layer > ext_network->layer_count) || (layer < 0) )
 	{
@@ -29,7 +69,7 @@ bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_n
 		return FALSE;
 	}	
 
-	if (layer == all_network->layer_count)		// New & valid layer request from user
+	if (layer == ext_network->layer_count)		// New & valid layer request from user
 	{
 		if (!increment_number_of_external_network_layers(ext_network))
 			return FALSE;
@@ -44,10 +84,9 @@ static bool increment_number_of_external_network_layers(ExtNetwork *ext_network)
 {
 	int i;
 	ExtLayer		**ptr_layers = NULL;
-	ExtLayer		*ptr_layer = NULL;		
-	
+	ExtLayer		*ptr_layer = NULL;	
+		
 	ptr_layers = g_new0(ExtLayer*,ext_network->layer_count+1);
-	
 	if (!is_allocated(ptr_layers, TRUE, "ExtNetwork", "increment_number_of_external_network_layers", ALLOCATION_FAILED, "ptr_layers", EXPECTS_ALLOCATED))
 		return FALSE;	
 		

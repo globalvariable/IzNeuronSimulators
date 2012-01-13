@@ -473,6 +473,7 @@ bool destroy_network(void)
 		}
 		g_free(all_network->layers);
 		g_free(all_network);
+		all_network = NULL;
 	}
 	return TRUE;
 }

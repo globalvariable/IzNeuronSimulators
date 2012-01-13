@@ -28,7 +28,8 @@ struct __ExtNeuronGroup
 
 
 
-
+ExtNetwork* allocate_external_network(ExtNetwork *network);
+ExtNetwork* deallocate_external_network(ExtNetwork *network);
 bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer, bool inhibitory);
 
 

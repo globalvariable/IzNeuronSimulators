@@ -696,13 +696,14 @@ bool create_simulation_tab(GtkWidget * tabs)
 
 	btn_select_directory_load_spike_pattern_generator_data = gtk_file_chooser_button_new ("Select Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
         gtk_box_pack_start(GTK_BOX(hbox),btn_select_directory_load_spike_pattern_generator_data, TRUE,TRUE,0);
+	set_path_for_btn_select_directory_load_spike_pattern_generator_data();
 	
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
 	btn_load_spike_pattern_generator_data = gtk_button_new_with_label("Load SpikePatternGenerator Data");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_load_spike_pattern_generator_data, TRUE, TRUE, 0);   
-	
+
 	g_signal_connect(G_OBJECT(btn_load_spike_pattern_generator_data), "clicked", G_CALLBACK(load_spike_pattern_generator_data_button_func), NULL);	
 	
 	
@@ -782,7 +783,12 @@ void load_spike_pattern_generator_data_button_func(void)
 	int num_of_patterns;
 	TimeStampMs pattern_length_ms;
 	int num_of_spikes;
+	
+	// use below to utilize in program.
 	SpikeTimeStampItem *spike_time_stamps = NULL;
+	
+	if (!write_path_for_btn_select_directory_load_spike_pattern_generator_data(path))
+		return;
 	
 	initialize_spike_pattern_generator_data_read_write_handlers();
 		
@@ -790,6 +796,9 @@ void load_spike_pattern_generator_data_button_func(void)
 	{
 		return;
 	}	
+	
+	neurosim_set_ext_network(allocate_external_network(neurosim_get_ext_network()));   // deallocates previously allocated external network and brings a new one.
+		
 	if (!((*spike_pattern_generator_data_get_num_of_layers[version])(2, path, &num_of_layers)))
 		return;
 	for (i=0;i<num_of_layers; i++)
@@ -799,17 +808,19 @@ void load_spike_pattern_generator_data_button_func(void)
 		for (j=0;j<num_of_neuron_groups_in_layer; j++)
 		{
 			if(!((*spike_pattern_generator_data_get_num_of_neurons_in_neuron_group[version])(4, path, i, j, &num_of_neurons_in_neuron_group)))
-				return;	
+				return;
+			add_neurons_to_external_network_layer(neurosim_get_ext_network(), num_of_neurons_in_neuron_group , i, 0);
 		}		
 	}	
 	if (!((*spike_pattern_generator_data_get_num_of_patterns[version])(2, path, &num_of_patterns)))
-		return;							
-	for (i=0;i<num_of_patterns; i++)
+		return;
+	neurosim_set_num_of_spike_generator_data_patterns(num_of_patterns);								
+	for (i=0;i<neurosim_get_num_of_spike_generator_data_patterns(); i++)
 	{
 		 if(!((*spike_pattern_generator_data_get_pattern_length[version])(3, path, i , &pattern_length_ms)))
 			return;
 	}		
-	for (i=0;i<num_of_patterns; i++)
+	for (i=0;i<neurosim_get_num_of_spike_generator_data_patterns(); i++)
 	{
 		if(!((*spike_pattern_generator_data_get_num_of_spikes_in_pattern[version])(3, path, i , &num_of_spikes)))
 			return;
@@ -818,7 +829,7 @@ void load_spike_pattern_generator_data_button_func(void)
 			return;		
 		for (j=0;j<num_of_spikes; j++)		
 		{
-			printf("%llu %d %d %d\n", spike_time_stamps[j].peak_time, spike_time_stamps[j].mwa_or_layer, spike_time_stamps[j].channel_or_neuron_group, spike_time_stamps[j].unit_or_neuron);
+		//	printf("%llu %d %d %d\n", spike_time_stamps[j].peak_time, spike_time_stamps[j].mwa_or_layer, spike_time_stamps[j].channel_or_neuron_group, spike_time_stamps[j].unit_or_neuron);
 		}
 		g_free(spike_time_stamps);
 		spike_time_stamps = NULL;
@@ -827,3 +838,44 @@ void load_spike_pattern_generator_data_button_func(void)
 	return;
 }
 
+void set_path_for_btn_select_directory_load_spike_pattern_generator_data(void)
+{
+	char line[600];
+	FILE *fp = NULL;
+       	if ((fp = fopen("./initial_path_spike_pattern_generator_data", "r")) == NULL)  
+       	{ 
+       		printf ("ERROR: SimulationTab: Couldn't find file: ./initial_path_spike_pattern_generator_data\n"); 
+       		printf ("ERROR: SimulationTab: /home is loaded as initial direcoty to create data folder\n");
+		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_load_spike_pattern_generator_data),"/home");
+       	}
+       	else
+       	{
+		if (fgets(line, sizeof line, fp ) == NULL) 
+		{ 
+			printf("ERROR: SimulationTab: Couldn' t read ./initial_path_spike_pattern_generator_data\n"); 
+       			printf ("ERROR: SimulationTab: /home is loaded as initial direcoty to create data folder\n");
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_load_spike_pattern_generator_data),"/home");
+		}
+		else
+		{
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_load_spike_pattern_generator_data),line);
+		}
+		fclose(fp); 		
+	}  	 
+}
+
+bool write_path_for_btn_select_directory_load_spike_pattern_generator_data(char *path)
+{
+	FILE *fp = NULL;
+       	if ((fp = fopen("./initial_path_spike_pattern_generator_data", "w")) == NULL)  
+       	{ 
+       		printf ("ERROR: SimulationTab: Couldn't write into file: ./initial_path_spike_pattern_generator_data\n"); 
+		return FALSE;
+       	}
+       	else
+       	{
+		fprintf(fp,"%s", path);
+		fclose(fp); 
+		return TRUE;		
+	}  	 
+}
