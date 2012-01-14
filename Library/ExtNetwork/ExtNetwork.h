@@ -7,6 +7,7 @@ typedef struct 	__ExtLayer 		ExtLayer;
 typedef struct 	__ExtNetwork 	ExtNetwork;
 
 #include "../ExtNeuron/ExtNeuron.h"
+#include "../Network/Network.h"
 
 struct __ExtNetwork
 {
@@ -18,6 +19,8 @@ struct __ExtLayer
 {
 	ExtNeuronGroup	**neuron_groups;
 	int 				neuron_group_count;
+	ExtLayer			*connected_to_ext_network_layer;
+	Layer			*connected_to_network_layer;
 };
 
 struct __ExtNeuronGroup

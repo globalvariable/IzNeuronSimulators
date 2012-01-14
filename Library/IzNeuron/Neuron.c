@@ -37,7 +37,7 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	return TRUE;
 }
 
-bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
+bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuron_num)
 {
 	Neuron		*ptr_neuron = NULL;
 	NeuronEventBuffer *ptr_neuron_event_buffer;
@@ -46,7 +46,7 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 	int i;
 	
 	
-	ptr_neuron = get_neuron_address(layer, neuron_group, neuron_num);
+	ptr_neuron = get_neuron_address(network, layer, neuron_group, neuron_num);
 	if (ptr_neuron == NULL)
 	{
 		printf("Neuron: ERROR: Neuron to interrogate was not found (Layer: %d Neuron_Group: %d Neuron: %d)\n", layer, neuron_group, neuron_num);
@@ -149,7 +149,7 @@ bool interrogate_neuron(int layer, int neuron_group, int neuron_num)
 				
 }
 
-bool submit_new_neuron_params(Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool submit_new_neuron_params(Network *network, Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
 	if ((a<0) || ((inhibitory < 0) || (inhibitory > 1)) || (C<=0) ||  (k<0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
@@ -177,7 +177,7 @@ bool submit_new_neuron_params(Neuron *nrn, double v, double a, double b, double 
 	nrn->conductance_excitatory = 0;
 	nrn->conductance_inhibitory = 0;
 	nrn->k_v_threshold = k * nrn->v_threshold;
-	if (!parker_sochacki_set_order_tolerance(get_maximum_parker_sochacki_order(), get_maximum_parker_sochacki_error_tolerance()))
+	if (!parker_sochacki_set_order_tolerance(network, get_maximum_parker_sochacki_order(), get_maximum_parker_sochacki_error_tolerance()))
 		return FALSE;
 	return TRUE;
 }

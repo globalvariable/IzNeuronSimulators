@@ -3,9 +3,9 @@
 static int parker_sochacki_max_order = 0;
 static double parker_sochacki_error_tolerance = 0;
 
-static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void);
+static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Network *network);
 
-bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_tolerance)
+bool parker_sochacki_set_order_tolerance(Network *network, int max_ps_order, double ps_error_tolerance)
 {
 	if ((max_ps_order < 0) || (ps_error_tolerance < 0))
 	{
@@ -19,7 +19,7 @@ bool parker_sochacki_set_order_tolerance(int max_ps_order, double ps_error_toler
 
 	printf ("ParkerSochachki: INFO: Set values as Max Order: %d, Error Tolerance: %f\n", parker_sochacki_max_order,  parker_sochacki_error_tolerance);
 
-	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons())
+	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(network))
 		return TRUE;
 	else
 		return FALSE;
@@ -35,7 +35,7 @@ double get_maximum_parker_sochacki_error_tolerance(void)
 	return parker_sochacki_error_tolerance;
 }
 
-static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(void)
+static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Network *network)
 {
 	int i, j, k, m;
 	Layer		*ptr_layer = NULL;
@@ -43,11 +43,11 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(voi
 	Neuron		*ptr_neuron = NULL;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;
 	
-	if (!is_network_allocated())
+	if (!is_network_allocated(network))
 		return FALSE;
-	for (i=0; i<all_network->layer_count; i++)
+	for (i=0; i<network->layer_count; i++)
 	{
-		ptr_layer = all_network->layers[i];
+		ptr_layer = network->layers[i];
 		for (j=0; j<ptr_layer->neuron_group_count; j++)
 		{
 			ptr_neuron_group = ptr_layer->neuron_groups[j];
@@ -366,16 +366,16 @@ int parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_
 	return 0;
 }
 
-void clear_parker_sochacki_polynomials(int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group) /// For debugging, delete when testing complete
+void clear_parker_sochacki_polynomials(Network *network, int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group) /// For debugging, delete when testing complete
 {
 	int i, j, k, m;
 	Layer		*ptr_layer = NULL;
 	NeuronGroup	*ptr_neuron_group = NULL;
 	Neuron		*ptr_neuron = NULL;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;
-	for (i=0; i<all_network->layer_count; i++)
+	for (i=0; i<network->layer_count; i++)
 	{
-		ptr_layer = all_network->layers[i];
+		ptr_layer = network->layers[i];
 		for (j=0; j<ptr_layer->neuron_group_count; j++)
 		{
 			ptr_neuron_group = ptr_layer->neuron_groups[j];

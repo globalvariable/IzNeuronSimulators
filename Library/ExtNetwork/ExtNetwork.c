@@ -39,8 +39,10 @@ ExtNetwork* deallocate_external_network(ExtNetwork *network)
 		{
 			ptr_neuron_group = ptr_layer->neuron_groups[j];
 			g_free(ptr_neuron_group->neurons);
+			g_free(ptr_neuron_group);
 		}
-		g_free(ptr_layer->neuron_groups);		
+		g_free(ptr_layer->neuron_groups);
+		g_free(ptr_layer);		
 	}
 	g_free(network->layers);
 	g_free(network);
