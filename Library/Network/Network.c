@@ -55,7 +55,7 @@ Network* deallocate_network(Network *network)
 	}
 	g_free(network->layers);
 	g_free(network);
-	printf("ExtNetwork: INFO: Destroyed existing external network.\n");		
+	printf("Network: INFO: Destroyed existing network.\n");		
 	return NULL;
 }
 
@@ -63,7 +63,7 @@ bool add_neurons_to_layer(Network *network, int num_of_neuron, int layer, double
 {
 	if (network == NULL)
 	{
-		printf("ExtNetwork: ERROR: external_network was not allocated\n.");
+		printf("Network: ERROR: network was not allocated\n.");
 		return FALSE;
 	}
 
