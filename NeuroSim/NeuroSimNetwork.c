@@ -14,4 +14,12 @@ void neurosim_set_ext_network(ExtNetwork *network)
 }
 
 
+Network *spike_pattern_generator_get_network(void)			///	dummy definitions
+{
+	return NULL;
+}
 
+void spike_pattern_generator_set_network(Network *network)
+{
+	return;
+}
