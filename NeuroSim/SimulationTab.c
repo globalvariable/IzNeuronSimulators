@@ -798,7 +798,7 @@ void load_spike_pattern_generator_data_button_func(void)
 	}	
 	
 	neurosim_set_ext_network(allocate_external_network(neurosim_get_ext_network()));   // deallocates previously allocated external network and brings a new one.
-		
+
 	if (!((*spike_pattern_generator_data_get_num_of_layers[version])(2, path, &num_of_layers)))
 		return;
 	for (i=0;i<num_of_layers; i++)
@@ -814,13 +814,15 @@ void load_spike_pattern_generator_data_button_func(void)
 	}	
 	if (!((*spike_pattern_generator_data_get_num_of_patterns[version])(2, path, &num_of_patterns)))
 		return;
-	neurosim_set_num_of_spike_generator_data_patterns(num_of_patterns);								
-	for (i=0;i<neurosim_get_num_of_spike_generator_data_patterns(); i++)
+								
+	for (i=0;i<num_of_patterns; i++)
 	{
 		 if(!((*spike_pattern_generator_data_get_pattern_length[version])(3, path, i , &pattern_length_ms)))
 			return;
 	}		
-	for (i=0;i<neurosim_get_num_of_spike_generator_data_patterns(); i++)
+
+	neurosim_set_ext_network_spike_patterns(allocate_spike_patterns(neurosim_get_ext_network_spike_patterns()));			 // deallocates previously allocated external network spike patterns and brings a new one.
+	for (i=0;i< num_of_patterns; i++)
 	{
 		if(!((*spike_pattern_generator_data_get_num_of_spikes_in_pattern[version])(3, path, i , &num_of_spikes)))
 			return;
@@ -829,7 +831,12 @@ void load_spike_pattern_generator_data_button_func(void)
 			return;		
 		for (j=0;j<num_of_spikes; j++)		
 		{
-		//	printf("%llu %d %d %d\n", spike_time_stamps[j].peak_time, spike_time_stamps[j].mwa_or_layer, spike_time_stamps[j].channel_or_neuron_group, spike_time_stamps[j].unit_or_neuron);
+			if(!add_spike_time_stamp_to_spike_pattern(neurosim_get_ext_network_spike_patterns(), i, &(spike_time_stamps[j])))
+			{
+				print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t add all spike timestamps of SpikePatternGeneratorData\n");
+				return;
+			}
+			//	printf("%llu %d %d %d\n", spike_time_stamps[j].peak_time, spike_time_stamps[j].mwa_or_layer, spike_time_stamps[j].channel_or_neuron_group, spike_time_stamps[j].unit_or_neuron);
 		}
 		g_free(spike_time_stamps);
 		spike_time_stamps = NULL;

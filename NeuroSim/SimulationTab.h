@@ -5,12 +5,12 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 
-#include "NeuroSimPattern.h"
 #include "NeuroSimNetwork.h"
+#include "NeuroSimSpikePatterns.h"
 #include "../Library/Network/Network.h"
 #include "../Library/IzNeuron/NeuronTypes.h"
-#include "../Library/IzNeuron/NeuronDynamicsGraph.h"
-#include "../Library/IzNeuron/NeuronDynamicsCombo.h"
+#include "../Library/IzNeuronDynamics/NeuronDynamicsGraph.h"
+#include "../Library/IzNeuronDynamics/NeuronDynamicsCombo.h"
 #include "../../SpikePatternGenerator/DataHandling/DataHandling.h"
 #include "../Library/ExtNetwork/ExtNetwork.h"
 
