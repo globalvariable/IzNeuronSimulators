@@ -13,8 +13,8 @@ typedef unsigned int NeuronAddress;
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
-#define MAX_U_VALUE	200
-#define MIN_U_VALUE	-200
+#define MAX_U_VALUE	400
+#define MIN_U_VALUE	-50
 #define MAX_EXCITATORY_CONDUCTANCE_VALUE	150
 #define MIN_EXCITATORY_CONDUCTANCE_VALUE		-50
 #define MAX_INHIBITORY_CONDUCTANCE_VALUE		150
