@@ -325,7 +325,7 @@ Neuron* get_neuron_address(Network *network, int layer, int nrn_grp, int nrn_num
 	NeuronGroup *ptr_neuron_group;
 	Neuron		*ptr_neuron = NULL;	
 	if (!is_network_allocated(network))
-		return FALSE;
+		return NULL;
 	if (is_layer_free (network, layer))
 		return NULL;
 	if (is_neuron_group_free (network, layer, nrn_grp))
@@ -404,6 +404,40 @@ void interrogate_network(Network *network)
 		printf("Layer: %u\t is connected to External Network Layer (address): %d.\n", i, (unsigned int)ptr_layer->connected_to_ext_network_layer);
 	}		
 	printf("------------ Interrogating Network...Complete ----------------\n");	
+}
+
+
+bool get_num_of_layers_in_network(Network *network, int *num_of_layers)
+{
+	*num_of_layers = 0;
+	if (!is_network_allocated(network))
+		return FALSE;
+	*num_of_layers = network->layer_count; 
+	return TRUE;	
+}
+
+bool get_num_of_neuron_groups_in_layer(Network *network, int layer, int *num_of_neuron_groups)
+{
+	*num_of_neuron_groups = 0;
+	if (!is_network_allocated(network))
+		return FALSE;
+	if (is_layer_free (network, layer))
+		return FALSE;		
+	*num_of_neuron_groups = network->layers[layer]->neuron_group_count;
+	return TRUE;
+}
+
+
+bool get_num_of_neurons_in_neuron_group(Network *network, int layer, int neuron_group, int *num_of_neurons)
+{
+	if (!is_network_allocated(network))
+		return FALSE;
+	if (is_layer_free (network, layer))
+		return FALSE;
+	if (is_neuron_group_free (network, layer, neuron_group))
+		return FALSE;
+	*num_of_neurons = network->layers[layer]->neuron_groups[neuron_group]->neuron_count;
+	return TRUE;
 }
 
 
