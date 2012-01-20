@@ -1,7 +1,7 @@
 #include "NeuronDynamics.h"
 
 
-NeuronDynamics* allocate_neuron_dynamics(Network *network, NeuronDynamics *neuron_dynamics)
+NeuronDynamics* allocate_neuron_dynamics(Network *network, PatternData *pattern_data, NeuronDynamics *neuron_dynamics)
 {
 	int i,j;
 	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -24,8 +24,8 @@ NeuronDynamics* allocate_neuron_dynamics(Network *network, NeuronDynamics *neuro
 	}
 	else		
 	{
-		neuron_dynamics = deallocate_neuron_dynamics(network, neuron_dynamics);
-		neuron_dynamics = allocate_neuron_dynamics(network, neuron_dynamics);
+		neuron_dynamics = deallocate_neuron_dynamics(network, pattern_data, neuron_dynamics);
+		neuron_dynamics = allocate_neuron_dynamics(network, pattern_data, neuron_dynamics);
 	}
 	neuron_dynamics->network = network;
 	if (!get_num_of_layers_in_network(network, &num_of_layers))
@@ -57,7 +57,7 @@ NeuronDynamics* allocate_neuron_dynamics(Network *network, NeuronDynamics *neuro
 	return neuron_dynamics;	
 }
 
-NeuronDynamics* deallocate_neuron_dynamics(Network *network, NeuronDynamics *neuron_dynamics)
+NeuronDynamics* deallocate_neuron_dynamics(Network *network, PatternData *pattern_data, NeuronDynamics *neuron_dynamics)
 {
 	int i,j,k, m;
 	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -101,7 +101,7 @@ NeuronDynamics* deallocate_neuron_dynamics(Network *network, NeuronDynamics *neu
 			}		
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				for (m = 0; m < neuron_dynamics->num_of_patterns; m++)
+				for (m = 0; m < pattern_data->num_of_patterns; m++)
 				{				
 					g_free(neuron_dynamics->patterns[i][j][k].pattern[m].v);	
 					g_free(neuron_dynamics->patterns[i][j][k].pattern[m].u);	
@@ -120,13 +120,14 @@ NeuronDynamics* deallocate_neuron_dynamics(Network *network, NeuronDynamics *neu
 	return NULL;	
 }
 
-bool add_neuron_dynamics_pattern(Network *network, NeuronDynamics *neuron_dynamics, NeuronDynamics *neuron_dynamics_source, TimeStampMs pattern_length_ms)   
+bool add_neuron_dynamics_to_pattern(Network *network, PatternData *pattern_data, NeuronDynamics *neuron_dynamics, int layer, int neuron_group, int neuron_num, int pattern_num, NeuronDynamicsPattern *dynamics_pattern)
 {
+/*	pattern num max a eşitse yeni allocation yap. 
 	int i,j,k, m, n;
 	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	NeuronDynamicsPattern *lcl_pattern;
 	int num_of_patterns;
-
+	TimeStampMs pattern_length_ms;
 	if (network == NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "add_neuron_dynamics_pattern", "Network was not alocated.");		
 
@@ -150,7 +151,7 @@ bool add_neuron_dynamics_pattern(Network *network, NeuronDynamics *neuron_dynami
 		return FALSE;					
 	}	
 	
-	num_of_patterns = neuron_dynamics->num_of_patterns;   // to be faster
+	num_of_patterns = pattern_data->num_of_patterns;   // to be faster
 	for (i = 0; i < num_of_layers; i++)
 	{
 		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
@@ -188,16 +189,13 @@ bool add_neuron_dynamics_pattern(Network *network, NeuronDynamics *neuron_dynami
 					lcl_pattern[m].u = neuron_dynamics->patterns[i][j][k].pattern[m].u;
 					lcl_pattern[m].e = neuron_dynamics->patterns[i][j][k].pattern[m].e;
 					lcl_pattern[m].i = neuron_dynamics->patterns[i][j][k].pattern[m].i;	
-					lcl_pattern[m].initial_v = neuron_dynamics->patterns[i][j][k].pattern[m].initial_v;
-					lcl_pattern[m].initial_u = neuron_dynamics->patterns[i][j][k].pattern[m].initial_u;
-					lcl_pattern[m].initial_e = neuron_dynamics->patterns[i][j][k].pattern[m].initial_e;
-					lcl_pattern[m].initial_i = neuron_dynamics->patterns[i][j][k].pattern[m].initial_i;	
-					lcl_pattern[m].pattern_length_ms = neuron_dynamics->patterns[i][j][k].pattern[m].pattern_length_ms;															
+					if (!get_pattern_length_ms(pattern_data, m, &pattern_length_ms))	
+						return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "add_neuron_dynamics_pattern", NULL);		
 				}
 				g_free(neuron_dynamics->patterns[i][j][k].pattern);
 				neuron_dynamics->patterns[i][j][k].pattern = lcl_pattern;
-				///////////// Created new neuron dynamics for neuron. Now copy the source neuron dynamics pattern	
-				lcl_pattern[num_of_patterns].pattern_length_ms = pattern_length_ms;	// copy as much as the length you want from the source	// by the way it has redundant copies for each neuron but easier for coding
+
+				lcl_pattern[num_of_patterns].pattern_length_ms = pattern_length_ms;	
 				for (n = 0; n < pattern_length_ms; n++)
 				{				
 					lcl_pattern[num_of_patterns].v[n] = neuron_dynamics_source->patterns[i][j][k].pattern[0].v[n];
@@ -209,11 +207,17 @@ bool add_neuron_dynamics_pattern(Network *network, NeuronDynamics *neuron_dynami
 				lcl_pattern[num_of_patterns].initial_u = neuron_dynamics->patterns[i][j][k].pattern[0].initial_u;
 				lcl_pattern[num_of_patterns].initial_e = neuron_dynamics->patterns[i][j][k].pattern[0].initial_e;
 				lcl_pattern[num_of_patterns].initial_i = neuron_dynamics->patterns[i][j][k].pattern[0].initial_i;	
-//				lcl_pattern[num_of_patterns].pattern_length_ms = neuron_dynamics->patterns[i][j][k].pattern[0].pattern_length_ms;	  give it manually (see the line before for loop), assign it according the part to be copied from source 
+
 			}
 			neuron_dynamics->num_of_patterns++;
 		}
-	}
+	}  
+	
+	
+	
+	
+	
+	 */
 	return TRUE;
 }
 

@@ -1,0 +1,14 @@
+#ifndef NEURON_DYNAMICS_INITIAL
+#define NEURON_DYNAMICS_INITIAL
+
+
+
+
+
+
+
+
+
+
+
+#endif
