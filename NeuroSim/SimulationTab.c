@@ -783,6 +783,7 @@ void load_spike_pattern_generator_data_button_func(void)
 	int num_of_patterns;
 	TimeStampMs pattern_length_ms;
 	int num_of_spikes;
+	int max_num_of_spikes_in_patterns = 0;	
 	
 	// use below to utilize in program.
 	SpikeTimeStampItem *spike_time_stamps = NULL;
@@ -814,14 +815,24 @@ void load_spike_pattern_generator_data_button_func(void)
 	}	
 	if (!((*spike_pattern_generator_data_get_num_of_patterns[version])(2, path, &num_of_patterns)))
 		return;
-								
+
+	for (i=0;i< num_of_patterns; i++)
+	{
+		if(!((*spike_pattern_generator_data_get_num_of_spikes_in_pattern[version])(3, path, i , &num_of_spikes)))
+			return;
+		if (num_of_spikes > max_num_of_spikes_in_patterns)
+			max_num_of_spikes_in_patterns = num_of_spikes;	
+	}
+
+	neurosim_set_ext_network_spike_patterns(allocate_spike_patterns(neurosim_get_ext_network_spike_patterns(), num_of_patterns, max_num_of_spikes_in_patterns));	 // deallocates previously allocated external network spike patterns and brings a new one.
+	neurosim_set_ext_network_single_spike_pattern(allocate_single_spike_pattern(neurosim_get_ext_network_single_spike_pattern(), max_num_of_spikes_in_patterns));	 // deallocates previously allocated external network spike patterns and brings a new one.				
+				
 	for (i=0;i<num_of_patterns; i++)
 	{
 		 if(!((*spike_pattern_generator_data_get_pattern_length[version])(3, path, i , &pattern_length_ms)))
 			return;
 	}		
 
-	neurosim_set_ext_network_spike_patterns(allocate_spike_patterns(neurosim_get_ext_network_spike_patterns()));			 // deallocates previously allocated external network spike patterns and brings a new one.
 	for (i=0;i< num_of_patterns; i++)
 	{
 		if(!((*spike_pattern_generator_data_get_num_of_spikes_in_pattern[version])(3, path, i , &num_of_spikes)))
@@ -829,17 +840,18 @@ void load_spike_pattern_generator_data_button_func(void)
 		spike_time_stamps = g_new0(SpikeTimeStampItem, num_of_spikes);
 		if(!((*spike_pattern_generator_data_get_all_spike_time_stamps_in_pattern[version])(4, path, i , num_of_spikes, spike_time_stamps)))
 			return;		
+		if(!reset_spike_pattern_write_idx(neurosim_get_ext_network_single_spike_pattern()))
+			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t reset spike_pattern.");				
 		for (j=0;j<num_of_spikes; j++)		
 		{
-			if(!add_spike_time_stamp_to_spike_pattern(neurosim_get_ext_network_spike_patterns(), i, &(spike_time_stamps[j])))
-			{
-				print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t add all spike timestamps of SpikePatternGeneratorData\n");
-				return;
-			}
+			if(!write_spike_time_stamp_to_spike_pattern(neurosim_get_ext_network_single_spike_pattern(), &(spike_time_stamps[j])))			
+				return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t  add spike timestamp of SpikePatternGeneratorData.");
 			//	printf("%llu %d %d %d\n", spike_time_stamps[j].peak_time, spike_time_stamps[j].mwa_or_layer, spike_time_stamps[j].channel_or_neuron_group, spike_time_stamps[j].unit_or_neuron);
 		}
 		g_free(spike_time_stamps);
 		spike_time_stamps = NULL;
+		if (!add_single_spike_pattern_to_spike_patterns(neurosim_get_ext_network_single_spike_pattern(), neurosim_get_ext_network_spike_patterns()))		
+			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t add spike pattern of SpikePatternGeneratorData.");
 	}		
 
 	return;
