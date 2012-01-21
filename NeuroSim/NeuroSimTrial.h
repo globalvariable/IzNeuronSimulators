@@ -3,9 +3,10 @@
 
 #include <stdio.h>
 
-void neurosim_set_num_of_trials(int num_of_trial);
-int neurosim_get_num_of_trials(void);
+#include "../../BlueSpike/Library/TrialStats/TrialStats.h"
 
+MainTrialStats * neurosim_get_main_trial_stats(void);
+void neurosim_set_main_trial_stats(MainTrialStats* main_stats);
 
 
 #endif

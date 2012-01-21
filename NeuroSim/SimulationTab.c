@@ -57,6 +57,8 @@ static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
+static GtkWidget *entry_num_of_trials;
+
 static GtkWidget *combo_layer_num_upper;
 static GtkWidget *combo_neuron_group_num_upper;
 static GtkWidget *combo_neuron_num_upper;
@@ -66,6 +68,7 @@ static GtkWidget *combo_neuron_num_lower;
 static GtkWidget *btn_interrogate_network;
 static GtkWidget *btn_interrogate_neuron;
 
+static GtkWidget *entry_num_of_trials_to_simulate;
 static GtkWidget *btn_simulate;
 
 /////// LAST COLUMN
@@ -565,7 +568,20 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
 	
          gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+         
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
+	lbl = gtk_label_new("Num of Trials: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+ 
+ 	entry_num_of_trials = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox),entry_num_of_trials, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_num_of_trials), "1000");
+	gtk_widget_set_size_request(entry_num_of_trials, 50, 25) ;
+                 
+         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+         
   	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -609,6 +625,17 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_neuron, TRUE, TRUE, 0);
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
+        
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("Num of Trials to Simulate: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+ 
+ 	entry_num_of_trials_to_simulate = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox),entry_num_of_trials_to_simulate, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_num_of_trials_to_simulate), "1");
+	gtk_widget_set_size_request(entry_num_of_trials_to_simulate, 50, 25) ;        
         
  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -778,13 +805,17 @@ void load_spike_pattern_generator_data_button_func(void)
 	int version;
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_load_spike_pattern_generator_data));
 	path = &path_temp[7];   // since     uri returns file:///home/....
+
+	char  *end_ptr;	
 	
 	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	int num_of_patterns;
 	TimeStampMs pattern_length_ms;
 	int num_of_spikes;
 	int max_num_of_spikes_in_patterns = 0;	
-	
+	unsigned int num_of_trials_used, num_of_trials_allocated;
+
+	TimeStamp trial_start_ns = 0;	
 	// use below to utilize in program.
 	SpikeTimeStampItem *spike_time_stamps = NULL;
 	
@@ -826,11 +857,24 @@ void load_spike_pattern_generator_data_button_func(void)
 
 	neurosim_set_ext_network_spike_patterns(allocate_spike_patterns(neurosim_get_ext_network_spike_patterns(), num_of_patterns, max_num_of_spikes_in_patterns));	 // deallocates previously allocated external network spike patterns and brings a new one.
 	neurosim_set_ext_network_single_spike_pattern(allocate_single_spike_pattern(neurosim_get_ext_network_single_spike_pattern(), max_num_of_spikes_in_patterns));	 // deallocates previously allocated external network spike patterns and brings a new one.				
-				
-	for (i=0;i<num_of_patterns; i++)
+	
+	neurosim_set_main_trial_stats(allocate_main_trial_stats(neurosim_get_main_trial_stats(), strtoul(gtk_entry_get_text(GTK_ENTRY(entry_num_of_trials)), &end_ptr, 10)));   // deallocates previously allocated
+	
+	if (!get_main_trial_stats_num_of_trials(neurosim_get_main_trial_stats(),  &num_of_trials_used, &num_of_trials_allocated))
+		return;
+	
+	if (num_of_trials_allocated < num_of_patterns)
+		return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "num_of_trials_allocated < num_of_patterns.");	
+	
+	if (num_of_trials_allocated > num_of_patterns)
+		print_message(WARNING_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Some patterns will be duplicate since num_of_trials_allocated > num_of_patterns.");										
+					
+	for (i=0;i<num_of_trials_allocated; i++)
 	{
-		 if(!((*spike_pattern_generator_data_get_pattern_length[version])(3, path, i , &pattern_length_ms)))
+		if(!((*spike_pattern_generator_data_get_pattern_length[version])(3, path, 0, &pattern_length_ms)))
 			return;
+		if (!write_to_main_trial_stats(neurosim_get_main_trial_stats(), trial_start_ns+=1000000000 , pattern_length_ms*1000000))     // leave 1 second interval between trials. 
+			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "load_spike_pattern_generator_data_button_func", "Couldn' t write pattern length to trial stats.");							
 	}		
 
 	for (i=0;i< num_of_patterns; i++)

@@ -1,15 +1,15 @@
 #include "NeuroSimTrial.h"
 
 
+static MainTrialStats *neurosim_main_trial_stats = NULL;
 
-void neurosim_set_num_of_trials(int num_of_trials)
+MainTrialStats * neurosim_get_main_trial_stats(void)
 {
-	num_of_neurosim_trials = num_of_trials;
-	printf("NeuroSimTrial: INFO: NeuroSim number of trails is %d\n", num_of_neurosim_trials);
+	return neurosim_main_trial_stats;
 }
 
-
-int  neurosim_get_num_of_trials(void)
+void neurosim_set_main_trial_stats(MainTrialStats *main_stats)
 {
-	return num_of_neurosim_trials;
+	neurosim_main_trial_stats = main_stats;
 }
+
