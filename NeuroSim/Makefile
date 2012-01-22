@@ -12,8 +12,8 @@ GTK_FLAGS = $(shell pkg-config --cflags --libs gtk+-2.0 gtkdatabox)
 
 all: NeuroSim
 
-NeuroSim: NeuroSim.c Gui.o SimulationTab.o TrainingTab.o NeuroSimNetwork.o ../Library/Network/Network.o ../Library/ParkerSochacki/ParkerSochacki.o ../Library/Synapse/Synapse.o ../Library/Event/Event.o ../Library/IzNeuron/NeuronTypes.o ../Library/IzNeuron/Neuron.o ../Library/IzNeuronDynamics/NeuronDynamicsPatterns.o ../Library/IzNeuronDynamics/NeuronDynamicsGraph.o ../Library/IzNeuronDynamics/NeuronDynamicsCombo.o ../../BlueSpike/Library/Misc/Misc.o ../Library/ExtNeuron/ExtNeuron.o ../Library/ExtNetwork/ExtNetwork.o ../../SpikePatternGenerator/DataHandling/DataHandling.o ../../SpikePatternGenerator/DataHandling/v0/DataFormat_v0.o ../../SpikePatternGenerator/Pattern/Pattern.o ../../BlueSpike/Library/SpikePatterns/SpikePatterns.o NeuroSimSpikePatterns.o ../../BlueSpike/Library/TrialStats/TrialStats.o NeuroSimTrial.o
-	$(CC) $(LXRT_CFLAGS) -o $@ $< Gui.o SimulationTab.o TrainingTab.o NeuroSimNetwork.o ../Library/Network/Network.o ../Library/ParkerSochacki/ParkerSochacki.o ../Library/Synapse/Synapse.o ../Library/Event/Event.o ../Library/IzNeuron/NeuronTypes.o ../Library/IzNeuron/Neuron.o ../Library/IzNeuronDynamics/NeuronDynamicsPatterns.o ../Library/IzNeuronDynamics/NeuronDynamicsGraph.o ../Library/IzNeuronDynamics/NeuronDynamicsCombo.o ../../BlueSpike/Library/Misc/Misc.o ../Library/ExtNeuron/ExtNeuron.o ../Library/ExtNetwork/ExtNetwork.o ../../SpikePatternGenerator/DataHandling/DataHandling.o ../../SpikePatternGenerator/DataHandling/v0/DataFormat_v0.o ../../SpikePatternGenerator/Pattern/Pattern.o  ../../BlueSpike/Library/SpikePatterns/SpikePatterns.o NeuroSimSpikePatterns.o ../../BlueSpike/Library/TrialStats/TrialStats.o NeuroSimTrial.o $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) 
+NeuroSim: NeuroSim.c Gui.o SimulationTab.o TrainingTab.o NeuroSimNetwork.o ../Library/Network/Network.o ../Library/ParkerSochacki/ParkerSochacki.o ../Library/Synapse/Synapse.o ../Library/Event/Event.o ../Library/IzNeuron/NeuronTypes.o ../Library/IzNeuron/Neuron.o ../Library/IzNeuronDynamics/NeuronDynamicsPatterns.o ../Library/IzNeuronDynamics/NeuronDynamicsGraph.o ../Library/IzNeuronDynamics/NeuronDynamicsCombo.o ../../BlueSpike/Library/Misc/Misc.o ../Library/ExtNeuron/ExtNeuron.o ../Library/ExtNetwork/ExtNetwork.o ../../SpikePatternGenerator/DataHandling/DataHandling.o ../../SpikePatternGenerator/DataHandling/v0/DataFormat_v0.o ../../SpikePatternGenerator/Pattern/Pattern.o ../../BlueSpike/Library/SpikePatterns/SpikePatterns.o NeuroSimSpikePatterns.o ../Library/TrialStats/TrialStats.o NeuroSimTrial.o NeuroSimNeuronDynamics.o
+	$(CC) $(LXRT_CFLAGS) -o $@ $< Gui.o SimulationTab.o TrainingTab.o NeuroSimNetwork.o ../Library/Network/Network.o ../Library/ParkerSochacki/ParkerSochacki.o ../Library/Synapse/Synapse.o ../Library/Event/Event.o ../Library/IzNeuron/NeuronTypes.o ../Library/IzNeuron/Neuron.o ../Library/IzNeuronDynamics/NeuronDynamicsPatterns.o ../Library/IzNeuronDynamics/NeuronDynamicsGraph.o ../Library/IzNeuronDynamics/NeuronDynamicsCombo.o ../../BlueSpike/Library/Misc/Misc.o ../Library/ExtNeuron/ExtNeuron.o ../Library/ExtNetwork/ExtNetwork.o ../../SpikePatternGenerator/DataHandling/DataHandling.o ../../SpikePatternGenerator/DataHandling/v0/DataFormat_v0.o ../../SpikePatternGenerator/Pattern/Pattern.o  ../../BlueSpike/Library/SpikePatterns/SpikePatterns.o NeuroSimSpikePatterns.o ../Library/TrialStats/TrialStats.o NeuroSimTrial.o NeuroSimNeuronDynamics.o $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) 
 	
 Gui.o: Gui.c 
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	
@@ -28,6 +28,9 @@ NeuroSimNetwork.o: NeuroSimNetwork.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	
 		
 NeuroSimSpikePatterns.o: NeuroSimSpikePatterns.c 
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	
+
+NeuroSimNeuronDynamics.o: NeuroSimNeuronDynamics.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	
 	
 NeuroSimTrial.o: NeuroSimTrial.c 
@@ -81,14 +84,14 @@ NeuroSimTrial.o: NeuroSimTrial.c
 ../../SpikePatternGenerator/Pattern/Pattern.o: ../../SpikePatternGenerator/Pattern/Pattern.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	
 
-../../BlueSpike/Library/TrialStats/TrialStats.o: ../../BlueSpike/Library/TrialStats/TrialStats.c
+../Library/TrialStats/TrialStats.o: ../Library/TrialStats/TrialStats.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS) 	 
 	
 			
  		# to see warnings
 		
 clean:
-	rm -f *.o NeuroSim ../Library/Network/*.o ../Library/ParkerSochacki/*.o ../Library/Synapse/*.o ../Library/Event/*.o ../Library/IzNeuron/*.o ../Library/IzNeuronDynamics/*.o ../../BlueSpike/Library/Misc/*.o ../Library/ExtNetwork/*.o ../Library/ExtNeuron/*.o ../../SpikePatternGenerator/*.o ../../SpikePatternGenerator/DataHandling/v0/*.o ../../SpikePatternGenerator/Pattern/*.o ../../BlueSpike/Library/SpikePatterns/*.o ../../BlueSpike/Library/TrialStats/*.o 
+	rm -f *.o NeuroSim ../Library/Network/*.o ../Library/ParkerSochacki/*.o ../Library/Synapse/*.o ../Library/Event/*.o ../Library/IzNeuron/*.o ../Library/IzNeuronDynamics/*.o ../../BlueSpike/Library/Misc/*.o ../Library/ExtNetwork/*.o ../Library/ExtNeuron/*.o ../../SpikePatternGenerator/*.o ../../SpikePatternGenerator/DataHandling/v0/*.o ../../SpikePatternGenerator/Pattern/*.o ../../BlueSpike/Library/SpikePatterns/*.o ../Library/TrialStats/*.o 
 
 .PHONY: clean
 

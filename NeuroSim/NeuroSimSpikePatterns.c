@@ -2,6 +2,7 @@
 
 static SpikePatterns *ext_network_spike_patterns = NULL;
 static SingleSpikePattern *ext_network_single_spike_pattern = NULL;
+static SingleSpikePattern *ext_network_unsorted_single_spike_pattern = NULL;
 
 static SpikePatterns *network_spike_patterns = NULL;
 static SingleSpikePattern *network_single_spike_pattern = NULL;
@@ -23,6 +24,16 @@ SingleSpikePattern* neurosim_get_ext_network_single_spike_pattern(void)
 void neurosim_set_ext_network_single_spike_pattern(SingleSpikePattern* single_spike_pattern)
 {
 	ext_network_single_spike_pattern = single_spike_pattern;
+}
+
+SingleSpikePattern* neurosim_get_ext_network_unsorted_single_spike_pattern(void)
+{
+	return ext_network_unsorted_single_spike_pattern;
+}
+
+void neurosim_set_ext_network_unsorted_single_spike_pattern(SingleSpikePattern* single_spike_pattern)
+{
+	ext_network_unsorted_single_spike_pattern = single_spike_pattern;
 }
 
 
