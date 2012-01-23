@@ -1,6 +1,6 @@
 #include "Neuron.h"
 
-bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool initialize_neuron_params(Neuron *nrn, int layer, int neuron_group, int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
 	if ((a<0) || ((inhibitory < 0) || (inhibitory > 1)) || (C<=0) ||  (k<0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
@@ -11,8 +11,6 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->layer = layer;
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;
-	nrn->v = v - v_resting; 
-	nrn->u = b * nrn->v;		
 	nrn->a = a;
 	nrn->b = b;
 	nrn->c = c - v_resting;	
@@ -22,7 +20,6 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->v_resting = v_resting;			
 	nrn->v_threshold = v_threshold - v_resting;
 	nrn->v_peak = v_peak - v_resting;	
-	nrn->I_inject = I_inject;
 	nrn->inhibitory = inhibitory;
 	nrn->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
 	nrn->E_inhibitory = E_inhibitory-v_resting;
@@ -31,8 +28,14 @@ bool initialize_neuron(Neuron *nrn, int layer, int neuron_group, int neuron_num,
 	nrn->conductance_excitatory = 0;
 	nrn->conductance_inhibitory = 0;
 	nrn->k_v_threshold = k * nrn->v_threshold;
+	if (nrn->syn_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	if (nrn->event_buff != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
+	if (nrn->ps_vals != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 	return TRUE;
 }
@@ -179,5 +182,13 @@ bool submit_new_neuron_params(Network *network, Neuron *nrn, double v, double a,
 	nrn->k_v_threshold = k * nrn->v_threshold;
 	if (!parker_sochacki_set_order_tolerance(network, get_maximum_parker_sochacki_order(), get_maximum_parker_sochacki_error_tolerance()))
 		return FALSE;
+	return TRUE;
+}
+
+bool inject_current_to_neuron(Neuron *nrn, double I_inject)
+{
+	if (nrn == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "inject_current_to_neuron", "neuron was not allocated.");
+	nrn->I_inject = I_inject;
 	return TRUE;
 }

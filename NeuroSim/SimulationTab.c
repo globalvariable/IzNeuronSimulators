@@ -57,14 +57,16 @@ static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
-static GtkWidget *combo_layer_num_upper;
-static GtkWidget *combo_neuron_group_num_upper;
-static GtkWidget *combo_neuron_num_upper;
-static GtkWidget *combo_layer_num_lower;
-static GtkWidget *combo_neuron_group_num_lower;
-static GtkWidget *combo_neuron_num_lower;
+static LayerNrnGrpNeuronCombo *combos_interrogate_neuron;
 static GtkWidget *btn_interrogate_network;
 static GtkWidget *btn_interrogate_neuron;
+
+// GRAPHS COLUMN
+static LayerNrnGrpNeuronCombo *combos_upper_graph;
+static LayerNrnGrpNeuronCombo *combos_lower_graph;
+
+static GtkWidget *btn_inject_current;
+static GtkWidget *entry_inject_current; 
 
 static GtkWidget *entry_num_of_trials_to_simulate;
 static GtkWidget *btn_simulate;
@@ -85,8 +87,18 @@ static int lower_graph_idx;
 static int upper_graph_combo_idx;
 static int lower_graph_combo_idx;
 
+static void combo_neuron_type_func(void);
+static void add_neurons_to_layer_button_func(void);
+static void combos_interrogate_neuron_func(GtkWidget *changed_combo);
+static void combos_upper_graph_func(GtkWidget *changed_combo);
+static void combos_lower_graph_func(GtkWidget *changed_combo);
+static void load_spike_pattern_generator_data_button_func(void);
 
-void load_spike_pattern_generator_data_button_func(void);
+
+
+static void set_neuron_param_entries(int neuron_type);
+static void set_path_for_btn_select_directory_load_spike_pattern_generator_data(void);
+static bool write_path_for_btn_select_directory_load_spike_pattern_generator_data(char *path);
 
 
 bool create_simulation_tab(GtkWidget * tabs)
@@ -289,7 +301,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_excitatory_connection_probability = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_excitatory_connection_probability, FALSE,FALSE,0);	
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_connection_probability), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_connection_probability), "1.0");
 	gtk_widget_set_size_request(entry_internal_neurons_excitatory_connection_probability, 50, 25) ;	
 	
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -306,7 +318,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_weight_excitatory_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_weight_excitatory_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_weight_excitatory_max), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_weight_excitatory_max), "1.0");
 	gtk_widget_set_size_request(entry_internal_neurons_weight_excitatory_max, 50, 25) ;	
 	
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -316,15 +328,15 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_excitatory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_excitatory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_min), "1000000");
-	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_min, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_min), "1.0");
+	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_min, 50, 25) ;
 	
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_excitatory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_excitatory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_max), "5000000");	
-	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_max, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_max), "5.0");	
+	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_max, 50, 25) ;
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 		
@@ -341,7 +353,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_inhibitory_connection_probability = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_inhibitory_connection_probability, FALSE,FALSE,0);	
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_connection_probability), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_connection_probability), "1.0");
 	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_connection_probability, 50, 25) ;	
 
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -358,7 +370,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_weight_inhibitory_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_weight_inhibitory_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_weight_inhibitory_max), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_weight_inhibitory_max), "1.0");
 	gtk_widget_set_size_request(entry_internal_neurons_weight_inhibitory_max, 50, 25) ;	
 	
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -368,15 +380,15 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_inhibitory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_inhibitory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_min), "1000000");
-	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_min, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_min), "1.0");
+	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_min, 50, 25) ;
 	
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_inhibitory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_inhibitory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_max), "5000000");	
-	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_max, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_max), "5.0");	
+	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -417,7 +429,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_excitatory_connection_probability= gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_excitatory_connection_probability, FALSE,FALSE,0);	
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_connection_probability), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_connection_probability), "1.0");
 	gtk_widget_set_size_request(entry_external_neurons_excitatory_connection_probability, 50, 25) ;	
 	
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -434,25 +446,25 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_weight_excitatory_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_weight_excitatory_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_weight_excitatory_max), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_weight_excitatory_max), "1.0");
 	gtk_widget_set_size_request(entry_external_neurons_weight_excitatory_max, 50, 25) ;	
 	
  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("Delay Min(ns): ");
+	lbl = gtk_label_new("Delay Min(ms): ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_excitatory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_excitatory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_min), "1000000");
-	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_min, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_min), "1.0");
+	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_min, 50, 25) ;
 	
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_excitatory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_excitatory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_max), "5000000");	
-	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_max, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_max), "5.0");	
+	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_max, 50, 25) ;
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 		
@@ -469,7 +481,7 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_inhibitory_connection_probability = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_inhibitory_connection_probability, FALSE,FALSE,0);	
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_connection_probability), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_connection_probability), "1.0");
 	gtk_widget_set_size_request(entry_external_neurons_inhibitory_connection_probability, 50, 25) ;	
 
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -486,25 +498,25 @@ bool create_simulation_tab(GtkWidget * tabs)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_weight_inhibitory_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_weight_inhibitory_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_weight_inhibitory_max), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_weight_inhibitory_max), "1.0");
 	gtk_widget_set_size_request(entry_external_neurons_weight_inhibitory_max, 50, 25) ;	
 	
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("Delay Min(ns): ");
+	lbl = gtk_label_new("Delay Min(ms): ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_inhibitory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_inhibitory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_min), "1000000");
-	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_min, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_min), "1.0");
+	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_min, 50, 25) ;
 	
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_inhibitory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_inhibitory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_max), "5000000");	
-	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_max, 55, 25) ;
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_max), "5.0");	
+	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -575,28 +587,12 @@ bool create_simulation_tab(GtkWidget * tabs)
         
 	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-        
-	combo_layer_num_upper = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_layer_num_upper, TRUE,TRUE,0);
+ 
+	combos_interrogate_neuron = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_interrogate_neuron->combo_layer , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_interrogate_neuron->combo_neuron_group, TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox),combos_interrogate_neuron->combo_neuron , TRUE,TRUE,0);
 
-	combo_neuron_group_num_upper = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_neuron_group_num_upper, TRUE,TRUE,0);
-	        
-	combo_neuron_num_upper = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_neuron_num_upper, TRUE,TRUE,0);
-
-	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-        
-	combo_layer_num_lower = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_layer_num_lower, TRUE,TRUE,0);
-
-	combo_neuron_group_num_lower = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_neuron_group_num_lower, TRUE,TRUE,0);
-	        
-	combo_neuron_num_lower = gtk_combo_box_new_text();
-        gtk_box_pack_start(GTK_BOX(hbox),combo_neuron_num_lower, TRUE,TRUE,0);
-        
  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -610,7 +606,20 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_neuron, TRUE, TRUE, 0);
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
-        
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_inject_current = gtk_button_new_with_label("Inject Current (pA) ");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_inject_current, TRUE, TRUE, 0);       
+	
+ 	entry_inject_current = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_inject_current, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_inject_current), "0");
+	gtk_widget_set_size_request(entry_inject_current, 60, 25) ;        
+
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
+                
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -629,27 +638,53 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate, TRUE, TRUE, 0);        
         
 //////	GRAPHS
-	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 2,7, 0,3);  
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 2,7, 0,3);  
+ 	hbox1 = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox1, FALSE,FALSE,0);
  	vbox1 = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),vbox1, FALSE,FALSE,0);		
-	hbox1 = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox1),hbox1, FALSE,FALSE,0);	
-	if(!add_neuron_dynamics_combo(hbox1, &upper_graph_combo_idx))
+        gtk_box_pack_start(GTK_BOX(hbox1),vbox1, FALSE,FALSE,0);  
+  	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox1),hbox, FALSE,FALSE,0); 
+	combos_upper_graph = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_upper_graph->combo_layer, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_upper_graph->combo_layer, 50, 25) ;               
+        gtk_box_pack_start(GTK_BOX(hbox),combos_upper_graph->combo_neuron_group, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_upper_graph->combo_neuron_group, 60, 25) ;             
+        gtk_box_pack_start(GTK_BOX(hbox),combos_upper_graph->combo_neuron, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_upper_graph->combo_neuron, 70, 25) ;                     	
+	if(!add_neuron_dynamics_combo(hbox, &upper_graph_combo_idx))
 		return FALSE;	
+	lbl = gtk_label_new("  Layer : NeuronGroup : Neuron : Dynamic");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);				
 	if(!add_neuron_dynamics_box_and_graph(hbox, 1000*1000000, &upper_graph_idx))	// 1000 ms
 		return FALSE;
 
-	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 2,7, 3,6); 
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 2,7, 3,6); 
+ 	hbox1 = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox1, FALSE,FALSE,0);
  	vbox1 = gtk_vbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),vbox1, FALSE,FALSE,0);		
-	hbox1 = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox1),hbox1, FALSE,FALSE,0);		 
-	if(!add_neuron_dynamics_combo(hbox1, &lower_graph_combo_idx))
-		return FALSE;		
-	if(!add_neuron_dynamics_box_and_graph(hbox, 1000*1000000, &lower_graph_idx))	// 1000 ms
+        gtk_box_pack_start(GTK_BOX(hbox1),vbox1, FALSE,FALSE,0);  
+  	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox1),hbox, FALSE,FALSE,0); 
+	combos_lower_graph = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_lower_graph->combo_layer, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_lower_graph->combo_layer, 50, 25) ;               
+        gtk_box_pack_start(GTK_BOX(hbox),combos_lower_graph->combo_neuron_group, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_lower_graph->combo_neuron_group, 60, 25) ;             
+        gtk_box_pack_start(GTK_BOX(hbox),combos_lower_graph->combo_neuron, FALSE,FALSE,0);
+ 	gtk_widget_set_size_request(combos_lower_graph->combo_neuron, 70, 25) ;    
+	if(!add_neuron_dynamics_combo(hbox, &lower_graph_combo_idx))
 		return FALSE;	
+	lbl = gtk_label_new("  Layer : NeuronGroup : Neuron : Dynamic");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);				
+	if(!add_neuron_dynamics_box_and_graph(hbox, 1000*1000000, &lower_graph_idx))	// 1000 ms
+		return FALSE;
  
 /////// LAST COLUMN
 
@@ -716,6 +751,22 @@ bool create_simulation_tab(GtkWidget * tabs)
 	btn_load_spike_pattern_generator_data = gtk_button_new_with_label("Load SpikePatternGenerator Data");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_load_spike_pattern_generator_data, TRUE, TRUE, 0);   
 
+
+	neurosim_set_network(allocate_network(neurosim_get_network()));   // deallocates previously allocated network and brings a new one.
+	
+	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
+     	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);	
+     	
+	g_signal_connect(G_OBJECT(combos_interrogate_neuron->combo_layer), "changed", G_CALLBACK(combos_interrogate_neuron_func), combos_interrogate_neuron->combo_layer);
+	g_signal_connect(G_OBJECT(combos_interrogate_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_interrogate_neuron_func), combos_interrogate_neuron->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_interrogate_neuron->combo_neuron), "changed", G_CALLBACK(combos_interrogate_neuron_func), combos_interrogate_neuron->combo_neuron);		
+ 	g_signal_connect(G_OBJECT(combos_upper_graph->combo_layer), "changed", G_CALLBACK(combos_upper_graph_func), combos_upper_graph->combo_layer);
+	g_signal_connect(G_OBJECT(combos_upper_graph->combo_neuron_group), "changed", G_CALLBACK(combos_upper_graph_func), combos_upper_graph->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_upper_graph->combo_neuron), "changed", G_CALLBACK(combos_upper_graph_func), combos_upper_graph->combo_neuron);		
+	g_signal_connect(G_OBJECT(combos_lower_graph->combo_layer), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_layer);
+	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron_group), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron);					
+	
 	g_signal_connect(G_OBJECT(btn_load_spike_pattern_generator_data), "clicked", G_CALLBACK(load_spike_pattern_generator_data_button_func), NULL);	
 	
 	
@@ -725,7 +776,7 @@ bool create_simulation_tab(GtkWidget * tabs)
 }
 
 
-void set_neuron_param_entries(int neuron_type)
+static void set_neuron_param_entries(int neuron_type)
 {
 	char str[20];
 	
@@ -783,7 +834,7 @@ void set_neuron_param_entries(int neuron_type)
 
 
 
-void load_spike_pattern_generator_data_button_func(void)
+static void load_spike_pattern_generator_data_button_func(void)
 {
 	int i, j;
 	char *path_temp = NULL, *path = NULL;
@@ -895,7 +946,7 @@ void load_spike_pattern_generator_data_button_func(void)
 	return;
 }
 
-void set_path_for_btn_select_directory_load_spike_pattern_generator_data(void)
+static void set_path_for_btn_select_directory_load_spike_pattern_generator_data(void)
 {
 	char line[600];
 	FILE *fp = NULL;
@@ -921,7 +972,7 @@ void set_path_for_btn_select_directory_load_spike_pattern_generator_data(void)
 	}  	 
 }
 
-bool write_path_for_btn_select_directory_load_spike_pattern_generator_data(char *path)
+static bool write_path_for_btn_select_directory_load_spike_pattern_generator_data(char *path)
 {
 	FILE *fp = NULL;
        	if ((fp = fopen("./initial_path_spike_pattern_generator_data", "w")) == NULL)  
@@ -936,3 +987,82 @@ bool write_path_for_btn_select_directory_load_spike_pattern_generator_data(char 
 		return TRUE;		
 	}  	 
 }
+
+static void combo_neuron_type_func (void)
+{
+	int neuron_type;
+	neuron_type = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_type));
+	set_neuron_param_entries(neuron_type);	
+}
+
+
+static void add_neurons_to_layer_button_func()
+{
+	int num_of_neuron;
+	int layer; 
+	double a;
+	double b;
+	double c;
+	double d;
+	double k;
+	double C;
+	double v_resting;
+	double v_threshold;
+	double v_peak;
+	double I_inject;
+	bool inhibitory;
+	double E_excitatory;
+	double E_inhibitory;
+	double tau_excitatory;
+	double tau_inhibitory;
+	int randomize_params;
+
+ 	num_of_neuron = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_neuron_for_group)));
+	layer = atoi(gtk_entry_get_text(GTK_ENTRY(entry_add_neurons_to_layer))); 
+
+	a = atof(gtk_entry_get_text(GTK_ENTRY(entry_a)));
+	b = atof(gtk_entry_get_text(GTK_ENTRY(entry_b)));
+	c = atof(gtk_entry_get_text(GTK_ENTRY(entry_c)));
+	d = atof(gtk_entry_get_text(GTK_ENTRY(entry_d)));
+	k = atof(gtk_entry_get_text(GTK_ENTRY(entry_k)));
+	C = atof(gtk_entry_get_text(GTK_ENTRY(entry_C)));
+	v_resting = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_resting)));
+	v_threshold = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_threshold)));
+	v_peak = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_peak)));
+	I_inject = 0;		// injection is done by stimulus
+	inhibitory = (bool)atof(gtk_entry_get_text(GTK_ENTRY(entry_inhibitory)));
+	E_excitatory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_excitatory)));
+	E_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_inhibitory)));
+	tau_excitatory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_excitatory)));
+	tau_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_inhibitory)));
+	randomize_params = 0;
+							
+	if (!add_neurons_to_layer(neurosim_get_network(), num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+		return;
+	
+	if(!update_texts_of_combos_when_add_remove(combos_interrogate_neuron, neurosim_get_network()))
+		return;
+	if(!update_texts_of_combos_when_add_remove(combos_upper_graph, neurosim_get_network()))
+		return;	
+	if(!update_texts_of_combos_when_add_remove(combos_lower_graph, neurosim_get_network()))
+		return;			
+	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, TRUE);	
+	return;
+}
+
+static void combos_interrogate_neuron_func(GtkWidget *changed_combo)
+{
+	if(!update_texts_of_combos_when_change(combos_interrogate_neuron, neurosim_get_network(), changed_combo))
+		return;
+}
+static void combos_upper_graph_func(GtkWidget *changed_combo)
+{
+	if(!update_texts_of_combos_when_change(combos_upper_graph, neurosim_get_network(), changed_combo))
+		return;
+}
+static void combos_lower_graph_func(GtkWidget *changed_combo)
+{
+	if(!update_texts_of_combos_when_change(combos_lower_graph, neurosim_get_network(), changed_combo))
+		return;
+}
+

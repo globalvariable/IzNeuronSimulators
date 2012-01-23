@@ -2,7 +2,7 @@
 
 static bool increment_number_of_layers(Network *network);
 static bool increment_number_of_neuron_group_in_layer(Network *network, int layer);
-static bool add_neuron_group_to_layer(Network *network, int layer, int num_of_neuron, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, 
+static bool add_neuron_group_to_layer(Network *network, int layer, int num_of_neuron, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, 
 								double E_inhibitory, double tau_excitatory, double tau_inhibitory);	
 
 
@@ -59,7 +59,7 @@ Network* deallocate_network(Network *network)
 	return NULL;
 }
 
-bool add_neurons_to_layer(Network *network, int num_of_neuron, int layer, double v, double a, double b, double c,double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory, int randomize_params)
+bool add_neurons_to_layer(Network *network, int num_of_neuron, int layer, double a, double b, double c,double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory, int randomize_params)
 {
 	if (network == NULL)
 	{
@@ -86,7 +86,7 @@ bool add_neurons_to_layer(Network *network, int num_of_neuron, int layer, double
 			return FALSE;
 	}	
 	
-	if (!add_neuron_group_to_layer(network, layer, num_of_neuron, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
+	if (!add_neuron_group_to_layer(network, layer, num_of_neuron, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 		return FALSE;
 
 	return TRUE;
@@ -124,7 +124,7 @@ static bool increment_number_of_layers(Network *network)
 	return TRUE;			
 }
 
-static bool add_neuron_group_to_layer(Network *network, int layer, int num_of_neuron, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory)
+static bool add_neuron_group_to_layer(Network *network, int layer, int num_of_neuron, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory)
 {
 	int i;
 	Layer		*ptr_layer = NULL;
@@ -146,7 +146,7 @@ static bool add_neuron_group_to_layer(Network *network, int layer, int num_of_ne
 
 	for (i=0; i<num_of_neuron; i++)
 	{
-		if( !initialize_neuron(&(ptr_neuron_group->neurons[i]), layer, 0, i, v, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
+		if( !initialize_neuron_params(&(ptr_neuron_group->neurons[i]), layer, 0, i, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 			return FALSE;
 	}
 	printf("Network: Additon of %d neurons to layer %d is successful\n", num_of_neuron, layer);

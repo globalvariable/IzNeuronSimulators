@@ -4,6 +4,9 @@
 #include "../Library/ExtNetwork/ExtNetwork.h"
 
 
+Network * neurosim_get_network(void);
+void neurosim_set_network(Network *network);
+
 ExtNetwork * neurosim_get_ext_network(void);
 void neurosim_set_ext_network(ExtNetwork *network);
 

@@ -1,16 +1,26 @@
 #include "NeuroSimNetwork.h"
 
+static Network *internal_network = NULL;
+static ExtNetwork *external_network = NULL;
 
-static ExtNetwork *ext_network = NULL;
+Network * neurosim_get_network(void)
+{
+	return internal_network;
+}
+
+void neurosim_set_network(Network *network)
+{
+	internal_network = network;
+}
 
 ExtNetwork * neurosim_get_ext_network(void)
 {
-	return ext_network;
+	return external_network;
 }
 
 void neurosim_set_ext_network(ExtNetwork *network)
 {
-	ext_network = network;
+	external_network = network;
 }
 
 
