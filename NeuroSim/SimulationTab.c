@@ -92,6 +92,8 @@ static void add_neurons_to_layer_button_func(void);
 static void combos_interrogate_neuron_func(GtkWidget *changed_combo);
 static void combos_upper_graph_func(GtkWidget *changed_combo);
 static void combos_lower_graph_func(GtkWidget *changed_combo);
+static void submit_parker_sochacki_params_button_func(void);
+static void simulate_button_func(void);
 static void load_spike_pattern_generator_data_button_func(void);
 
 
@@ -765,8 +767,10 @@ bool create_simulation_tab(GtkWidget * tabs)
 	g_signal_connect(G_OBJECT(combos_upper_graph->combo_neuron), "changed", G_CALLBACK(combos_upper_graph_func), combos_upper_graph->combo_neuron);		
 	g_signal_connect(G_OBJECT(combos_lower_graph->combo_layer), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_layer);
 	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron_group), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron_group);	
-	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron);					
-	
+	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron);	
+					
+      	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+	g_signal_connect(G_OBJECT(btn_simulate), "clicked", G_CALLBACK(simulate_button_func), NULL);      		
 	g_signal_connect(G_OBJECT(btn_load_spike_pattern_generator_data), "clicked", G_CALLBACK(load_spike_pattern_generator_data_button_func), NULL);	
 	
 	
@@ -1065,4 +1069,44 @@ static void combos_lower_graph_func(GtkWidget *changed_combo)
 	if(!update_texts_of_combos_when_change(combos_lower_graph, neurosim_get_network(), changed_combo))
 		return;
 }
+static void submit_parker_sochacki_params_button_func(void)
+{
+	if (parker_sochacki_set_order_tolerance(neurosim_get_network(), (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+		return;
 
+}
+static void simulate_button_func(void)
+{
+	int k, m, n;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	Neuron		*ptr_neuron;		
+	
+	TimeStamp start_time_ns, end_time_ns, time_ns;
+	ParkerSochackiStepSize step_size = 250000;
+	TimeStamp  spike_time;
+
+	start_time_ns = 0;
+	end_time_ns = 1000000000;
+	for (time_ns = start_time_ns; time_ns < end_time_ns; time_ns+=step_size)
+	{	
+		for (k=0; k<neurosim_get_network()->layer_count; k++)
+		{
+			ptr_layer = neurosim_get_network()->layers[k];			
+			for (m=0; m<ptr_layer->neuron_group_count; m++)
+			{
+				ptr_neuron_group = ptr_layer->neuron_groups[m];
+				for (n=0; n<ptr_neuron_group->neuron_count; n++)
+				{
+					ptr_neuron = &(ptr_neuron_group->neurons[n]);
+					ptr_neuron -> I_inject = 30.0;
+					spike_time = evaluate_neuron_dyn(ptr_neuron, time_ns, time_ns+step_size);
+					if (spike_time != MAX_TIME_STAMP)
+					{
+						printf ("Spike time nano: %llu\n", spike_time);
+					}
+				}
+			}
+		}
+	}
+}
