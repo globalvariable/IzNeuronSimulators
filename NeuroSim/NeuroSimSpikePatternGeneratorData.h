@@ -1,0 +1,19 @@
+#ifndef NEUROSIM_SPIKE_PATTERN_GENERATOR_DATA_H
+#define NEUROSIM_SPIKE_PATTERN_GENERATOR_DATA_H
+
+
+#include <string.h>
+
+void neurosim_set_num_of_patterns_in_spike_pattern_generator_data(unsigned int num_of_patterns);
+unsigned int neurosim_get_num_of_patterns_in_spike_pattern_generator_data(void);
+
+void neurosim_set_spike_pattern_generator_data_path(char *path);
+char* neurosim_get_spike_pattern_generator_data_path(void);
+
+void neurosim_set_max_num_of_pattern_spikes_in_spike_pattern_generator_data(unsigned int num_of_spikes);
+unsigned int neurosim_get_max_num_of_pattern_spikes_in_spike_pattern_generator_data(void);
+
+void neurosim_set_spike_pattern_generator_data_version(int version);
+int neurosim_get_spike_pattern_generator_data_version(void);
+
+#endif
