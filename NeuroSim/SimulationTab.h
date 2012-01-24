@@ -8,6 +8,7 @@
 #include "NeuroSimNetwork.h"
 #include "NeuroSimSpikePatterns.h"
 #include "NeuroSimTrial.h"
+#include "NeuroSimNeuronDynamics.h"
 #include "../Library/Network/Network.h"
 #include "../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../Library/IzNeuron/NeuronTypes.h"

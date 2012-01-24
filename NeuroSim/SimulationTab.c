@@ -1,6 +1,9 @@
 #include "SimulationTab.h"
 
 // FIRST COLUMN
+static GtkWidget *btn_select_directory_load_spike_pattern_generator_data;
+static GtkWidget *btn_load_spike_pattern_generator_data; 
+
 static GtkWidget *combo_neuron_type;
 static GtkWidget *entry_a;
 static GtkWidget *entry_b;
@@ -78,14 +81,7 @@ static GtkWidget *	btn_create_neurosim_data_directory;
 static GtkWidget *	btn_save_neurosim_data;
 static GtkWidget *	btn_load_neurosim_data;
 
-static GtkWidget *btn_select_directory_load_spike_pattern_generator_data;
-static GtkWidget *btn_load_spike_pattern_generator_data; 
 
-static int upper_graph_idx;
-static int lower_graph_idx;
-
-static int upper_graph_combo_idx;
-static int lower_graph_combo_idx;
 
 static void combo_neuron_type_func(void);
 static void add_neurons_to_layer_button_func(void);
@@ -123,6 +119,24 @@ bool create_simulation_tab(GtkWidget * tabs)
 ///////////////////////////////////////////// FIRST COLUMN  ///////////////////////////////////////////////////////////////
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 0,1, 0, 6);  
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);              
+
+	lbl = gtk_label_new("Folder : ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+
+	btn_select_directory_load_spike_pattern_generator_data = gtk_file_chooser_button_new ("Select Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+        gtk_box_pack_start(GTK_BOX(hbox),btn_select_directory_load_spike_pattern_generator_data, TRUE,TRUE,0);
+	set_path_for_btn_select_directory_load_spike_pattern_generator_data();
+	
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_load_spike_pattern_generator_data = gtk_button_new_with_label("Load SpikePatternGenerator Data");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_load_spike_pattern_generator_data, TRUE, TRUE, 0);   
+	
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);  		
 	
   	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -280,7 +294,7 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_entry_set_text(GTK_ENTRY(entry_add_neurons_to_layer), "0");
 	gtk_widget_set_size_request(entry_add_neurons_to_layer, 50, 25) ;	
 
-	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 10);  	
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
 	///////////////  CONNECT INTERNAL NEURONS
 
@@ -408,7 +422,7 @@ bool create_simulation_tab(GtkWidget * tabs)
 	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect_internal_layer_to), "0");	
 	gtk_widget_set_size_request(entry_internal_layer_num_to_connect_internal_layer_to, 30, 25);		
 	
-	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 15);  	
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
 	///////////////  CONNECT EXTERNAL NEURONS
 
@@ -655,15 +669,12 @@ bool create_simulation_tab(GtkWidget * tabs)
  	gtk_widget_set_size_request(combos_upper_graph->combo_neuron_group, 60, 25) ;             
         gtk_box_pack_start(GTK_BOX(hbox),combos_upper_graph->combo_neuron, FALSE,FALSE,0);
  	gtk_widget_set_size_request(combos_upper_graph->combo_neuron, 70, 25) ;                     	
-	if(!add_neuron_dynamics_combo(hbox, &upper_graph_combo_idx))
-		return FALSE;	
+	neurosim_set_neuron_dynamics_combo_simulation_tab_upper(allocate_neuron_dynamics_combo(hbox,neurosim_get_neuron_dynamics_combo_simulation_tab_upper()));
 	lbl = gtk_label_new("  Layer : NeuronGroup : Neuron : Dynamic");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);				
-	if(!add_neuron_dynamics_box_and_graph(hbox, 1000*1000000, &upper_graph_idx))	// 1000 ms
-		return FALSE;
-
+	gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);		
+	neurosim_set_neuron_dynamics_graph_simulation_tab_upper(allocate_neuron_dynamics_graph(hbox,neurosim_get_neuron_dynamics_graph_simulation_tab_upper()));
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 2,7, 3,6); 
  	hbox1 = gtk_hbox_new(FALSE, 0);
@@ -679,14 +690,12 @@ bool create_simulation_tab(GtkWidget * tabs)
  	gtk_widget_set_size_request(combos_lower_graph->combo_neuron_group, 60, 25) ;             
         gtk_box_pack_start(GTK_BOX(hbox),combos_lower_graph->combo_neuron, FALSE,FALSE,0);
  	gtk_widget_set_size_request(combos_lower_graph->combo_neuron, 70, 25) ;    
-	if(!add_neuron_dynamics_combo(hbox, &lower_graph_combo_idx))
-		return FALSE;	
+	neurosim_set_neuron_dynamics_combo_simulation_tab_lower(allocate_neuron_dynamics_combo(hbox,neurosim_get_neuron_dynamics_combo_simulation_tab_lower()));
 	lbl = gtk_label_new("  Layer : NeuronGroup : Neuron : Dynamic");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);				
-	if(!add_neuron_dynamics_box_and_graph(hbox, 1000*1000000, &lower_graph_idx))	// 1000 ms
-		return FALSE;
+	neurosim_set_neuron_dynamics_graph_simulation_tab_lower(allocate_neuron_dynamics_graph(hbox,neurosim_get_neuron_dynamics_graph_simulation_tab_lower()));
  
 /////// LAST COLUMN
 
@@ -737,23 +746,6 @@ bool create_simulation_tab(GtkWidget * tabs)
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
         
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);              
-
-	lbl = gtk_label_new("Folder : ");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-
-	btn_select_directory_load_spike_pattern_generator_data = gtk_file_chooser_button_new ("Select Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-        gtk_box_pack_start(GTK_BOX(hbox),btn_select_directory_load_spike_pattern_generator_data, TRUE,TRUE,0);
-	set_path_for_btn_select_directory_load_spike_pattern_generator_data();
-	
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_load_spike_pattern_generator_data = gtk_button_new_with_label("Load SpikePatternGenerator Data");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_load_spike_pattern_generator_data, TRUE, TRUE, 0);   
-
-
 	neurosim_set_network(allocate_network(neurosim_get_network()));   // deallocates previously allocated network and brings a new one.
 	
 	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);

@@ -3,13 +3,23 @@
 
 
 #include "../Library/IzNeuronDynamics/NeuronDynamicsPatterns.h"
-
+#include "../Library/IzNeuronDynamics/NeuronDynamicsGraph.h"
+#include "../Library/IzNeuronDynamics/NeuronDynamicsCombo.h"
 
 AllNeuronsDynamicsSinglePattern* neurosim_get_all_neurons_dynamics_single_pattern(void);
 void neurosim_set_all_neurons_dynamics_single_pattern(AllNeuronsDynamicsSinglePattern* single_pattern);
 
+NeuronDynamicsGraph* neurosim_get_neuron_dynamics_graph_simulation_tab_upper(void);
+void neurosim_set_neuron_dynamics_graph_simulation_tab_upper(NeuronDynamicsGraph* graph);
 
+NeuronDynamicsGraph* neurosim_get_neuron_dynamics_graph_simulation_tab_lower(void);
+void neurosim_set_neuron_dynamics_graph_simulation_tab_lower(NeuronDynamicsGraph* graph);
 
+NeuronDynamicsCombo* neurosim_get_neuron_dynamics_combo_simulation_tab_upper(void);
+void neurosim_set_neuron_dynamics_combo_simulation_tab_upper(NeuronDynamicsCombo* combo);
+
+NeuronDynamicsCombo* neurosim_get_neuron_dynamics_combo_simulation_tab_lower(void);
+void neurosim_set_neuron_dynamics_combo_simulation_tab_lower(NeuronDynamicsCombo* combo);
 
 
 #endif

@@ -20,6 +20,12 @@ typedef unsigned int NeuronAddress;
 #define MAX_INHIBITORY_CONDUCTANCE_VALUE		150
 #define MIN_INHIBITORY_CONDUCTANCE_VALUE		-50
 
+#define DYNAMICS_TYPE_V	0
+#define DYNAMICS_TYPE_U	1
+#define DYNAMICS_TYPE_E	2     // excitatory
+#define DYNAMICS_TYPE_I	3	// inhibitory
+
+
 struct __Neuron
 {
 	int 			layer;

@@ -1,27 +1,19 @@
 #include "NeuronDynamicsGraph.h"
 
 
-static GtkWidget **boxes = NULL;
-static GtkWidget **databoxes = NULL;
-static GtkDataboxGraph **graphs = NULL;
-static GdkColor color_bg;
-static GdkColor color_line;
-static GdkColor color_grid;
-static float **y_axis = NULL;    
-static float **x_axis = NULL;  
-static int num_of_graphs = 0;
-
-
-bool add_neuron_dynamics_box_and_graph(GtkWidget *hbox, TimeStamp pattern_length, int *graph_idx)
+NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph)
 {
-	int i;
-	GtkWidget **lcl_boxes = NULL;
-	GtkWidget **lcl_databoxes = NULL;	
-	float **lcl_y_axis = NULL;    
-	float **lcl_x_axis = NULL;  
-	GtkDataboxGraph **lcl_graphs = NULL;	
+	if (graph != NULL)
+	{
+		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
+		return graph;
+	}
 	
-	TimeStampMs pattern_length_to_disp = (TimeStampMs)(pattern_length/1000000);
+	graph = g_new0(NeuronDynamicsGraph,1);
+		
+	GdkColor color_bg;
+	GdkColor color_line;
+	GdkColor color_grid;
 
 	color_bg.red = 65535;
 	color_bg.green = 65535;
@@ -35,106 +27,113 @@ bool add_neuron_dynamics_box_and_graph(GtkWidget *hbox, TimeStamp pattern_length
 	color_line.green = 0;
 	color_line.blue = 0;
 
+	gtk_databox_create_box_with_scrollbars_and_rulers (&(graph->box), &(graph->databox),TRUE, TRUE, TRUE, TRUE);
+  	gtk_widget_modify_bg (graph->box, GTK_STATE_NORMAL, &color_bg);
+ 	gtk_databox_graph_add (GTK_DATABOX (graph->box), gtk_databox_grid_new (9, 9, &color_grid, 0)); 	
+	gtk_box_pack_start (GTK_BOX (hbox), graph->databox, TRUE, TRUE, 0);
 
-	is_allocated(boxes, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_WARNING, "This is the first time for allocation of neuron dynamics boxes.", EXPECTS_ALLOCATED);	
-	is_allocated(databoxes, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_WARNING, "This is the first time for allocation of neuron dynamics databoxes.", EXPECTS_ALLOCATED);	
-
-	lcl_boxes = g_new0(GtkWidget*, num_of_graphs + 1);	
-	lcl_databoxes = g_new0(GtkWidget*, num_of_graphs + 1);
-	if (!is_allocated(lcl_boxes, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "lcl_boxes", EXPECTS_ALLOCATED))	
-		return FALSE;
-	if (!is_allocated(lcl_boxes, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "lcl_databoxes", EXPECTS_ALLOCATED))	
-		return FALSE;	
-					
-	for (i = 0; i< num_of_graphs; i++)
-	{
-		lcl_boxes[i] = boxes[i];
-		lcl_databoxes[i] = databoxes[i];		
-	}		
-	g_free(boxes);
-	g_free(databoxes);
-	boxes = lcl_boxes;
-	databoxes = lcl_databoxes;
-
-	if (is_allocated(boxes[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "boxes[num_of_graphs]", EXPECTS_NOT_ALLOCATED))	
-		return FALSE;
-	if (is_allocated(databoxes[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "databoxes[num_of_graphs]", EXPECTS_NOT_ALLOCATED))	
-		return FALSE;
-	gtk_databox_create_box_with_scrollbars_and_rulers (&boxes[num_of_graphs], &databoxes[num_of_graphs],TRUE, TRUE, TRUE, TRUE);
-	if (!is_allocated(boxes[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "boxes[num_of_graphs]", EXPECTS_ALLOCATED))	
-		return FALSE;
-	if (!is_allocated(databoxes[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph",  ALLOCATION_FAILED, "databoxes[num_of_graphs]", EXPECTS_ALLOCATED))	
-		return FALSE;
-
-  	gtk_widget_modify_bg (boxes[num_of_graphs], GTK_STATE_NORMAL, &color_bg);
- 	gtk_databox_graph_add (GTK_DATABOX (boxes[num_of_graphs]), gtk_databox_grid_new (9, 9, &color_grid, 0)); 	
-	gtk_box_pack_start (GTK_BOX (hbox), databoxes[num_of_graphs], TRUE, TRUE, 0);
-
-	is_allocated(x_axis, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_WARNING, "This is the first time for allocation of neuron dynamics x axes.", EXPECTS_ALLOCATED);	
-	is_allocated(y_axis, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_WARNING, "This is the first time for allocation of neuron dynamics y axes.", EXPECTS_ALLOCATED);	
-
-	lcl_x_axis = g_new0(float*, num_of_graphs + 1);
-	lcl_y_axis = g_new0(float*, num_of_graphs + 1);
-	if (!is_allocated(lcl_x_axis, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "lcl_x_axis", EXPECTS_ALLOCATED))	
-		return FALSE;	
-	if (!is_allocated(lcl_y_axis, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "lcl_y_axis", EXPECTS_ALLOCATED))	
-		return FALSE;		
+	graph->num_of_points_allocated = 1000;  // create tentatively
+	graph->x = g_new0(float, graph->num_of_points_allocated);  
+	graph->y = g_new0(float, graph->num_of_points_allocated);
 	
-	for (i = 0; i< num_of_graphs; i++)
-	{
-		lcl_x_axis[i] = x_axis[i];
-		lcl_y_axis[i] = y_axis[i];		
-	}		
-	g_free(x_axis);
-	g_free(y_axis);	
-	x_axis = lcl_x_axis;
-	y_axis = lcl_y_axis;			
-		
-		
-	if (is_allocated(x_axis[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "x_axis[num_of_graphs]", EXPECTS_NOT_ALLOCATED))	
-		return FALSE;
-	if (is_allocated(y_axis[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "y_axis[num_of_graphs]", EXPECTS_NOT_ALLOCATED))	
-		return FALSE;
-	x_axis[num_of_graphs] = g_new0(float,  pattern_length_to_disp);
-	y_axis[num_of_graphs] = g_new0(float, pattern_length_to_disp);
-	if (!is_allocated(x_axis[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "x_axis[num_of_graphs]", EXPECTS_ALLOCATED))	
-		return FALSE;
-	if (!is_allocated(y_axis[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph",  ALLOCATION_FAILED, "y_axis[num_of_graphs]", EXPECTS_ALLOCATED))	
-		return FALSE;		
-
-	for (i = 0; i< pattern_length_to_disp; i++)
-	{
-		x_axis[num_of_graphs][i] = i;
-	}
-
-	is_allocated(graphs, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_WARNING, "This is the first time for allocation of neuron dynamics graphs.", EXPECTS_ALLOCATED);	
+	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (graph->num_of_points_allocated, graph->x, graph->y, &color_line, 0));
+	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, graph->num_of_points_allocated, MAX_V_VALUE, MIN_V_VALUE);	
 	
-	lcl_graphs = g_new0(GtkDataboxGraph *, num_of_graphs + 1);	
-	if (!is_allocated(lcl_graphs, TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "lcl_graphs", EXPECTS_ALLOCATED))	
-		return FALSE;
-	for (i = 0; i< num_of_graphs; i++)
-	{
-		lcl_graphs[i] = graphs[i];
-	}	
-	g_free(graphs);
-	graphs = lcl_graphs; 
-
-	if (is_allocated(graphs[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_BUG, "graphs[num_of_graphs]", EXPECTS_NOT_ALLOCATED))	
-		return FALSE;	
-	graphs[num_of_graphs] = GTK_DATABOX_GRAPH(gtk_databox_lines_new (pattern_length_to_disp, x_axis[num_of_graphs], y_axis[num_of_graphs], &color_line, 0));
-	if (!is_allocated(graphs[num_of_graphs], TRUE, "NeuronDynamicsGraph", "add_neuron_dynamics_box_and_graph", ALLOCATION_FAILED, "graphs[num_of_graphs]", EXPECTS_ALLOCATED))	
-		return FALSE;	
-	gtk_databox_graph_add (GTK_DATABOX (boxes[num_of_graphs]), graphs[num_of_graphs]);	
-	gtk_databox_set_total_limits (GTK_DATABOX (boxes[num_of_graphs]), 0, pattern_length_to_disp, MAX_V_VALUE, MIN_V_VALUE);	
-	
-	*graph_idx = num_of_graphs;	
-	num_of_graphs ++;
-	
-	printf ("NeuronDynamicsGraph: INFO: Number of total graphs in neuron dynamics graphs inventory is %d\n", num_of_graphs);
-
-	return TRUE;			
+	return graph;			
 }
 
+
+bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph, AllNeuronsDynamicsSinglePattern* dynamics_pattern, int layer, int neuron_group, int neuron_num, int dynamics_type)
+{
+	int i;
+	double *dynamics, initial_dynamics;
+	float *x, *y;	
+	float max_x = 0, min_y = 50000000, max_y = -50000000;
+	GdkColor color_line;
+	color_line.red = 0;
+	color_line.green = 0;
+	color_line.blue = 0;
+	
+	if (graph == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "update_neuron_dynamics_graph", "graph == NULL");
+		
+	if (dynamics_pattern == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "update_neuron_dynamics_graph", "dynamics_pattern == NULL");	
+		
+	if (!is_neuron(dynamics_pattern->network, layer, neuron_group, neuron_num))	
+		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "update_neuron_dynamics_graph", "No such a neuron.");
+		
+	if ((dynamics_type < 0) || (dynamics_type > 3))
+		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "update_neuron_dynamics_graph", "Invalid neuron dynamics type submitted.");	
+		
+	if ((dynamics_pattern->num_of_allocated_samples + 1) != graph->num_of_points_allocated)   // reallocate graph with new samples
+	{
+		graph->num_of_points_allocated = dynamics_pattern->num_of_allocated_samples+1;    // to display initial v as well 
+		g_free(graph->x);
+		g_free(graph->y);		
+		graph->x = g_new0(float, graph->num_of_points_allocated); // to display initial v as well  
+		graph->y = g_new0(float, graph->num_of_points_allocated);	
+		gtk_databox_graph_remove (GTK_DATABOX (graph->box), graph->graph);
+		g_object_unref(graph->graph);
+		graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (graph->num_of_points_allocated, graph->x, graph->y, &color_line, 0));
+		gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
+	}	
+	
+	if (dynamics_type ==  DYNAMICS_TYPE_V)
+	{
+		initial_dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].initial_v;
+		dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].v;
+	}
+	else if (dynamics_type ==  DYNAMICS_TYPE_U)
+	{
+		initial_dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].initial_u;
+		dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].u;
+	}
+	else if (dynamics_type ==  DYNAMICS_TYPE_E)
+	{
+		initial_dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].initial_e;
+		dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].e;	
+	}
+	else if (dynamics_type ==  DYNAMICS_TYPE_I)
+	{
+		initial_dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].initial_i;
+		dynamics = dynamics_pattern->network_pattern[layer][neuron_group][neuron_num].i;	
+	}
+	else
+	{
+		return print_message(BUG_MSG ,"NeuroSim", "NeuronDynamicsGraph", "update_neuron_dynamics_graph", "Invalid dynamics_type.");			
+	}	
+	
+	x = graph->x;
+	y = graph->y;	
+	x[0] = 0;
+	y[0] = initial_dynamics;	
+
+	for ( i=1; i < graph->num_of_points_allocated; i++)
+	{
+		if ( i <= dynamics_pattern->num_of_used_samples)
+		{
+			x[i] = (dynamics_pattern->sampling_times[i] - dynamics_pattern->initial_time) / 1000000.0;    // milliseconds scale by shifting
+			y[i] = dynamics[i];
+			if (x[i] > max_x)
+				max_x = x[i];
+			if (y[i] > max_y)
+				max_y = y[i];
+			if (y[i] < min_y)
+				min_y = y[i];				
+		}
+		else
+		{
+			x[i] = (dynamics_pattern->sampling_times[dynamics_pattern->num_of_used_samples-1] - dynamics_pattern->initial_time) / 1000000.0;     // freeze graphing here. end point of line will be the last point of sample
+			y[i] = dynamics[dynamics_pattern->num_of_used_samples-1];	
+		} 
+	}
+	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0-5, max_x+5, max_y+5, min_y-5);	
+		
+	return TRUE;
+}
 
 
 
