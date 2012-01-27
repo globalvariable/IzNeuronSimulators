@@ -60,6 +60,8 @@ static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
+static GtkWidget *btn_allocate_all_neurons_dynamics_pattern;
+
 static LayerNrnGrpNeuronCombo *combos_interrogate_neuron;
 static GtkWidget *btn_interrogate_network;
 static GtkWidget *btn_interrogate_neuron;
@@ -89,6 +91,7 @@ static void combos_interrogate_neuron_func(GtkWidget *changed_combo);
 static void combos_upper_graph_func(GtkWidget *changed_combo);
 static void combos_lower_graph_func(GtkWidget *changed_combo);
 static void submit_parker_sochacki_params_button_func(void);
+static void allocate_all_neurons_dynamics_pattern_button_func(void);
 static void simulate_button_func(void);
 static void load_spike_pattern_generator_data_button_func(void);
 
@@ -593,8 +596,16 @@ bool create_simulation_tab(GtkWidget * tabs)
 	btn_submit_parker_sochacki_params = gtk_button_new_with_label("Submit Parameters");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
 	
-         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
          
+  	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);                 
+         
+	btn_allocate_all_neurons_dynamics_pattern = gtk_button_new_with_label("Allocate Neuron Dynamics Patterns");  
+	gtk_box_pack_start (GTK_BOX (hbox), btn_allocate_all_neurons_dynamics_pattern, TRUE, TRUE, 0);  
+	
+         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
+	       
   	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -764,6 +775,7 @@ bool create_simulation_tab(GtkWidget * tabs)
 	g_signal_connect(G_OBJECT(combos_lower_graph->combo_neuron), "changed", G_CALLBACK(combos_lower_graph_func), combos_lower_graph->combo_neuron);	
 					
       	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_allocate_all_neurons_dynamics_pattern), "clicked", G_CALLBACK(allocate_all_neurons_dynamics_pattern_button_func), NULL);      	
 	g_signal_connect(G_OBJECT(btn_simulate), "clicked", G_CALLBACK(simulate_button_func), NULL);      		
 	g_signal_connect(G_OBJECT(btn_load_spike_pattern_generator_data), "clicked", G_CALLBACK(load_spike_pattern_generator_data_button_func), NULL);	
 	
@@ -841,9 +853,10 @@ static void load_spike_pattern_generator_data_button_func(void)
 	path = &path_temp[7];   // since     uri returns file:///home/....
 
 	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	int num_of_patterns;
+	unsigned int num_of_patterns;
 	unsigned int num_of_spikes;
 	int max_num_of_spikes_in_patterns = 0;	
+
 
 
 	if (!write_path_for_btn_select_directory_load_spike_pattern_generator_data(path))
@@ -857,7 +870,7 @@ static void load_spike_pattern_generator_data_button_func(void)
 		if(!((*spike_pattern_generator_data_get_num_of_spikes_in_pattern[version])(3, path, i , &num_of_spikes)))
 			return;
 		if (num_of_spikes > max_num_of_spikes_in_patterns)
-			max_num_of_spikes_in_patterns = num_of_spikes;	
+			max_num_of_spikes_in_patterns = num_of_spikes;
 	}
 	neurosim_set_spike_pattern_generator_data_path(path);
 	neurosim_set_spike_pattern_generator_data_version(version);
@@ -886,8 +899,7 @@ static void load_spike_pattern_generator_data_button_func(void)
 	
 	neurosim_set_ext_network_single_spike_pattern(allocate_single_spike_pattern(neurosim_get_ext_network_single_spike_pattern(), max_num_of_spikes_in_patterns));  // deallocates previously allocated external network spike pattern.				
 	neurosim_set_ext_network_unsorted_single_spike_pattern(allocate_single_spike_pattern(neurosim_get_ext_network_unsorted_single_spike_pattern(), max_num_of_spikes_in_patterns));	
-
-
+	
 	return;
 }
 
@@ -941,7 +953,7 @@ static void combo_neuron_type_func (void)
 }
 
 
-static void add_neurons_to_layer_button_func()
+static void add_neurons_to_layer_button_func(void)
 {
 	int num_of_neuron;
 	int layer; 
@@ -954,7 +966,6 @@ static void add_neurons_to_layer_button_func()
 	double v_resting;
 	double v_threshold;
 	double v_peak;
-	double I_inject;
 	bool inhibitory;
 	double E_excitatory;
 	double E_inhibitory;
@@ -974,7 +985,6 @@ static void add_neurons_to_layer_button_func()
 	v_resting = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_resting)));
 	v_threshold = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_threshold)));
 	v_peak = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_peak)));
-	I_inject = 0;		// injection is done by stimulus
 	inhibitory = (bool)atof(gtk_entry_get_text(GTK_ENTRY(entry_inhibitory)));
 	E_excitatory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_excitatory)));
 	E_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_inhibitory)));
@@ -982,7 +992,7 @@ static void add_neurons_to_layer_button_func()
 	tau_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_inhibitory)));
 	randomize_params = 0;
 							
-	if (!add_neurons_to_layer(neurosim_get_network(), num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, I_inject, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_neurons_to_layer(neurosim_get_network(), num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return;
 	
 	if(!update_texts_of_combos_when_add_remove(combos_interrogate_neuron, neurosim_get_network()))
@@ -1014,8 +1024,31 @@ static void submit_parker_sochacki_params_button_func(void)
 {
 	if (parker_sochacki_set_order_tolerance(neurosim_get_network(), (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return;
-
 }
+
+static void allocate_all_neurons_dynamics_pattern_button_func(void)
+{
+	
+	// ALLOCATE network_all_neuron_dynamics_single_pattern	
+	unsigned int i;
+	unsigned int num_of_patterns 	= neurosim_get_num_of_patterns_in_spike_pattern_generator_data();	
+	TimeStamp max_pattern_length_ns = 0;
+	TimeStampMs pattern_length_ms;	
+
+	for (i=0;i< num_of_patterns; i++)
+	{
+		if(!((*spike_pattern_generator_data_get_pattern_length[neurosim_get_spike_pattern_generator_data_version()])(3, neurosim_get_spike_pattern_generator_data_path(), i, &pattern_length_ms)))
+			return;
+		if ((pattern_length_ms*1000000) > max_pattern_length_ns)
+			max_pattern_length_ns = pattern_length_ms*1000000;	
+	}	
+	
+	neurosim_set_all_neurons_dynamics_single_pattern( allocate_all_neurons_dynamics_single_pattern( neurosim_get_network(), (unsigned int) ((max_pattern_length_ns/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)*1.5), neurosim_get_all_neurons_dynamics_single_pattern()) );	// max pattern length + half of max pattern length to get rid of overflow on allocated data 	
+	
+	if (!update_neuron_dynamics_graph(neurosim_get_neuron_dynamics_graph_simulation_tab_upper(), neurosim_get_all_neurons_dynamics_single_pattern(), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_layer)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_neuron_group)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_neuron)) , gtk_combo_box_get_active (GTK_COMBO_BOX(neurosim_get_neuron_dynamics_combo_simulation_tab_upper()->combo))))
+		return;
+}
+
 static void simulate_button_func(void)
 {
 	int i, k, m, n;
@@ -1024,7 +1057,7 @@ static void simulate_button_func(void)
 	Neuron		*ptr_neuron;		
 	
 	TimeStamp start_time_ns, end_time_ns, duration_ns, time_ns;
-	ParkerSochackiStepSize step_size = 250000;
+	ParkerSochackiStepSize step_size = PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	TimeStamp  spike_time;
 	unsigned int num_of_spikes;
 	SpikeTimeStampItem *unsorted_spike_time_stamps;	
@@ -1068,12 +1101,15 @@ static void simulate_button_func(void)
 			
 		if (!write_to_main_single_trial_stats(neurosim_get_main_single_trial_stats(), trial_start_ns , pattern_length_ms*1000000))     
 			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "simulate_button_func", "Couldn' t write pattern length to single trial stats.");	
-		trial_start_ns = trial_start_ns+(pattern_length_ms*1000000) + 1000000;    // set for next trial by leaving 1 second interval between trials. 		
-			
-	
+
 		if (!get_main_single_trial_stats_trial_times_ns(neurosim_get_main_single_trial_stats(), &start_time_ns, &duration_ns))
-			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "simulate_button_func", "Couldn' t write pattern length to single trial stats.");				
+			return (void)print_message(ERROR_MSG ,"NeuroSim", "SimulationTab", "simulate_button_func", "Couldn' t write pattern length to single trial stats.");		
+		start_time_ns = trial_start_ns;		
 		end_time_ns = start_time_ns+duration_ns;
+		
+		if (!reset_all_neurons_dynamics_single_pattern_write_idx( neurosim_get_network(), neurosim_get_all_neurons_dynamics_single_pattern()))
+			return;			
+			
 		for (time_ns = start_time_ns; time_ns < end_time_ns; time_ns+=step_size)
 		{	
 			for (k=0; k<neurosim_get_network()->layer_count; k++)
@@ -1091,10 +1127,18 @@ static void simulate_button_func(void)
 						{
 							printf ("Spike time nano: %llu\n", spike_time);
 						}
+						if (!write_neuron_dynamics_to_all_neurons_dynamics_single_pattern(neurosim_get_network(), neurosim_get_all_neurons_dynamics_single_pattern(), k, m, n, time_ns, ptr_neuron->v, ptr_neuron->u, ptr_neuron->conductance_excitatory, ptr_neuron->conductance_inhibitory))
+							return;
+						if (!update_neuron_dynamics_graph(neurosim_get_neuron_dynamics_graph_simulation_tab_upper(), neurosim_get_all_neurons_dynamics_single_pattern(), 
+						gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_layer)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_neuron_group)), 
+						gtk_combo_box_get_active (GTK_COMBO_BOX(combos_upper_graph->combo_neuron)) , 
+						gtk_combo_box_get_active (GTK_COMBO_BOX(neurosim_get_neuron_dynamics_combo_simulation_tab_upper()->combo))))
+							return;							
 					}
 				}
 			}
 		}
+		trial_start_ns = trial_start_ns+(pattern_length_ms*1000000) + 1000000;    // set for next trial by leaving 1 second interval between trials. 				
 		spike_pattern_generator_data_pattern_to_load++;
 		if  (spike_pattern_generator_data_pattern_to_load == neurosim_get_num_of_patterns_in_spike_pattern_generator_data())
 			spike_pattern_generator_data_pattern_to_load = 0;
