@@ -3,28 +3,37 @@
 
 
 
-typedef struct __MainTrialStats MainTrialStats;
-typedef struct __MainSingleTrialStats MainSingleTrialStats;
+typedef struct __TrialStats TrialStats;
+typedef struct __TrialData TrialData;
 
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include <stdbool.h>
 #include <gtk/gtk.h>
 #include "../../../BlueSpike/TimeStamp.h"
+#include "TrialType.h"
 
-struct __MainTrialStats
+struct __TrialStats
 {
-	TimeStamp	*trial_starts_ns;   // num_of_trials
-	TimeStamp	*trial_durations_ns;   // num_of_trials
-	unsigned int 	num_of_trials_allocated;
-	unsigned int 	num_of_trials_used;	
+	TrialData		*trials_data;
+	TrialData		*current_trial_data;	
+	unsigned int 	num_of_trials;
+	unsigned int 	num_of_succesful_trials;		
+	TimeStamp	max_trial_length;   
+	TimeStamp	min_trial_length;   	
+	TimeStamp	max_trial_interval; 
+	TimeStamp	min_trial_interval; 	  		
 };
 
-struct __MainSingleTrialStats
+struct __TrialData
 {
-	TimeStamp	trial_start_ns;   // num_of_trials
-	TimeStamp	trial_duration_ns;   // num_of_trials
-	TimeStamp	num_of_all_simulated_trials;   // num_of_trials
+	TimeStamp	trial_start_time;   
+	TimeStamp	trial_length;
+	TrialType		type;	// left, right, tracjectroy right etc. 
+	bool		successful;  
+	TrialData	*next;
 };
+
+
 
 MainTrialStats* allocate_main_trial_stats(MainTrialStats* main_stats, unsigned int num_of_trials_to_allocate);
 MainTrialStats* deallocate_main_trial_stats(MainTrialStats* main_stats);

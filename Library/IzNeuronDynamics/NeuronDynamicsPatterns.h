@@ -18,7 +18,6 @@ struct __AllNeuronsDynamicsPatterns
 	Network 				*network;
 	NeuronDynamicsPatterns 	***network_patterns; ///num_of_layers * num_of_neuron_groups * num_of_neurons 
 	TimeStamp			**sampling_times; //  num_of_patterns *   num_of_allocated_samples
-	TimeStamp			*initial_times; //  num_of_patterns *   num_of_allocated_samples	
 	unsigned int			*num_of_used_samples; //  num_of_patterns 
 	unsigned int			num_of_allocated_samples; //  num_of_patterns 
 	unsigned int			num_of_allocated_patterns; //  num_of_patterns 	
@@ -47,7 +46,6 @@ struct __AllNeuronsDynamicsSinglePattern
 	Network 				*network;
 	NeuronDynamicsPattern 	***network_pattern; ///num_of_layers * num_of_neuron_groups * num_of_neurons 
 	TimeStamp			*sampling_times; //  num_of_allocated_samples
-	TimeStamp			initial_time; //  num_of_allocated_samples	
 	unsigned int			num_of_used_samples; //  num_of_patterns 
 	unsigned int			num_of_allocated_samples; //  num_of_patterns 
 };

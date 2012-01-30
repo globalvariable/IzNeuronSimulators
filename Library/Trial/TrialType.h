@@ -1,0 +1,42 @@
+#ifndef TRIAL_TYPE_H
+#define TRIAL_TYPE_H
+
+typedef unsigned int TrialType;
+
+
+#define	TRIAL_TYPE_NULL		0
+
+
+////            NON_RT_SIMULATION_TRIALS (NON REAL-TIME)
+#define	TRIAL_TYPE_NON_RT_SIMULATION_ROBOT_TO_LEFT		1
+#define	TRIAL_TYPE_NON_RT_SIMULATION_ROBOT_TO_RIGHT	2
+
+
+
+
+
+
+////            RT_SIMULATION_TRIALS    (REAL_TIME)
+#define	TRIAL_TYPE_RT_SIMULATION_ROBOT_TO_LEFT		1001
+#define	TRIAL_TYPE_RT_SIMULATION_ROBOT_TO_RIGHT		1002
+
+
+
+
+
+
+////            IN_VIVO_BMI_TRIALS    (REAL_TIME)
+#define	TRIAL_TYPE_IN_VIVO_BMI_ROBOT_TARGET_LEFT		2001
+#define	TRIAL_TYPE_IN_VIVO_BMI_ROBOT_TARGET_RIGHT		2002
+
+
+
+
+////            RAT_TRAINING_TRIALS   
+#define	TRIAL_TYPE_RAT_TRAINING_ROBOT_TO_LEFT		3001
+#define	TRIAL_TYPE_RAT_TRAINING_ROBOT_TO_RIGHT		3002
+
+
+bool get_trial_type_string(TrialType trial_type, char *str);
+
+#endif 
