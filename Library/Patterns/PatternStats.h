@@ -16,6 +16,7 @@ struct __PatternStats
 	PatternData	*patterns_data;
 	PatternData	*current_pattern_data;	
 	unsigned int 	num_of_patterns;
+	unsigned int 	current_pattern_num;
 	TimeStamp	max_pattern_length;   
 	TimeStamp	min_pattern_length;   	
 	TimeStamp	max_pattern_interval; 
@@ -26,8 +27,10 @@ struct __PatternData
 {
 	TimeStamp	pattern_start_time;   
 	TimeStamp	pattern_length;
+	TimeStamp	pattern_interval;     // according to previous pattern end time.
 	PatternType	type;	// left, right, tracjectroy right etc. 
 	PatternData	*next;
+	PatternData	*prev;
 };
 
 
