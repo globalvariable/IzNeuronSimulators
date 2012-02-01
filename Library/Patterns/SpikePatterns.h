@@ -13,23 +13,24 @@ typedef struct __SpikePatterns SpikePatterns;
 
 struct __SpikePatterns
 {
-	SpikePattern *patterns;
-	unsigned int num_of_used_patterns;
-	unsigned int num_of_allocated_patterns;
-	unsigned int allocated_num_of_spikes;
+	TrialStats			*pattern_stats;
+	SpikePattern 		*patterns;
+	SpikePattern 		*current_pattern;
 };
 
 struct __SpikePattern
 {
 	SpikeTimeStampItem *spikes;
-	unsigned int used_num_of_spikes;
+	unsigned int num_of_spikes;
+	SpikePattern *prev;
+	SpikePattern *next;	
 };
 
 struct __SingleSpikePattern
 {
 	SpikeTimeStampItem *spikes;
-	unsigned int used_num_of_spikes;
-	unsigned int allocated_num_of_spikes;	
+	unsigned int num_of_spikes_used;
+	unsigned int num_of_spikes_allocated;
 };
 
 SpikePatterns* allocate_spike_patterns(SpikePatterns* spike_patterns, unsigned int num_of_patterns_to_allocate, unsigned int num_of_samples_to_allocate);

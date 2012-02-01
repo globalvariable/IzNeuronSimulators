@@ -1,5 +1,5 @@
-#ifndef NEURON_DYNAMICS_PATTERNS_H
-#define NEURON_DYNAMICS_PATTERNS_H
+#ifndef IZ_NEURON_DYNAMICS_PATTERNS_H
+#define IZ_NEURON_DYNAMICS_PATTERNS_H
 
 
 typedef struct __NetworkNeuronDynamicsPatterns NetworkNeuronDynamicsPatterns;
@@ -14,6 +14,7 @@ typedef struct __NeuronDynamicsPattern NeuronDynamicsPattern;
 
 struct __NetworkNeuronDynamicsPatterns
 {
+	TrialStats						*pattern_stats;	
 	Network 						*network;    // whose pattern is this?
 	NetworkNeuronDynamicsPattern		*patterns;
 	NetworkNeuronDynamicsPattern		*curr_pattern;
@@ -21,9 +22,9 @@ struct __NetworkNeuronDynamicsPatterns
 
 struct __NetworkNeuronDynamicsPattern
 {
-	NeuronDynamicsPattern 			***neuron_dynamics_in_network;
+	NeuronDynamicsPattern 			***neuron_dynamics_pattern;
 	TimeStamp					*sampling_times;
-	unsigned int					*num_of_samples;
+	unsigned int					num_of_samples;
 	NetworkNeuronDynamicsPattern		*prev;
 	NetworkNeuronDynamicsPattern		*next;
 };
@@ -38,6 +39,14 @@ struct __NeuronDynamicsPattern
 	double initial_u;   
 	double initial_e;   
 	double initial_i;   	
+};
+
+struct __NetworkNeuronDynamicsSinglePattern
+{
+	NeuronDynamicsPattern 			***neuron_dynamics_pattern;
+	TimeStamp					*sampling_times;
+	unsigned int					num_of_samples_used;
+	unsigned int					num_of_samples_allocated;
 };
 
 AllNeuronsDynamicsPatterns* allocate_all_neurons_dynamics_patterns(Network *network, unsigned int num_of_patterns_to_allocate, unsigned int num_of_samples_to_allocate, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns);

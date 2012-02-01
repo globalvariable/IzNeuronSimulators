@@ -16,8 +16,7 @@ struct __TrialStats
 {
 	TrialData		*trials_data;
 	TrialData		*current_trial_data;	
-	unsigned int 	num_of_trials;
-	unsigned int 	num_of_succesful_trials;		
+	unsigned int 	num_of_trials;		// it is also current trial num
 	TimeStamp	max_trial_length;   
 	TimeStamp	min_trial_length;   	
 	TimeStamp	max_trial_interval; 
@@ -28,12 +27,19 @@ struct __TrialData
 {
 	TimeStamp	trial_start_time;   
 	TimeStamp	trial_length;
+	TimeStamp	trial_interval;     // according to previous pattern end time.
 	TrialType		type;	// left, right, tracjectroy right etc. 
-	bool		successful;  
-	TrialData	*next;
+	TrialData		*next;
+	TrialData		*prev;
 };
 
-
+struct __SingleTrialData
+{
+	TimeStamp	trial_start_time;   
+	TimeStamp	trial_length;
+	TimeStamp	trial_interval;     // according to previous pattern end time.
+	TrialType		type;	// left, right, tracjectroy right etc. 
+};
 
 MainTrialStats* allocate_main_trial_stats(MainTrialStats* main_stats, unsigned int num_of_trials_to_allocate);
 MainTrialStats* deallocate_main_trial_stats(MainTrialStats* main_stats);
