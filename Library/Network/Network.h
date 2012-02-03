@@ -13,21 +13,21 @@ typedef struct 	__Network 		Network;
 struct __Network
 {
 	Layer	**layers;
-	int 		layer_count;
+	unsigned int 		layer_count;
 };
 
 struct __Layer
 {
 	NeuronGroup	**neuron_groups;
-	int 			neuron_group_count;
-	Layer		*connected_to_network_layer;	
-	ExtLayer		*connected_to_ext_network_layer;
+	unsigned int	neuron_group_count;
+	Layer		**connected_to_network_layer;	
+	ExtLayer		**connected_to_ext_network_layer;
 };
 
 struct __NeuronGroup
 {
-	Neuron	*neurons;
-	int 		neuron_count;
+	Neuron		*neurons;
+	unsigned int	neuron_count;
 };
 
 Network* allocate_network(Network *network);

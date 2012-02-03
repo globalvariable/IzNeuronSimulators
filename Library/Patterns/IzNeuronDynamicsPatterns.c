@@ -1,304 +1,254 @@
 #include "NeuronDynamicsPatterns.h"
 
 
-AllNeuronsDynamicsPatterns* allocate_all_neurons_dynamics_patterns(Network *network, unsigned int num_of_patterns_to_allocate, unsigned int num_of_samples_to_allocate, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns)
+NetworkIzNeuronDynamicsPatterns* allocate_network_izneuron_dynamics_patterns(Network *network, TrialStats *trial_stats, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns)
 {
-	int i,j, k, m;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	
 	if (network == NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Network was not alocated.");		
-	 	return NULL;
-	}
-	 
-	if (all_neurons_dynamics_patterns != NULL)
-	{
-		all_neurons_dynamics_patterns = deallocate_all_neurons_dynamics_patterns(network, all_neurons_dynamics_patterns);
-		all_neurons_dynamics_patterns = allocate_all_neurons_dynamics_patterns(network, num_of_patterns_to_allocate, num_of_samples_to_allocate, all_neurons_dynamics_patterns);
-		return all_neurons_dynamics_patterns;
-	}
-	
-	all_neurons_dynamics_patterns = g_new0(AllNeuronsDynamicsPatterns, 1);
-	print_message(INFO_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Created Neuron_Dynamics.");	
-			
-	all_neurons_dynamics_patterns->network = network;
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Couldn' t retrieve number of layers.");	
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_neuron_dynamics_patterns", "network == NULL");	
 		return NULL;
-	}	
-		
-	all_neurons_dynamics_patterns->network_patterns = g_new0(NeuronDynamicsPatterns**, num_of_layers);
-	for (i = 0; i < num_of_layers; i++)
-	{
-		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-		{
-			print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Couldn' t retrieve number of neuron groups.");
-			return NULL;
-		}
-		all_neurons_dynamics_patterns->network_patterns[i] = g_new0(NeuronDynamicsPatterns*, num_of_neuron_groups_in_layer);
-		for (j = 0; j < num_of_neuron_groups_in_layer; j++)
-		{
-			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-			{
-				print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Couldn' t retrieve number of neuron groups.");	
-				return NULL;
-			}			
-			all_neurons_dynamics_patterns->network_patterns[i][j] = g_new0(NeuronDynamicsPatterns, num_of_neurons_in_neuron_group);
-			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
-			{
-				all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns = g_new0(NeuronDynamicsPattern, num_of_patterns_to_allocate);		
-				for (m = 0; m < num_of_patterns_to_allocate; m++)
-				{				
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].v = g_new0(double, num_of_samples_to_allocate);	
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].u = g_new0(double, num_of_samples_to_allocate);	
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].e = g_new0(double, num_of_samples_to_allocate);	
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].i = g_new0(double, num_of_samples_to_allocate);																
-				}
-
-			}			
-		}			
 	}
-	all_neurons_dynamics_patterns->initial_times = g_new0(TimeStamp, num_of_patterns_to_allocate);	
-	all_neurons_dynamics_patterns->sampling_times = g_new0(TimeStamp*, num_of_patterns_to_allocate);
-	for (i = 0; i < num_of_patterns_to_allocate; i++)
-	{		
-		all_neurons_dynamics_patterns->sampling_times[i] = g_new0(TimeStamp, num_of_samples_to_allocate);
+	if (trial_stats == NULL)
+	{
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_neuron_dynamics_patterns", "trial_stats == NULL");	
+		return NULL;
+	}
+	if (network_neuron_dynamics_patterns != NULL)
+		network_neuron_dynamics_patterns = deallocate_allocate_network_neuron_dynamics_patterns(network, trial_stats, network_neuron_dynamics_patterns);
+		network_neuron_dynamics_patterns = allocate_allocate_network_neuron_dynamics_patterns(network, trial_stats, network_neuron_dynamics_patterns);
+		return network_neuron_dynamics_patterns;
 	}	
-	all_neurons_dynamics_patterns->num_of_used_samples = g_new0(unsigned int, num_of_patterns_to_allocate);
-	all_neurons_dynamics_patterns->num_of_allocated_samples = num_of_samples_to_allocate;
-	all_neurons_dynamics_patterns->num_of_allocated_patterns = num_of_patterns_to_allocate;		
-	print_message(INFO_MSG ,"BlueSpike", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Allocated all_neurons_dynamics_patterns\n");		
-	return all_neurons_dynamics_patterns;	
+	network_neuron_dynamics_patterns = g_new0(NetworkIzNeuronDynamicsPatterns, 1);
+	network_neuron_dynamics_patterns->head = g_new0(NetworkIzNeuronDynamicsPattern, 1);
+	network_neuron_dynamics_patterns->tail = network_neuron_dynamics_patterns->head;
+	print_message(INFO_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_neuron_dynamics_patterns", "Created network_neuron_dynamics_patterns.");
+	return network_neuron_dynamics_patterns;	
 }
-
-AllNeuronsDynamicsPatterns* deallocate_all_neurons_dynamics_patterns(Network *network, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns)
+NetworkIzNeuronDynamicsPatterns* deallocate_network_izneuron_dynamics_patterns(Network *network, TrialStats *trial_stats, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns)
 {
-	int i,j,k, m;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	
+	unsigned int i;
+	NetworkIzNeuronDynamicsPattern *curr_pattern, *prev_pattern;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int i, j, k, m;
 	if (network == NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "deallocate_all_neurons_dynamics_patterns", "Network was not alocated.");		
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "network == NULL");	
 		return NULL;
 	}
-	
-	if (all_neurons_dynamics_patterns == NULL)
+	if (trial_stats == NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "deallocate_all_neurons_dynamics_patterns", "neuron_dynamics was not alocated.");		
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "trial_stats == NULL");	
 		return NULL;
-	}	
-	
-	if (network != all_neurons_dynamics_patterns->network)
+	}
+	if (network_neuron_dynamics_patterns == NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "deallocate_all_neurons_dynamics_patterns", "Incorrect network pointer was given to destroy");		
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "network_neuron_dynamics_patterns == NULL");	
 		return NULL;
-	}	
-			
+	}
+	curr_pattern = network_neuron_dynamics_patterns->tail;
+	for (i = 0; i < trial_stats->num_of_trials; i++)
+	{
+		prev_pattern = curr_pattern->prev;
+		if (!get_num_of_layers_in_network(network, &num_of_layers))
+			return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "Couldn' t retrieve number of layers.");			
+		for (j=0; j < num_of_layers; j++)
+		{
+			if(!get_num_of_neuron_groups_in_layer(network, j, &num_of_neuron_groups_in_layer))
+				return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "Couldn' t retrieve number of neuron groups.");
+			for (k=0; k<num_of_neuron_groups_in_layer; k++)
+			{
+				if (!get_num_of_neurons_in_neuron_group(network, j, k, &num_of_neurons_in_neuron_group))
+					return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "Couldn' t retrieve number of neurons.");	
+				for (m = 0 ; m < num_of_neurons_in_neuron_group; m++)
+				{
+					g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k][m].v);
+					g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k][m].u);
+					g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k][m].e);
+					g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k][m].i);
+					g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k][m]);       /// Compiler should give error for here.
+				}
+				g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j][k]);
+			}
+			g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern[j]);		
+		}
+		g_free(network_neuron_dynamics_patterns->tail->neuron_dynamics_pattern);		
+		g_free(network_neuron_dynamics_patterns->tail->sampling_times);
+		curr_pattern = prev_pattern;
+	}
+	if (curr_pattern != network_neuron_dynamics_patterns->head)
+	{
+		print_message(BUG_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "curr_pattern != network_neuron_dynamics_patterns->head");
+	}
+	g_free(network_neuron_dynamics_patterns->head);
+	g_free(network_neuron_dynamics_patterns);
+	print_message(INFO_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_patterns", "Destroyed network_neuron_dynamics_patterns.");
+	retun NULL;
+}
+NetworkIzNeuronDynamicsSinglePattern* allocate_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern, unsigned int num_of_samples_to_allocate)
+{
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	if (network == NULL)
+	{
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_izneuron_dynamics_single_pattern", "network == NULL");	
+		return NULL;
+	}
+	if (network_neuron_dynamics_single_pattern != NULL)
+	{
+		network_neuron_dynamics_single_pattern = deallocate_network_izneuron_dynamics_single_pattern(network, network_neuron_dynamics_single_pattern);
+		network_neuron_dynamics_single_pattern = allocate_network_izneuron_dynamics_single_pattern(network, network_neuron_dynamics_single_pattern);
+		return network_neuron_dynamics_single_pattern;
+	}
+	network_neuron_dynamics_single_pattern = g_new0(NetworkIzNeuronDynamicsSinglePattern, 1);
+	network_neuron_dynamics_single_pattern->sampling_times = g_new0(TimeStamp, num_of_samples_to_allocate);	
+	network_neuron_dynamics_single_pattern->allocated_num_of_samples = num_of_samples_to_allocate;
+	network_neuron_dynamics_single_pattern->neuron_dynamics_pattern = g_new0(IzNeuronDynamicsPattern**,network->layer_count);
 	if (!get_num_of_layers_in_network(network, &num_of_layers))
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "deallocate_all_neurons_dynamics_patterns", "Couldn' t retrieve number of layers.");	
-		return NULL;
-	}
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
 	for (i = 0; i < num_of_layers; i++)
 	{
 		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
+			return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
+		network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i] = g_new0(IzNeuronDynamicsPattern*,num_of_neuron_groups_in_layer;
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
 		{
-			print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_neuron_dynamics", "Couldn' t retrieve number of neuron groups.");
-			return NULL;
+			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
+				return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neurons.");	
+			network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j] = g_new0(IzNeuronDynamicsPattern, num_of_neurons_in_neuron_group);
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+			{
+				network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].v = g_new0(double, num_of_samples_to_allocate);
+				network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].u = g_new0(double, num_of_samples_to_allocate);
+				network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].e = g_new0(double, num_of_samples_to_allocate);
+				network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].i = g_new0(double, num_of_samples_to_allocate);
+			}
 		}
+	}
+	print_message(INFO_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "allocate_network_izneuron_dynamics_single_pattern", "Created network_neuron_dynamics_single_pattern.");
+	return network_neuron_dynamics_single_pattern;	
+}
+NetworkIzNeuronDynamicsSinglePattern* deallocate_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern)
+{
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	if (network == NULL)
+	{
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "network == NULL");	
+		return NULL;
+	}
+	if (network_neuron_dynamics_single_pattern == NULL)
+	{
+		print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "network_neuron_dynamics_single_pattern == NULL");	
+		return NULL;
+	}
+	if (!get_num_of_layers_in_network(network, &num_of_layers))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
+	for (i = 0; i < num_of_layers; i++)
+	{
+		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
+			return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
 		for (j = 0; j < num_of_neuron_groups_in_layer; j++)
 		{
 			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-			{
-				print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "add_neuron_dynamics_pattern", "Couldn' t retrieve number of neurons.");	
-				return FALSE;
-			}		
+				return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neurons.");	
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				for (m = 0; m < all_neurons_dynamics_patterns->num_of_allocated_patterns; m++)
-				{				
-					g_free(all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].v);	
-					g_free(all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].u);	
-					g_free(all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].e);	
-					g_free(all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[m].i);												
-				}
-				g_free(all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns);
+				g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].v); 
+				g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].u); 
+				g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].e); 
+				g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].i); 
 			}
-			g_free(all_neurons_dynamics_patterns->network_patterns[i][j]);
+			g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j]);
 		}
-		g_free(all_neurons_dynamics_patterns->network_patterns[i]);
+		g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i]);	
 	}
-	g_free(all_neurons_dynamics_patterns->network_patterns); 
-	g_free(all_neurons_dynamics_patterns->initial_times); 	
-	for (m = 0; m < all_neurons_dynamics_patterns->num_of_allocated_patterns; m++)
-	{				
-		g_free(all_neurons_dynamics_patterns->sampling_times[m]);	
-	}
-	g_free(all_neurons_dynamics_patterns->sampling_times); 	
-	g_free(all_neurons_dynamics_patterns->num_of_used_samples); 	
-	g_free(all_neurons_dynamics_patterns); 	
-	print_message(INFO_MSG ,"BlueSpike", "NeuronDynamicsPatterns","deallocate_all_neurons_dynamics_pattern", "Destroyed all_neurons_dynamics_patterns\n");		
+	g_free(network_neuron_dynamics_single_pattern->neuron_dynamics_pattern);	
+	g_free(network_neuron_dynamics_single_pattern->sampling_times);
+	g_free(network_neuron_dynamics_single_pattern);
+	print_message(INFO_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "Destroyed network_neuron_dynamics_single_pattern.");
 	return NULL;	
 }
 
-AllNeuronsDynamicsSinglePattern* allocate_all_neurons_dynamics_single_pattern(Network *network, unsigned int num_of_samples_to_allocate, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern)
+bool write_initial_neuron_dynamics_to_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern *neuron_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, double v, double u, double e, double i)
 {
-	int i,j, k;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	if (network == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_all_neurons_dynamics_single_pattern", "Network was not alocated.");		
-	 	return NULL;
-	}
-	 
-	if (all_neurons_dynamics_single_pattern == NULL)
-	{
-		all_neurons_dynamics_single_pattern = g_new0(AllNeuronsDynamicsSinglePattern, 1);
-		print_message(INFO_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_all_neurons_dynamics_single_pattern", "Created all_neurons_dynamics_single_pattern.");	
-	}
-	else		
-	{
-		all_neurons_dynamics_single_pattern = deallocate_all_neurons_dynamics_single_pattern(network, all_neurons_dynamics_single_pattern);
-		all_neurons_dynamics_single_pattern = allocate_all_neurons_dynamics_single_pattern(network, num_of_samples_to_allocate, all_neurons_dynamics_single_pattern);
-	}
-	all_neurons_dynamics_single_pattern->network = network;
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
-		return NULL;
-	}	
-		
-	all_neurons_dynamics_single_pattern->network_pattern = g_new0(NeuronDynamicsPattern**, num_of_layers);
-	for (i = 0; i < num_of_layers; i++)
-	{
-		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-		{
-			print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
-			return NULL;
-		}
-		all_neurons_dynamics_single_pattern->network_pattern[i] = g_new0(NeuronDynamicsPattern*, num_of_neuron_groups_in_layer);
-		for (j = 0; j < num_of_neuron_groups_in_layer; j++)
-		{
-			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-			{
-				print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsPatterns", "allocate_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");	
-				return NULL;
-			}			
-			all_neurons_dynamics_single_pattern->network_pattern[i][j] = g_new0(NeuronDynamicsPattern, num_of_neurons_in_neuron_group);
-			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
-			{
-				all_neurons_dynamics_single_pattern->network_pattern[i][j][k].v = g_new0(double, num_of_samples_to_allocate);
-				all_neurons_dynamics_single_pattern->network_pattern[i][j][k].u = g_new0(double, num_of_samples_to_allocate);
-				all_neurons_dynamics_single_pattern->network_pattern[i][j][k].e = g_new0(double, num_of_samples_to_allocate);
-				all_neurons_dynamics_single_pattern->network_pattern[i][j][k].i = g_new0(double, num_of_samples_to_allocate);				
-			}			
-		}			
-	}
-	all_neurons_dynamics_single_pattern->sampling_times =g_new0(TimeStamp, num_of_samples_to_allocate);
-	all_neurons_dynamics_single_pattern->num_of_allocated_samples = num_of_samples_to_allocate;
-
-	return all_neurons_dynamics_single_pattern;	
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network == NULL.");	
+	if (network_neuron_dynamics_single_pattern == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network_neuron_dynamics_single_pattern == NULL.");	
+	if (network != network_neuron_dynamics_single_pattern->network)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network != network_neuron_dynamics_single_pattern->network.");	
+	if (!is_neuron(network, layer, neuron_group, neuron_num))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", " ! is_neuron(network, layer, neuron_group, neuron_num).");	
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].initial_v = v;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].initial_u = u;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].initial_e = e;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].initial_i = i;
+	return TRUE;
 }
 
-AllNeuronsDynamicsSinglePattern* deallocate_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern)
+bool add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern *neuron_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp sampling_time, double v, double u, double e, double i, bool first_sample) 
 {
-	int i,j,k;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	
+	unsigned int idx;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	if (network == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "deallocate_all_neurons_dynamics_single_pattern", "Network was not alocated.");		
-		return NULL;
-	}
-	
-	if (all_neurons_dynamics_single_pattern == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "deallocate_all_neurons_dynamics_single_pattern", "neuron_dynamics was not alocated.");		
-		return NULL;
-	}	
-	
-	if (network != all_neurons_dynamics_single_pattern->network)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "deallocate_all_neurons_dynamics_single_pattern", "Incorrect network pointer was given to destroy");		
-		return NULL;
-	}	
-			
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "deallocate_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
-		return NULL;
-	}
-	for (i = 0; i < num_of_layers; i++)
-	{
-		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-		{
-			print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "allocate_neuron_dynamics", "Couldn' t retrieve number of neuron groups.");
-			return NULL;
-		}
-		for (j = 0; j < num_of_neuron_groups_in_layer; j++)
-		{
-			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-			{
-				print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "add_neuron_dynamics_pattern", "Couldn' t retrieve number of neurons.");	
-				return FALSE;
-			}		
-			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
-			{
-				g_free(all_neurons_dynamics_single_pattern->network_pattern[i][j][k].v);	
-				g_free(all_neurons_dynamics_single_pattern->network_pattern[i][j][k].u);	
-				g_free(all_neurons_dynamics_single_pattern->network_pattern[i][j][k].e);	
-				g_free(all_neurons_dynamics_single_pattern->network_pattern[i][j][k].i);																				
-			}
-			g_free(all_neurons_dynamics_single_pattern->network_pattern[i][j]);
-		}
-		g_free(all_neurons_dynamics_single_pattern->network_pattern[i]);
-	}
-	g_free(all_neurons_dynamics_single_pattern->network_pattern); 
-	g_free(all_neurons_dynamics_single_pattern->sampling_times);	
-	g_free(all_neurons_dynamics_single_pattern); 	
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network == NULL.");	
+	if (network_neuron_dynamics_single_pattern == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network_neuron_dynamics_single_pattern == NULL.");	
+	if (network != network_neuron_dynamics_single_pattern->network)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "network != network_neuron_dynamics_single_pattern->network.");	
+	if (!is_neuron(network, layer, neuron_group, neuron_num))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", " ! is_neuron(network, layer, neuron_group, neuron_num).");	
+	if (neuron_dynamics_single_pattern->write_idx == neuron_dynamics_single_pattern->allocated_num_of_samples)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", " neuron_dynamics_single_pattern->write_idx == neuron_dynamics_single_pattern->allocated_num_of_samples.");			
+	if (first_sample)
+		neuron_dynamics_single_pattern->write_idx = 0;
+	idx = network_neuron_dynamics_single_pattern->write_idx;
 
-	print_message(INFO_MSG ,"BlueSpike", NULL, NULL, "Destroyed all_neurons_dynamics_single_pattern.");		
-	return NULL;	
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].v[idx] = v;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].u[idx] = u;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].e[idx] = e;
+	neuron_dynamics_single_pattern->neuron_dynamics_pattern[layer][neuron_group][neuron_num].i[idx] = i;
+
+	if (!get_num_of_layers_in_network(network, &num_of_layers))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of layers.");		
+	if(!get_num_of_neuron_groups_in_layer(network, num_of_layers-1, &num_of_neuron_groups_in_layer))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
+	if (!get_num_of_neurons_in_neuron_group(network, num_of_layers-1, num_of_neuron_groups_in_layer-1, &num_of_neurons_in_neuron_group))
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "deallocate_network_izneuron_dynamics_single_pattern", "Couldn' t retrieve number of neurons.");	
+	if (( layer == (num_of_layers-1)) && (neuron_group == (num_of_neuron_groups_in_layer -1)) && (neuron_num == (num_of_neurons_in_neuron_group - 1)) )	// last neuron in network is being handled		
+	{
+		network_neuron_dynamics_single_pattern->sampling_times[idx] = sampling_time;
+		network_neuron_dynamics_single_pattern->write_idx++;	
+	}
+	return TRUE;
 }
 
-
-bool write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns)
+bool add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns(Network *network, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern)
 {
-	int i,j,k, m;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	unsigned int num_of_used_patterns;
-	unsigned int num_of_used_samples;
-	
+	unsigned int i,j,k, m;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int num_of_samples;	
+	NetworkIzNeuronDynamicsPattern curr_patt;
 	if (network == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "Network was not alocated.");		
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns", "network == NULL.");		
+	if (network_neuron_dynamics_patterns == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns", "network_neuron_dynamics_patterns == NULL.");		
+	if (network_neuron_dynamics_single_pattern == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns", "network_neuron_dynamics_single_pattern == NULL.");		
+	if (network != network_neuron_dynamics_patterns->network)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns", "network != network_neuron_dynamics_patterns->network.");		
+	if (network != network_neuron_dynamics_single_pattern->network)
+		return print_message(ERROR_MSG ,"NeuroSim", "IzNeuronDynamicsPatterns", "add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns", "network != network_neuron_dynamics_single_pattern->network.");		
 
-	if (all_neurons_dynamics_single_pattern == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "all_neurons_dynamics_single_pattern was not allocated.");	
+	network_neuron_dynamics_patterns->tail->next = gnew_0(NetworkIzNeuronDynamicsPatterns, 1);
+	network_neuron_dynamics_patterns->tail->next->prev = network_neuron_dynamics_patterns->tail;
+	network_neuron_dynamics_patterns->tail = network_neuron_dynamics_patterns->tail->next;
+	curr_patt = network_neuron_dynamics_patterns->tail;
+	num_of_samples = network_neuron_dynamics_single_pattern->write_idx;
 
-	if (all_neurons_dynamics_patterns == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "all_neurons_dynamics_patterns was not allocated.");	
-
-	if (network != all_neurons_dynamics_single_pattern->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "Incorrect network pointer was given for all_neurons_dynamics_single_pattern");		
-
-	if (network != all_neurons_dynamics_patterns->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "Incorrect network pointer was given for all_neurons_dynamics_patterns");	
-
-	if (all_neurons_dynamics_single_pattern->num_of_allocated_samples != all_neurons_dynamics_patterns->num_of_allocated_samples)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "all_neurons_dynamics_single_pattern->num_of_allocated_samples != all_neurons_dynamics_patterns->num_of_allocated_samples");			
-
-	if (all_neurons_dynamics_patterns->num_of_used_patterns == all_neurons_dynamics_patterns->num_of_allocated_patterns)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "all_neurons_dynamics_patterns->num_of_used_patterns = all_neurons_dynamics_patterns->num_of_allocated_patterns");
-	
-	num_of_used_patterns = all_neurons_dynamics_patterns->num_of_used_patterns;   
-	num_of_used_samples = all_neurons_dynamics_single_pattern->num_of_used_samples;
-		
 	if (!get_num_of_layers_in_network(network, &num_of_layers))
 		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns", "Couldn' t retrieve number of layers.");	
-
 	for (i = 0; i < num_of_layers; i++)
 	{
 		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
@@ -311,161 +261,28 @@ bool write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns(
 
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].initial_v = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].initial_v;
-				all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].initial_u = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].initial_u;
-				all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].initial_e = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].initial_e;
-				all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].initial_i = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].initial_i;
-				for (m = 0; m < num_of_used_samples; m++)
+				curr_patt->neuron_dynamics_pattern[i][j][k].initial_v = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].initial_v;
+				curr_patt->neuron_dynamics_pattern[i][j][k].initial_u = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].initial_u;
+				curr_patt->neuron_dynamics_pattern[i][j][k].initial_e = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].initial_e;
+				curr_patt->neuron_dynamics_pattern[i][j][k].initial_i = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].initial_i;
+				for (m = 0; m < num_of_samples; m++)
 				{			
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].v[m] = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].v[m];
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].u[m] = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].u[m];
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].e[m] = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].e[m];
-					all_neurons_dynamics_patterns->network_patterns[i][j][k].patterns[num_of_used_patterns].i[m] = all_neurons_dynamics_single_pattern->network_pattern[i][j][k].i[m];
+					curr_patt->neuron_dynamics_pattern[i][j][k].v[m] = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].v[m];
+					curr_patt->neuron_dynamics_pattern[i][j][k].u[m] = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].u[m];
+					curr_patt->neuron_dynamics_pattern[i][j][k].e[m] = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].e[m];
+					curr_patt->neuron_dynamics_pattern[i][j][k].i[m] = network_neuron_dynamics_single_pattern->neuron_dynamics_pattern[i][j][k].i[m];
 				}
 			}
 		}
 	}  
-	all_neurons_dynamics_patterns->initial_times[num_of_used_patterns] = all_neurons_dynamics_single_pattern->initial_time;
-	for (i = 0; i < num_of_used_samples; i++)
+	curr_patt->sampling_times = g_new0(TimeStamp, num_of_samples);
+	for (i = 0; i < num_of_samples; i++)
 	{			
-		all_neurons_dynamics_patterns->sampling_times[num_of_used_patterns][i] = all_neurons_dynamics_single_pattern->sampling_times[i];
+		curr_patt->sampling_times[i] = network_neuron_dynamics_single_pattern->sampling_times[i];
 	}	
-	all_neurons_dynamics_patterns->num_of_used_samples[num_of_used_patterns] = all_neurons_dynamics_single_pattern->num_of_used_samples;
-	all_neurons_dynamics_patterns->num_of_used_patterns++;
+	curr_patt->num_of_samples = num_of_samples;
 	return TRUE;
 }
-
-bool reset_all_neurons_dynamics_single_pattern_write_idx(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern)
-{
-	if (network == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_single_pattern_write_idx", "Network was not alocated.");		
-
-	if (all_neurons_dynamics_single_pattern == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_single_pattern_write_idx", "all_neurons_dynamics_single_pattern was not allocated.");	
-
-	if (network != all_neurons_dynamics_single_pattern->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_single_pattern_write_idx", "Incorrect network pointer was given for all_neurons_dynamics_single_pattern");		
-		
-	all_neurons_dynamics_single_pattern->num_of_used_samples = 0;
-	
-	return TRUE;	
-}
-
-bool write_neuron_dynamics_to_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp sampling_time, double v, double u, double e, double i)
-{
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	unsigned int idx;
-
-	if (network == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "rwrite_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Network was not alocated.");		
-
-	if (all_neurons_dynamics_single_pattern == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "all_neurons_dynamics_single_pattern was not allocated.");	
-
-	if (network != all_neurons_dynamics_single_pattern->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Incorrect network pointer was given for all_neurons_dynamics_single_pattern");		
-
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
-
-	if (num_of_layers <= layer)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid layer number.");	
-				
-	if(!get_num_of_neuron_groups_in_layer(network, layer, &num_of_neuron_groups_in_layer))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
-
-	if (num_of_neuron_groups_in_layer <= neuron_group)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid neuron group number.");		
-
-	if (!get_num_of_neurons_in_neuron_group(network, layer, neuron_group, &num_of_neurons_in_neuron_group))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_patterns", "Couldn' t retrieve number of neurons.");	
-
-	if (num_of_neurons_in_neuron_group <= neuron_num)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid neuron number..");		
-
-	if (all_neurons_dynamics_single_pattern->num_of_used_samples == all_neurons_dynamics_single_pattern->num_of_allocated_samples)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_patterns", "all_neurons_dynamics_single_pattern->num_of_used_samples = all_neurons_dynamics_single_pattern->num_of_allocated_samples.");	
-		
-	idx = all_neurons_dynamics_single_pattern->num_of_used_samples;
-	
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].v[idx] = v;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].u[idx] = u;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].e[idx] = e;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].i[idx] = i;
-	
-	if(!get_num_of_neuron_groups_in_layer(network, num_of_layers-1, &num_of_neuron_groups_in_layer))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
-		
-	if (!get_num_of_neurons_in_neuron_group(network, num_of_layers-1, num_of_neuron_groups_in_layer -1 , &num_of_neurons_in_neuron_group))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_patterns", "Couldn' t retrieve number of neurons.");		
-	
-	if (( layer == (num_of_layers-1)) && (neuron_group == (num_of_neuron_groups_in_layer -1)) && (neuron_num == (num_of_neurons_in_neuron_group - 1)) )	// last neuron in network is being handled		
-	{
-		all_neurons_dynamics_single_pattern->sampling_times[idx] = sampling_time;
-		all_neurons_dynamics_single_pattern->num_of_used_samples++;	
-	}
-	return TRUE;	
-}
-
-
-bool reset_all_neurons_dynamics_patterns_write_idx(Network *network, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns)
-{
-	if (network == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_patterns_write_idx", "Network was not alocated.");		
-
-	if (all_neurons_dynamics_patterns == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_patterns_write_idx", "all_neurons_dynamics_patterns was not allocated.");	
-
-	if (network != all_neurons_dynamics_patterns->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "reset_all_neurons_dynamics_patterns_write_idx", "Incorrect network pointer was given for all_neurons_dynamics_patterns");	
-
-	all_neurons_dynamics_patterns->num_of_used_patterns = 0;
-	
-	return TRUE;
-}
-
-bool write_initial_neuron_dynamics_to_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp initial_time, double v, double u, double e, double i)
-{
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-
-	if (network == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "rwrite_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Network was not alocated.");		
-
-	if (all_neurons_dynamics_single_pattern == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "all_neurons_dynamics_single_pattern was not allocated.");	
-
-	if (network != all_neurons_dynamics_single_pattern->network)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Incorrect network pointer was given for all_neurons_dynamics_single_pattern");		
-
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of layers.");	
-
-	if (num_of_layers <= layer)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid layer number.");	
-				
-	if(!get_num_of_neuron_groups_in_layer(network, layer, &num_of_neuron_groups_in_layer))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Couldn' t retrieve number of neuron groups.");
-
-	if (num_of_neuron_groups_in_layer <= neuron_group)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid neuron group number.");		
-
-	if (!get_num_of_neurons_in_neuron_group(network, layer, neuron_group, &num_of_neurons_in_neuron_group))
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_patterns", "Couldn' t retrieve number of neurons.");	
-
-	if (num_of_neurons_in_neuron_group <= neuron_num)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamics", "write_neuron_dynamics_to_all_neurons_dynamics_single_pattern", "Invalid neuron number..");	
-
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].initial_v = v;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].initial_u = u;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].initial_e = e;
-	all_neurons_dynamics_single_pattern->network_pattern[layer][neuron_group][neuron_num].initial_i = i;
-
-	all_neurons_dynamics_single_pattern->initial_time = initial_time;
-
-	return TRUE;	
-
-}
-
 
 
 

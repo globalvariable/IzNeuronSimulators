@@ -12,15 +12,15 @@ typedef struct __NeuronDynamicsPattern NeuronDynamicsPattern;
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../Network/Network.h"
 
-struct __NetworkNeuronDynamicsPatterns
+struct __NetworkIzNeuronDynamicsPatterns
 {
-	TrialStats						*pattern_stats;	
+	TrialStats						*trial_stats;	// get num of patterns from num of trials
 	Network 						*network;    // whose pattern is this?
-	NetworkNeuronDynamicsPattern		*patterns;
-	NetworkNeuronDynamicsPattern		*curr_pattern;
+	NetworkNeuronDynamicsPattern		*head;
+	NetworkNeuronDynamicsPattern		*tail;		// current pattern
 }
 
-struct __NetworkNeuronDynamicsPattern
+struct __NetworkIzNeuronDynamicsPattern
 {
 	NeuronDynamicsPattern 			***neuron_dynamics_pattern;
 	TimeStamp					*sampling_times;
@@ -29,7 +29,7 @@ struct __NetworkNeuronDynamicsPattern
 	NetworkNeuronDynamicsPattern		*next;
 };
 
-struct __NeuronDynamicsPattern
+struct __IzNeuronDynamicsPattern
 {
 	double *v;   /// *num_of_allocated_samples
 	double *u;    /// * num_of_allocated_samples
@@ -41,23 +41,21 @@ struct __NeuronDynamicsPattern
 	double initial_i;   	
 };
 
-struct __NetworkNeuronDynamicsSinglePattern
+struct __NetworkIzNeuronDynamicsSinglePattern
 {
-	NeuronDynamicsPattern 			***neuron_dynamics_pattern;
+	Network 						*network;    // whose pattern is this?	
+	IzNeuronDynamicsPattern 			***neuron_dynamics_pattern;
 	TimeStamp					*sampling_times;
-	unsigned int					num_of_samples_used;
-	unsigned int					num_of_samples_allocated;
+	unsigned int					write_idx;
+	unsigned int					allocated_num_of_samples;
 };
 
-AllNeuronsDynamicsPatterns* allocate_all_neurons_dynamics_patterns(Network *network, unsigned int num_of_patterns_to_allocate, unsigned int num_of_samples_to_allocate, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns);
-AllNeuronsDynamicsPatterns* deallocate_all_neurons_dynamics_patterns(Network *network, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns);
+NetworkIzNeuronDynamicsPatterns* allocate_network_izneuron_dynamics_patterns(Network *network, TrialStats *trial_stats, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns);
+NetworkIzNeuronDynamicsPatterns* deallocate_network_izneuron_dynamics_patterns(Network *network, TrialStats *trial_stats, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns);
+NetworkIzNeuronDynamicsSinglePattern* allocate_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern, unsigned int num_of_samples_to_allocate);
+NetworkIzNeuronDynamicsSinglePattern* deallocate_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern);
+bool write_initial_neuron_dynamics_to_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern *neuron_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, double v, double u, double e, double i);
+bool add_izneuron_dynamics_to_network_izneuron_dynamics_single_pattern(Network *network, NetworkIzNeuronDynamicsSinglePattern *neuron_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp sampling_time, double v, double u, double e, double i, bool first_sample);
+bool add_network_izneuron_dynamics_single_pattern_to_network_izneuron_dynamics_patterns(Network *network, NetworkIzNeuronDynamicsPatterns* network_neuron_dynamics_patterns, NetworkIzNeuronDynamicsSinglePattern* network_neuron_dynamics_single_pattern);
 
-AllNeuronsDynamicsSinglePattern* allocate_all_neurons_dynamics_single_pattern(Network *network, unsigned int num_of_samples_to_allocate, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern);
-AllNeuronsDynamicsSinglePattern* deallocate_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern);
-
-bool write_all_neurons_dynamics_single_pattern_to_all_neurons_dynamics_patterns(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns);
-bool reset_all_neurons_dynamics_single_pattern_write_idx(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern);
-bool reset_all_neurons_dynamics_patterns_write_idx(Network *network, AllNeuronsDynamicsPatterns *all_neurons_dynamics_patterns);
-bool write_neuron_dynamics_to_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp sampling_time, double v, double u, double e, double i);
-bool write_initial_neuron_dynamics_to_all_neurons_dynamics_single_pattern(Network *network, AllNeuronsDynamicsSinglePattern *all_neurons_dynamics_single_pattern, int layer, int neuron_group, int neuron_num, TimeStamp inital_time, double v, double u, double e, double i);
 #endif
