@@ -24,8 +24,7 @@ struct __CurrentPatterns
 {
 	TrialStats				*trial_stats;	// get num of patterns from num of trials
 	Network 				*network;    // whose pattern is this?
-	unsigned int			num_of_template_types;
-	CurrentPatternTemplate	*current_pattern_templates;         //num_of_pattern_types
+	CurrentPatternTemplate	*current_pattern_templates;         //trial_stats->num_of_trial_types
 	CurrentPattern			*head;
 	CurrentPattern			*tail;		// current pattern
 };
@@ -33,26 +32,26 @@ struct __CurrentPatterns
 struct __CurrentPatternTemplate
 {
 	TrialType				template_type;
-	InitializationCurrent		init_current;
+	InitializationCurrent		init_currents;
 	CurrentTemplate		current_templates;
 	CurrentNoiseParams		noise_params;
 };
 
 struct __InitializationCurrent
 {
-	TimeStamp				duration;
 	InitializationCurrentNeuron		***init_current_neuron;
 }
 
 struct __InitializationCurrentNeuron
 {
-	TimeStamp				mean;
-	InitializationCurrentNeuron		variance;
+	double		max_current;
+	TimeStamp	duration;
 }
 
 struct __CurrentTemplate
 {
-	TimeStamp				sampling_interval;	
+	TimeStamp				sampling_interval;
+	unsigned int				num_of_samples;	
 	NeuronCurrentTemplate		***neuron_current_templates;
 }
 
@@ -84,7 +83,17 @@ struct __CurrentPattern
 
 struct __NeuronCurrentPattern
 {
+	double	initialization_current;
 	double	*current;                      
+};
+
+struct __SingleCurrentPattern
+{
+	TrialType				pattern_type;
+	NeuronCurrentPattern		***neuron_current_pattern;
+	TimeStamp			*sampling_times;
+	unsigned int			write_idx;
+	unsigned int			allocated_num_of_samples;		
 };
 
 #endif
