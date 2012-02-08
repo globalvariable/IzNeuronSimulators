@@ -15,8 +15,9 @@ CurrentPatterns* allocate_current_patterns(Network *network, TrialStats *trial_s
 		return NULL;
 	}
 	if (current_patterns != NULL)
+	{
 		current_patterns = deallocate_current_patterns(network, trial_stats, current_patterns);
-		current_patterns = allocate_current_patterns(network, trial_stats, current_patterns, num_of_template_types);
+		current_patterns = allocate_current_patterns(network, trial_stats, current_patterns);
 		return current_patterns;
 	}	
 	current_patterns = g_new0(CurrentPatterns, 1);
@@ -32,34 +33,26 @@ CurrentPatterns* deallocate_current_patterns(Network *network, TrialStats *trial
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	unsigned int i, j, k, m;
 	if (network == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "network == NULL");	
-		return NULL;
-	}
+		return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "network == NULL");	
 	if (trial_stats == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "trial_stats == NULL");	
-		return NULL;
-	}
+		return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "trial_stats == NULL");	
 	if (current_patterns == NULL)
-	{
-		print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "current_patterns == NULL");	
-		return NULL;
-	}
+		return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "current_patterns == NULL");	
+	
 	curr_current_pattern = current_patterns->tail;
 	for (i = 0; i < trial_stats->num_of_trials; i++)
 	{
 		prev_current_pattern = curr_current_pattern->prev;
 		if (!get_num_of_layers_in_network(network, &num_of_layers))
-			return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of layers.");			
+			return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of layers.");			
 		for (j=0; j < num_of_layers; j++)
 		{
 			if(!get_num_of_neuron_groups_in_layer(network, j, &num_of_neuron_groups_in_layer))
-				return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neuron groups.");
+				return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neuron groups.");
 			for (k=0; k<num_of_neuron_groups_in_layer; k++)
 			{
 				if (!get_num_of_neurons_in_neuron_group(network, j, k, &num_of_neurons_in_neuron_group))
-					return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neurons.");	
+					return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neurons.");	
 				for (m = 0 ; m < num_of_neurons_in_neuron_group; m++)
 				{
 					g_free(curr_current_pattern->neuron_current_pattern[j][k][m].current);
@@ -73,27 +66,24 @@ CurrentPatterns* deallocate_current_patterns(Network *network, TrialStats *trial
 		curr_current_pattern = prev_current_pattern;
 	}	
 	if (curr_current_pattern != current_patterns->head)
-	{
 		print_message(BUG_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "curr_current_pattern != current_patterns->head");
-	}
 	g_free(current_patterns->head);
 // deallocate templates
-	for (i = 0; i < current_patterns->num_of_template_types; i++)
+	for (i = 0; i < trial_stats->num_of_trial_types; i++)
 	{
 		if (!get_num_of_layers_in_network(network, &num_of_layers))
-			return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of layers.");			
+			return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of layers.");			
 		for (j=0; j < num_of_layers; j++)
 		{
 			if(!get_num_of_neuron_groups_in_layer(network, j, &num_of_neuron_groups_in_layer))
-				return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neuron groups.");
+				return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neuron groups.");
 			for (k=0; k<num_of_neuron_groups_in_layer; k++)
 			{
 				if (!get_num_of_neurons_in_neuron_group(network, j, k, &num_of_neurons_in_neuron_group))
-					return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neurons.");	
+					return (CurrentPatterns*)print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Couldn' t retrieve number of neurons.");	
 				for (m = 0 ; m < num_of_neurons_in_neuron_group; m++)
 				{
 					g_free(current_patterns->current_pattern_templates[i].current_templates.neuron_current_templates[j][k][m].current);		
-					g_free(current_patterns->current_pattern_templates[i].current_templates.neuron_current_templates[j][k][m]);		 /// Compiler should give error for here.		
 				}
 				g_free(current_patterns->current_pattern_templates[i].init_currents.init_current_neuron[j][k]);
 				g_free(current_patterns->current_pattern_templates[i].current_templates.neuron_current_templates[j][k]);				
@@ -110,7 +100,7 @@ CurrentPatterns* deallocate_current_patterns(Network *network, TrialStats *trial
 	g_free(current_patterns->current_pattern_templates);
 	g_free(current_patterns);
 	print_message(INFO_MSG ,"NeuroSim", "CurrentPatterns", "deallocate_current_patterns", "Destroyed current_patterns.");
-	retun NULL;	
+	return NULL;	
 }
 
 bool add_trial_type_to_current_pattern_templates(CurrentPatterns* current_patterns, TrialType pattern_type, TimeStamp sampling_interval)
@@ -121,14 +111,14 @@ bool add_trial_type_to_current_pattern_templates(CurrentPatterns* current_patter
 	if (current_patterns == NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "CurrentPatterns", "add_trial_type_to_current_pattern_templates", "current_patterns == NULL");	
 
-	lcl_current_pattern_templates = g_new0(CurrentPatternTemplate, current_patterns->num_of_template_types+1);
-	for (i = 0; i < current_patterns->num_of_template_types; i++)
+	lcl_current_pattern_templates = g_new0(CurrentPatternTemplate, trial_stats->num_of_trial_types+1);
+	for (i = 0; i < trial_stats->num_of_trial_types; i++)
 	{
 		lcl_current_pattern_templates[i] = current_patterns->current_pattern_templates[i];
 	}
 	g_free(current_patterns->current_pattern_templates);
 	current_patterns->current_pattern_templates = lcl_current_pattern_templates;
-	current_patterns->num_of_template_types++;
+	trial_stats->num_of_trial_types++;           <------------------------------------------------------------     REMOVE THOSE. SAYILAR HEP TRIAL STATS TA OLACAK.
 	ptr_current_pattern_template = &(current_patterns->current_pattern_templates[current_patterns->num_of_template_types - 1]);
 	(*ptr_current_pattern_template).template_type = pattern_type;
 	(*ptr_current_pattern_template).current_templates.sampling_interval = sampling_interval;

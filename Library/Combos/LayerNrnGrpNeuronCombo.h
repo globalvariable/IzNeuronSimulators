@@ -14,9 +14,9 @@ struct __LayerNrnGrpNeuronCombo
 	GtkWidget *combo_layer;
 	GtkWidget *combo_neuron_group;
 	GtkWidget *combo_neuron;
-	int num_of_texts_in_layer_combo;
-	int num_of_texts_in_neuron_group_combo;
-	int num_of_texts_in_neuron_combo;
+	unsigned int num_of_texts_in_layer_combo;
+	unsigned int num_of_texts_in_neuron_group_combo;
+	unsigned int num_of_texts_in_neuron_combo;
 	bool updating;
 };
 

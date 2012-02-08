@@ -13,7 +13,7 @@ Network* allocate_network(Network *network)
 		network =	g_new0(Network, 1);
 		if (!is_allocated(network, TRUE, "Network", "allocate_network", ALLOCATION_FAILED, NULL, EXPECTS_ALLOCATED))
 			return NULL;	
-		printf("Network: INFO: Created network.\n");
+		print_message(INFO_MSG ,"NeuroSim", "Network", "allocate_network", "Created network.");
 		return network;		
 	}
 	else
@@ -55,7 +55,7 @@ Network* deallocate_network(Network *network)
 	}
 	g_free(network->layers);
 	g_free(network);
-	printf("Network: INFO: Destroyed existing network.\n");		
+	print_message(INFO_MSG ,"NeuroSim", "Network", "deallocate_network", "Destroyed network.");
 	return NULL;
 }
 
@@ -407,7 +407,7 @@ void interrogate_network(Network *network)
 }
 
 
-bool get_num_of_layers_in_network(Network *network, int *num_of_layers)
+bool get_num_of_layers_in_network(Network *network, unsigned int *num_of_layers)
 {
 	*num_of_layers = 0;
 	if (!is_network_allocated(network))
@@ -416,7 +416,7 @@ bool get_num_of_layers_in_network(Network *network, int *num_of_layers)
 	return TRUE;	
 }
 
-bool get_num_of_neuron_groups_in_layer(Network *network, int layer, int *num_of_neuron_groups)
+bool get_num_of_neuron_groups_in_layer(Network *network, unsigned int layer, unsigned int *num_of_neuron_groups)
 {
 	*num_of_neuron_groups = 0;
 	if (!is_network_allocated(network))
@@ -428,7 +428,7 @@ bool get_num_of_neuron_groups_in_layer(Network *network, int layer, int *num_of_
 }
 
 
-bool get_num_of_neurons_in_neuron_group(Network *network, int layer, int neuron_group, int *num_of_neurons)
+bool get_num_of_neurons_in_neuron_group(Network *network, unsigned int layer, unsigned int neuron_group,unsigned int *num_of_neurons)
 {
 	if (!is_network_allocated(network))
 		return FALSE;

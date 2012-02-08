@@ -45,9 +45,9 @@ bool is_neuron(Network *network, int layer, int nrn_grp, int nrn_num);
 Neuron* get_neuron_address(Network *network, int layer, int nrn_grp, int nrn_num);					
 void reset_all_network_neuron_dynamics (Network *network);
 void interrogate_network(Network *network);
-bool get_num_of_layers_in_network(Network *network, int *num_of_layers);
-bool get_num_of_neuron_groups_in_layer(Network *network, int layer, int *num_of_neuron_groups);
-bool get_num_of_neurons_in_neuron_group(Network *network, int layer, int neuron_group, int *num_of_neurons);
+bool get_num_of_layers_in_network(Network *network, unsigned int *num_of_layers);
+bool get_num_of_neuron_groups_in_layer(Network *network, unsigned int layer, unsigned int *num_of_neuron_groups);
+bool get_num_of_neurons_in_neuron_group(Network *network, unsigned int layer, unsigned int neuron_group, unsigned int *num_of_neurons);
 
 
 #endif
