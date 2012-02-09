@@ -1,17 +1,14 @@
 #ifndef CURRENT_PATTERNS_H
 #define CURRENT_PATTERNS_H
 
-
+typedef struct __InitializationCurrentParams InitializationCurrentParams;
+typedef struct __CurrentNoiseParams CurrentNoiseParams;
+typedef struct __NeuronCurrent NeuronCurrent;
+typedef struct __NeuronCurrentTemplateData NeuronCurrentTemplateData;
 typedef struct __CurrentPatterns CurrentPatterns;
 typedef struct __CurrentPatternTemplate CurrentPatternTemplate;
-typedef struct __InitializationCurrent InitializationCurrent;
-typedef struct __InitializationCurrentNeuron InitializationCurrentNeuron;
-typedef struct __CurrentTemplate CurrentTemplate;
-typedef struct __NeuronCurrentTemplate NeuronCurrentTemplate;
-typedef struct __CurrentNoiseParams CurrentNoiseParams;
-typedef struct __NeuronCurrentNoiseParams NeuronCurrentNoiseParams;
 typedef struct __CurrentPattern CurrentPattern;
-typedef struct __NeuronCurrentPattern NeuronCurrentPattern;
+typedef struct __CurrentPatternBuffer CurrentPatternBuffer;
 
 
 #include <stdbool.h>
@@ -21,6 +18,31 @@ typedef struct __NeuronCurrentPattern NeuronCurrentPattern;
 #include "../../../TrialControllers/Library/TrialStats/TrialStats.h"
 
 
+struct __InitializationCurrentParams
+{
+	double		max_current;
+	double		min_current;
+	TimeStamp	duration;
+	double		v_after_init;
+	double		u_after_init;
+};
+struct __CurrentNoiseParams
+{
+	TimeStamp	noise_addition_interval;	
+	double		noise_variance;	
+};
+struct __NeuronCurrent
+{
+	double 	*pattern;
+};
+
+struct __NeuronCurrentTemplateData
+{
+	InitializationCurrentParams	init_params;
+	CurrentNoiseParams 		noise_params;
+	NeuronCurrent			pattern_template;	
+};
+
 struct __CurrentPatterns
 {
 	TrialStats				*trial_stats;	// get num of patterns from num of trials
@@ -28,81 +50,41 @@ struct __CurrentPatterns
 	CurrentPatternTemplate	*current_pattern_templates;         //trial_stats->num_of_trial_types
 	CurrentPattern			*head;
 	CurrentPattern			*tail;		// current pattern
-};
-
-struct __InitializationCurrentNeuron
-{
-	double		max_current;
-	TimeStamp	duration;
-};
-
-struct __InitializationCurrent
-{
-	InitializationCurrentNeuron		***init_current_neuron;
-};
-
-struct __CurrentTemplate
-{
-	TimeStamp				sampling_interval;
-	unsigned int				num_of_samples;	
-	NeuronCurrentTemplate		***neuron_current_templates;
-};
-
-struct __NeuronCurrentTemplate
-{
-	double *current;
-};
-
-struct __CurrentNoiseParams
-{
-	NeuronCurrentNoiseParams ***neuron_noise_params;
-};
-
-struct __NeuronCurrentNoiseParams
-{
-	TimeStamp	noise_addition_interval;	
-	double		noise_variance;	
+	CurrentPatternBuffer		*buffer; 
 };
 
 struct __CurrentPatternTemplate
 {
-	TrialType				template_type;
-	InitializationCurrent		init_currents;
-	CurrentTemplate		current_templates;
-	CurrentNoiseParams		noise_params;
+	TimeStamp				sampling_interval;
+	unsigned int				num_of_samples;
+	TimeStamp				*sampling_times;
+	NeuronCurrentTemplateData	***neuron_current_templates;
 };
 
 struct __CurrentPattern
 {
-	TrialType				pattern_type;
-	NeuronCurrentPattern		***neuron_current_pattern;
+	NeuronCurrent			***neuron_current_pattern;
 	TimeStamp			*sampling_times;
 	unsigned int			num_of_samples;			// determine this according to write_idx in SingleCurrentPattern
+	double				initialization_current;
 	CurrentPattern			*prev;
 	CurrentPattern			*next;
 };
 
-struct __NeuronCurrentPattern
+struct __CurrentPatternBuffer
 {
-	double	initialization_current;
-	double	*current;                      
-};
-
-struct __SingleCurrentPattern
-{
-	TrialType				pattern_type;
-	NeuronCurrentPattern		***neuron_current_pattern;
-	TimeStamp			*sampling_times;
+	NeuronCurrent			***neuron_current_pattern;
+	TimeStamp			*sampling_times;			// num_of_samples in CurrentPatternTemplate
 	unsigned int			write_idx;
-	unsigned int			allocated_num_of_samples;		
 };
 
 
 CurrentPatterns* allocate_current_patterns(Network *network, TrialStats *trial_stats, CurrentPatterns* current_patterns);
 CurrentPatterns* deallocate_current_patterns(Network *network, TrialStats *trial_stats, CurrentPatterns* current_patterns);
-bool add_trial_type_to_current_pattern_templates(CurrentPatterns* current_patterns, TrialType pattern_type, TimeStamp sampling_interval);
+bool increment_current_template_types_in_current_pattern_templates(CurrentPatterns* current_patterns, TimeStamp sampling_interval);
 bool submit_initialization_current(CurrentPatterns* current_patterns, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp duration, double max_current);
 bool submit_noise_params(CurrentPatterns* current_patterns, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp	noise_addition_interval, double noise_variance);
 bool submit_current_template_sample(CurrentPatterns* current_patterns, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp sampling_time, double current);
-
+bool interrogate_neuron_current_pattern_params(CurrentPatterns* current_patterns, unsigned int trial_num, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num);
+bool get_current_pattern(CurrentPatterns* current_patterns, unsigned int trial_num, CurrentPattern **current_pattern);
 #endif
