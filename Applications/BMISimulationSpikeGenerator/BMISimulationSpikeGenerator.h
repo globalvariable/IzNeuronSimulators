@@ -1,0 +1,19 @@
+#ifndef BMI_SIMULATION_SPIKE_GENERATOR_H
+#define BMI_SIMULATION_SPIKE_GENERATOR_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+
