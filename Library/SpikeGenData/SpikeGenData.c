@@ -1,35 +1,27 @@
 #include "SpikeGenData.h"
 
 
-SpikeGenData* allocate_spike_generator_data(TrialsData *trials_data, SpikeGenData *data)
+SpikeGenData* allocate_spike_generator_data(SpikeGenData *data, TrialsData *trials_data)
 {
-	if (trials_data == NULL)
-		return (SpikeGenData*)print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenData", "allocate_spike_generator_data", "trials_data == NULL.");				
 	if (data != NULL)
 	{
-		data = deallocate_spike_generator_data(trials_data, data);
-		data = allocate_spike_generator_data(trials_data, data);
+		data = deallocate_spike_generator_data(data, trials_data);
+		data = allocate_spike_generator_data(data, trials_data);
 		return data;
 	}	
 	data = g_new0(SpikeGenData, 1);
 	data->network = allocate_network(data->network);
-	data->current_pattern_template = allocate_current_pattern_template(trials_data, data->current_pattern_template);
-	data->current_pattern_buffer = allocate_current_pattern_buffer(trials_data, data->current_pattern_buffer);
-	data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_pattern_buffer(data->network, data->neuron_dynamics_pattern_buffer);
 	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeGenData", "allocate_spike_generator_data", "Created spike_generator_data.");
 	return data;
 }
 
-SpikeGenData* deallocate_spike_generator_data(TrialsData *trials_data, SpikeGenData *data)
+SpikeGenData* deallocate_spike_generator_data(SpikeGenData *data, TrialsData *trials_data)
 {
-	if (trials_data == NULL)
-		return (SpikeGenData*)print_message(BUG_MSG ,"IzNeuronSimulators", "SpikeGenData", "deallocate_spike_generator_data", "trials_data == NULL.");		
 	if (data == NULL)
-		return (SpikeGenData*)print_message(BUG_MSG ,"IzNeuronSimulators", "SpikeGenData", "deallocate_spike_generator_data", "spike_generator_data == NULL.");		
+		return (SpikeGenData*)print_message(BUG_MSG ,"IzNeuronSimulators", "SpikeGenData", "deallocate_spike_generator_data", "spike_generator_data == NULL.");	
 	data->network = deallocate_network(data->network);
-	data->current_pattern_template = deallocate_current_pattern_template(trials_data, data->current_pattern_template);
-	data->current_pattern_buffer = deallocate_current_pattern_buffer(trials_data, data->current_pattern_buffer);
-	data->neuron_dynamics_pattern_buffer = deallocate_neuron_dynamics_pattern_buffer(data->neuron_dynamics_pattern_buffer);
+	data->injection_current = deallocate_injection_current_data(data->network, trials_data, data->injection_current);
+	data->neuron_dynamics_pattern_buffer = deallocate_neuron_dynamics_buffer(data->network, data->neuron_dynamics_pattern_buffer);
 	g_free(data);
 	return NULL;
 }

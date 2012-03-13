@@ -5,17 +5,19 @@
 
 typedef struct __SpikeGenData SpikeGenData;
 
+#include "../Network/Network.h"
+#include "../InjectionCurrentData/InjectionCurrentData.h"
+#include "../NeuronDynamicsData/NeuronDynamicsData.h"
 
 struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeData
 {
 	Network						*network;
-	CurrentPatternTemplate			*current_patten_template;
-	CurrentPatternBuffer			*current_patten_buffer;
-	NeuronDynamicsPatternBuffer	*neuron_dynamics_pattern_buffer;
+	InjectionCurrentData			*injection_current;
+	NeuronDynamicsBuffer			*neuron_dynamics_pattern_buffer;
 };
 
-SpikeGenData* allocate_spike_generator_data(TrialsData *trials_data, SpikeGenData *data);
-SpikeGenData* deallocate_spike_generator_data(TrialsData *trials_data, SpikeGenData *data);
+SpikeGenData* allocate_spike_generator_data(SpikeGenData *data, TrialsData *trials_data);
+SpikeGenData* deallocate_spike_generator_data(SpikeGenData *data, TrialsData *trials_data);
 bool get_shm_spike_generator_data(SpikeGenData **data);
-
+bool set_shm_spike_generator_data(SpikeGenData *data);
 #endif

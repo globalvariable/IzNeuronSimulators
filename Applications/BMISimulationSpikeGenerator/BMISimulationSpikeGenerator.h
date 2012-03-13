@@ -6,7 +6,8 @@
 
 #include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
 #include "../../../BlueSpike/Library/RtTaskStats/RtTaskStats.h"
-
+#include "../../Library/SpikeGenData/SpikeGenData.h"
+#include "Gui.h"
 
 
 
