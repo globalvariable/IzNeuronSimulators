@@ -26,18 +26,4 @@ SpikeGenData* deallocate_spike_generator_data(SpikeGenData *data, TrialsData *tr
 	return NULL;
 }
 
-bool get_shm_spike_generator_data(SpikeGenData **data)
-{
-	if (shared_memory->additional_data[SHM_ADDITIONAL_DATA_SPIKE_GENERATOR_DATA] == NULL)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenData", "get_spike_generator_data", "spike_generator_data == NULL.");
-	*data = shared_memory->additional_data[SHM_ADDITIONAL_DATA_SPIKE_GENERATOR_DATA];
-	return TRUE;
-}
 
-bool set_shm_spike_generator_data(SpikeGenData *data)
-{
-	if (shared_memory->additional_data[SHM_ADDITIONAL_DATA_SPIKE_GENERATOR_DATA] != NULL)
-		print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikeGenData", "get_spike_generator_data", "spike_generator_data != NULL.");
-	shared_memory->additional_data[SHM_ADDITIONAL_DATA_SPIKE_GENERATOR_DATA] = data;
-	return TRUE;
-}

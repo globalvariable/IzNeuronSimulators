@@ -3,15 +3,20 @@
 static int bmi_simulation_spike_generator_rt_thread = 0;
 static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;
 
+TrialsData* bmi_simulation_spike_generator_trials_data = NULL;
+SpikeGenData *bmi_simulation_spike_gen_data = NULL;
+
+
 static void *bmi_simulation_spike_generator_rt_handler(void *args); 
 
 int main( int argc, char *argv[])
 {
-	TrialsData *trials_data;
    	shared_memory = (SharedMemStruct*)rtai_malloc(nam2num(SHARED_MEM_NAME), SHARED_MEM_SIZE);
-	if (! get_shm_trials_data(&trials_data)) {
-		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "! get_shm_trials_data()."); return -1; }
-	set_shm_spike_generator_data(allocate_spike_generator_data(NULL, trials_data));
+	bmi_simulation_spike_generator_trials_data = rtai_malloc(nam2num("TRIALDATA"), 0);
+	if (bmi_simulation_spike_generator_trials_data == NULL) {
+		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "spike_generator_trials_data == NULL."); return -1; }
+	bmi_simulation_spike_generator_trials_data->num_of_other_procs++;
+	bmi_simulation_spike_gen_data = allocate_spike_generator_data(bmi_simulation_spike_gen_data, bmi_simulation_spike_generator_trials_data);
 //	bmi_simulation_spike_generator_rt_thread = rt_thread_create( bmi_simulation_spike_generator_rt_handler, NULL, 10000);
 	gtk_init(&argc, &argv);
 	create_gui();
@@ -53,4 +58,21 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 
 	print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "rt_task_delete().");		
         return 0;
+}
+
+void set_bmi_simulation_spike_generator_trials_data(TrialsData *data)
+{
+	bmi_simulation_spike_generator_trials_data = data;
+}
+TrialsData* get_bmi_simulation_spike_generator_trials_data(void)
+{
+	return bmi_simulation_spike_generator_trials_data;
+}
+void set_bmi_simulation_spike_generator_spike_gen_data(SpikeGenData *data)
+{
+	bmi_simulation_spike_gen_data = data;
+}
+SpikeGenData* get_bmi_simulation_spike_generator_spike_gen_data(void)
+{
+	return bmi_simulation_spike_gen_data;
 }

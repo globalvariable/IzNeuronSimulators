@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "BMISimulationSpikeGenerator.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/IzNeuron/Neuron.h"
 #include "../../Library/IzNeuron/NeuronTypes.h"
@@ -20,13 +21,8 @@
 #define CLEAR 3
 #define pi 3.141592653589793
 
-
-
-
-
 bool create_current_pattern_view_gui(GtkWidget *tabs);
-void combo_neuron_type_func(void);
-void add_neurons_to_layer_button_func(void);
+
 void create_firing_rate_view_button_func(void);
 
 void interrogate_network_button_func(void); 		

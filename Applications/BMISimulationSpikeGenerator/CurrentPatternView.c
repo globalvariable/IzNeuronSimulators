@@ -22,6 +22,11 @@ static GtkWidget *entry_num_of_neuron_for_group;
 static GtkWidget *btn_add_neurons_to_layer;
 static GtkWidget *entry_add_neurons_to_layer;
 
+static GtkWidget *entry_num_of_trial_start_available_currents;
+static GtkWidget *entry_num_of_in_refractory_currents;
+static GtkWidget *entry_num_of_in_trial_currents;
+static GtkWidget *btn_submit_num_of_currents;
+
 static GtkWidget *btn_create_firing_rate_view;
 static GtkWidget *entry_bin_size_ms;
 
@@ -84,6 +89,10 @@ static GtkWidget *btn_load;
 ///   at graphs.h
 
 
+static void combo_neuron_type_func (void);
+static void add_neurons_to_layer_button_func(void);
+static void submit_num_of_currents_button_func(void);
+
 static void add_trial_type_button_func(void);
 static void submit_initial_current_params_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
@@ -97,8 +106,8 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
 
-        frame = gtk_frame_new ("Simulation");
-        frame_label = gtk_label_new ("Simulation");      
+        frame = gtk_frame_new ("Network & Currents");
+        frame_label = gtk_label_new ("Network & Currents");      
    
         gtk_notebook_append_page (GTK_NOTEBOOK (tabs), frame, frame_label);  
 
@@ -120,7 +129,7 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	combo_neuron_type = gtk_combo_box_new_text();
         gtk_box_pack_start(GTK_BOX(hbox),combo_neuron_type, TRUE,TRUE,0);
-	gtk_widget_set_size_request(combo_neuron_type, 180, 25) ;
+	gtk_widget_set_size_request(combo_neuron_type, 180, 30) ;
 	
 	int i; char neuron_type_str[50];
 	for (i = 0; i < MAX_NUM_OF_NEURON_TYPES; i++)
@@ -257,8 +266,43 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 	gtk_widget_set_size_request(entry_add_neurons_to_layer, 50, 25) ;	
 	
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,10);	
-        
-	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("# Start Availab. Current	: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_num_of_trial_start_available_currents = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_trial_start_available_currents, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_num_of_trial_start_available_currents), "1");
+	gtk_widget_set_size_request(entry_num_of_trial_start_available_currents, 50, 25) ; 
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("# Refractory Current	: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_num_of_in_refractory_currents = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_in_refractory_currents, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_num_of_in_refractory_currents), "1");
+	gtk_widget_set_size_request(entry_num_of_in_refractory_currents, 50, 25) ; 
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("# In Trial Current		: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_num_of_in_trial_currents = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_in_trial_currents, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_num_of_in_trial_currents), "1");
+	gtk_widget_set_size_request(entry_num_of_in_trial_currents, 50, 25) ; 
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_num_of_currents = gtk_button_new_with_label("Submit Num of Trial Currents");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_num_of_currents, TRUE, TRUE, 0);
+
 ///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
 
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -610,9 +654,11 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 	
 	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
     	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_submit_num_of_currents), "clicked", G_CALLBACK(submit_num_of_currents_button_func), NULL);
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_layer);
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
+
 /*     	g_signal_connect(G_OBJECT(btn_refresh_screen), "clicked", G_CALLBACK(refresh_screen_button_func), NULL);
      	g_signal_connect(G_OBJECT(btn_submit_initial_current_params), "clicked", G_CALLBACK(submit_initial_current_params_button_func), NULL);	     		  	
      	g_signal_connect(G_OBJECT(btn_create_firing_rate_view), "clicked", G_CALLBACK(create_firing_rate_view_button_func), NULL);	     		  	
@@ -645,20 +691,20 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 */
 // 	initialize_graphs(table);
 
- 		
+	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
 	return TRUE;
 
 }
 
 
-void combo_neuron_type_func (void)
+static void combo_neuron_type_func (void)
 {
 	int neuron_type;
 	neuron_type = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_type));
 	set_neuron_param_entries(neuron_type);	
 }
 
-void add_neurons_to_layer_button_func()
+static void add_neurons_to_layer_button_func(void)
 {
 	SpikeGenData *data;
 	int num_of_neuron;
@@ -697,15 +743,32 @@ void add_neurons_to_layer_button_func()
 	tau_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_inhibitory)));
 	randomize_params = 0;
 
-	if (!get_shm_spike_generator_data(&data))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "! get_shm_spike_generator_data().");
+	if ((data = get_bmi_simulation_spike_generator_spike_gen_data()) == NULL)
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_neurons_to_layer_button_func", "spike_gen_data == NULL.");
 							
 	if (!add_neurons_to_layer(data->network, num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return;
 	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, data->network))
 		return;
-	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_num_of_currents, TRUE);			
 	return;
+}
+
+static void submit_num_of_currents_button_func(void)
+{
+	TrialsData *trials_data = get_bmi_simulation_spike_generator_trials_data();
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	unsigned int num_of_trial_start_available_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_trial_start_available_currents)));
+	unsigned int num_of_in_refractory_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_refractory_currents)));
+	unsigned int num_of_in_trial_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_trial_currents)));
+	if (trials_data == NULL)
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "trials_data == NULL.");
+	if (spike_gen_data == NULL)
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
+
+	spike_gen_data->injection_current = allocate_injection_current_data(spike_gen_data->network, trials_data, spike_gen_data->injection_current , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+/*	if (parker_sochacki_set_order_tolerance(spike_pattern_generator_get_network(), (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+		gtk_widget_set_sensitive(btn_add_trial_type, TRUE);*/
 }
 
 void submit_parker_sochacki_params_button_func(void)
@@ -1286,10 +1349,10 @@ void create_firing_rate_view_button_func(void)
 
 static void combos_select_neuron_func(GtkWidget *changed_combo)
 {
-	SpikeGenData *data;
-	if (!get_shm_spike_generator_data(&data))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "! get_shm_spike_generator_data().");
-	if(!update_texts_of_combos_when_change(combos_select_neuron, data->network, changed_combo))
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	if (spike_gen_data == NULL)
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "spike_gen_data == NULL.");
+	if(!update_texts_of_combos_when_change(combos_select_neuron, spike_gen_data->network, changed_combo))
 		return;
 }
 
