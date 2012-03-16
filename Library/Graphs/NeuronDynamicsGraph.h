@@ -13,7 +13,6 @@ typedef struct 	__NeuronDynamicsGraph 		NeuronDynamicsGraph;
 #include "../../../BlueSpike/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../Network/Network.h"
-#include "../IzNeuronDynamics/NeuronDynamicsPatterns.h"
 
 struct  __NeuronDynamicsGraph
 {
@@ -22,13 +21,12 @@ struct  __NeuronDynamicsGraph
 	GtkDataboxGraph *graph;
 	float *x;
 	float *y;
-	unsigned int num_of_points_allocated;
+	unsigned int num_of_data_points;
+	TimeStamp sampling_interval;
 };
 
 
-
-NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph);
-bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph, AllNeuronsDynamicsSinglePattern* dynamics_pattern, int layer, int neuron_group, int neuron_num, int dynamics_type);
+NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
 
 
 

@@ -13,7 +13,8 @@
 #include "../../../ExperimentControllers/TrialControllers/Library/Combos/TrialTypesCombo.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../../Library/SpikeGenData/SpikeGenData.h"
-//#include "../../Library/Graphs/CurrentPatternGraph.h"
+#include "../../Library/Graphs/CurrentPatternGraph.h"
+#include "../../Library/Graphs/NeuronDynamicsGraph.h"
 
 #define LINE 0
 #define SIN 1
@@ -23,11 +24,9 @@
 
 bool create_current_pattern_view_gui(GtkWidget *tabs);
 
-void create_firing_rate_view_button_func(void);
-
 void interrogate_network_button_func(void); 		
 void interrogate_neuron_button_func(void);
-void submit_parker_sochacki_params_button_func(void);
+
 
 
 

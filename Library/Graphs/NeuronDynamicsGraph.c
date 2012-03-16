@@ -1,17 +1,16 @@
-#include "CurrentPatternGraph.h"
+#include "NeuronDynamicsGraph.h"
 
 
-
-CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval)
+NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval)
 {
 	unsigned int i;
 	if (graph != NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "CurrentPatternGraph", "allocate_current_pattern_graph", "graph != NULL");	
+		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
 		return graph;
 	}
 	
-	graph = g_new0(CurrentPatternGraph,1);
+	graph = g_new0(NeuronDynamicsGraph,1);
 	graph->num_of_data_points = num_of_data_points;
 	graph->sampling_interval = sampling_interval;
 	GdkColor color_bg;
@@ -46,6 +45,13 @@ CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatt
 
 	gtk_widget_show_all(hbox);	
 
-	return graph;			
+	return graph;						
 }
+
+
+
+
+
+
+
 

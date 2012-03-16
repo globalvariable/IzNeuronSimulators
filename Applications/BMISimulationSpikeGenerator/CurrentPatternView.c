@@ -1,6 +1,6 @@
 #include "CurrentPatternView.h"
 
-//static CurrentPatternGraph *current_pattern_graph = NULL;
+
 
 // FIRST COLUMN
 static GtkWidget *combo_neuron_type;
@@ -27,23 +27,32 @@ static GtkWidget *entry_num_of_in_refractory_currents;
 static GtkWidget *entry_num_of_in_trial_currents;
 static GtkWidget *btn_submit_num_of_currents;
 
-static GtkWidget *btn_create_firing_rate_view;
-static GtkWidget *entry_bin_size_ms;
+static GtkWidget *entry_in_refractory_current_num;
+static GtkWidget *entry_in_refractory_current_length;
+static GtkWidget *entry_trial_start_available_current_num;
+static GtkWidget *entry_trial_start_available_current_length;
+static GtkWidget *btn_submit_current_lengths;
+static GtkWidget *btn_generate_current_injection_graphs;
 
-
-// SECOND COLUMN
 static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
-static GtkWidget *entry_trial_type;
-static GtkWidget *entry_min_trial_length;
-static GtkWidget *entry_max_trial_length;
-static GtkWidget *entry_current_sampling_interval;
-static GtkWidget *btn_add_trial_type;
+static GtkWidget *current_pattern_graph_hbox;
+static CurrentPatternGraph *current_pattern_graph = NULL;
+static GtkWidget *neuron_dynamics_graph_hbox;
+static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
+
+
+// SECOND COLUMN
 static LayerNrnGrpNeuronCombo *combos_select_neuron;
 static TrialTypesCombo *combo_trial_type;
+static GtkWidget *entry_current_pattern_number;
+static GtkWidget *btn_display_currents_and_dynamics_in_trial;
+static GtkWidget *btn_display_currents_and_dynamics_trial_available;
+static GtkWidget *btn_display_currents_and_dynamics_in_refractory;
+
 
 static GtkWidget *btn_refresh_screen;
 
@@ -92,8 +101,12 @@ static GtkWidget *btn_load;
 static void combo_neuron_type_func (void);
 static void add_neurons_to_layer_button_func(void);
 static void submit_num_of_currents_button_func(void);
+static void submit_current_lengths_button_func(void);
+static void generate_current_injection_graphs_button_func(void);
+static void submit_parker_sochacki_params_button_func(void);
 
-static void add_trial_type_button_func(void);
+
+
 static void submit_initial_current_params_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void refresh_screen_button_func(void);
@@ -144,18 +157,24 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("a: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_a = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_a, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_a, 50, 25) ;
 
-	lbl = gtk_label_new("b: ");
+	lbl = gtk_label_new(" b: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_b = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_b, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_b, 50, 25) ;
 
-	lbl = gtk_label_new("c: ");
+	lbl = gtk_label_new(" c: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_c = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_c, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_c, 50, 25) ;
@@ -165,18 +184,24 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("d: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_d = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_d, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_d, 50, 25) ;
 
-	lbl = gtk_label_new("k: ");
+	lbl = gtk_label_new(" k: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_k = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_k, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_k, 50, 25) ;
 
-	lbl = gtk_label_new("C: ");
+	lbl = gtk_label_new(" C: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_C = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_C, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_C, 50, 25) ;
@@ -186,12 +211,16 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("v_thres: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_v_threshold = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_v_threshold, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_v_threshold, 50, 25) ;
 
-	lbl = gtk_label_new("v_peak: ");
+	lbl = gtk_label_new(" v_peak: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_v_peak = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_v_peak, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_v_peak, 50, 25) ;
@@ -201,12 +230,16 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("v_rest  : ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_v_resting = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_v_resting, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_v_resting, 50, 25) ;
 
-	lbl = gtk_label_new("inhibit : ");
+	lbl = gtk_label_new(" inhibit : ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_inhibitory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_inhibitory, FALSE,FALSE,0);
 	gtk_entry_set_max_length (GTK_ENTRY(entry_inhibitory), 1);
@@ -217,12 +250,16 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("E_Excite: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_E_excitatory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_E_excitatory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_E_excitatory, 50, 25) ;	
 	
-	lbl = gtk_label_new("E_Inhibit: ");
+	lbl = gtk_label_new(" E_Inhibit: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_E_inhibitory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_E_inhibitory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_E_inhibitory, 50, 25) ;	
@@ -232,12 +269,16 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	lbl = gtk_label_new("Tau_Exc : ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_tau_excitatory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_tau_excitatory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_tau_excitatory, 50, 25) ;	
 	
-	lbl = gtk_label_new("Tau_Inh  : ");
+	lbl = gtk_label_new(" Tau_Inh  : ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_tau_inhibitory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_tau_inhibitory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_tau_inhibitory, 50, 25) ;	
@@ -247,8 +288,8 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("Num of Neuron:	");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("Num of Neurons to Add:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
        	entry_num_of_neuron_for_group = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_neuron_for_group, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_num_of_neuron_for_group), "1");
@@ -258,7 +299,7 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
 	btn_add_neurons_to_layer = gtk_button_new_with_label("Add Neurons to Layer");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_add_neurons_to_layer, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), btn_add_neurons_to_layer, TRUE, TRUE, 0);
 
         entry_add_neurons_to_layer = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_add_neurons_to_layer, FALSE,FALSE,0);
@@ -270,32 +311,38 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("# Start Availab. Current	: ");
+	lbl = gtk_label_new("# of Trial Availab. Currents: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
        	entry_num_of_trial_start_available_currents = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_trial_start_available_currents, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_num_of_trial_start_available_currents), "1");
-	gtk_widget_set_size_request(entry_num_of_trial_start_available_currents, 50, 25) ; 
+	gtk_widget_set_size_request(entry_num_of_trial_start_available_currents, 30, 25) ; 
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("# Refractory Current	: ");
+	lbl = gtk_label_new("# of In Refractory Currents: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
        	entry_num_of_in_refractory_currents = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_in_refractory_currents, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_num_of_in_refractory_currents), "1");
-	gtk_widget_set_size_request(entry_num_of_in_refractory_currents, 50, 25) ; 
+	gtk_widget_set_size_request(entry_num_of_in_refractory_currents, 30, 25) ; 
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("# In Trial Current		: ");
+	lbl = gtk_label_new("# In Trial Current: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
        	entry_num_of_in_trial_currents = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_num_of_in_trial_currents, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_num_of_in_trial_currents), "1");
-	gtk_widget_set_size_request(entry_num_of_in_trial_currents, 50, 25) ; 
+	gtk_widget_set_size_request(entry_num_of_in_trial_currents, 30, 25) ; 
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -303,66 +350,86 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 	btn_submit_num_of_currents = gtk_button_new_with_label("Submit Num of Trial Currents");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_num_of_currents, TRUE, TRUE, 0);
 
-///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
-
-	vbox = gtk_vbox_new(FALSE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 1,2,0,6);     ///  Stimulus graph control
-
- 	hbox = gtk_hbox_new(TRUE, 0);
+  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	lbl = gtk_label_new("Parker-Sochacki Integration:");
+	lbl = gtk_label_new("TrialAvailCurr #: ");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        
-  	hbox = gtk_hbox_new(TRUE, 0);
+       	entry_trial_start_available_current_num = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_trial_start_available_current_num, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_trial_start_available_current_num), "0");
+	gtk_widget_set_size_request(entry_trial_start_available_current_num, 25, 25) ; 
+
+	lbl = gtk_label_new("Len(ms): ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_trial_start_available_current_length = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_trial_start_available_current_length, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_trial_start_available_current_length), "100");
+	gtk_widget_set_size_request(entry_trial_start_available_current_length, 40, 25) ; 
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("InRefracCurr # : ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_in_refractory_current_num = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_in_refractory_current_num, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_in_refractory_current_num), "0");
+	gtk_widget_set_size_request(entry_in_refractory_current_num, 25, 25) ; 
+
+	lbl = gtk_label_new("Len(ms): ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       	entry_in_refractory_current_length = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_in_refractory_current_length, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_in_refractory_current_length), "100");
+	gtk_widget_set_size_request(entry_in_refractory_current_length, 40, 25) ; 
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_current_lengths = gtk_button_new_with_label("Submit Current Lengths");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_current_lengths, TRUE, TRUE, 0);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_generate_current_injection_graphs = gtk_button_new_with_label("Generate Graphs");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_generate_current_injection_graphs, TRUE, TRUE, 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);        
   
-	lbl = gtk_label_new("Err. Tolerance:");
+	lbl = gtk_label_new("Error. Tol:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
                 
         entry_parker_sochacki_err_tol= gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_parker_sochacki_err_tol, FALSE,FALSE,0);
 	char temp_str[40];
-      	sprintf(temp_str, "%.16E", 0.0);	
+      	sprintf(temp_str, "%.1E", 0.0);	
 	gtk_entry_set_text(GTK_ENTRY(entry_parker_sochacki_err_tol), temp_str);
-	gtk_widget_set_size_request(entry_parker_sochacki_err_tol, 50, 25) ;
-
-  	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);        
-  
+	gtk_widget_set_size_request(entry_parker_sochacki_err_tol, 65, 25) ;
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
 	lbl = gtk_label_new("Max Order:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-                
         entry_parker_sochacki_max_order= gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_parker_sochacki_max_order, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_parker_sochacki_max_order), "40");
-	gtk_widget_set_size_request(entry_parker_sochacki_max_order, 50, 25) ;
-	
-  	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);        
-  
-	btn_submit_parker_sochacki_params = gtk_button_new_with_label("Submit Parameters");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
-	
-        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
+	gtk_widget_set_size_request(entry_parker_sochacki_max_order, 30, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	lbl = gtk_label_new("Current Sample Intrvl(us):");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-       entry_current_sampling_interval = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox),entry_current_sampling_interval, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_current_sampling_interval), "1000");
-	gtk_widget_set_size_request(entry_current_sampling_interval, 50, 25) ;
-
-  	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_add_trial_type = gtk_button_new_with_label("Add Trial Type");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_add_trial_type, TRUE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);        
+  
+	btn_submit_parker_sochacki_params = gtk_button_new_with_label("Submit Parker-Sochacki Params");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 1,2,0,6);     ///  Stimulus graph control
 
 	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -377,6 +444,34 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 	combo_trial_type = allocate_trial_types_combo();
         gtk_box_pack_start(GTK_BOX(hbox), combo_trial_type->combo, TRUE,TRUE,0);
+	if (! update_trial_types_combo(get_bmi_simulation_spike_generator_trials_data(), combo_trial_type))
+		return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "create_current_pattern_view_gui", "! update_trial_types_combo().");
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	lbl = gtk_label_new("Trial Status Current Number: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	entry_current_pattern_number = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox),entry_current_pattern_number, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_current_pattern_number), "0");
+	gtk_widget_set_size_request(entry_current_pattern_number, 30, 25) ;
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	lbl = gtk_label_new("Display Neuron Current & Dynamics:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_display_currents_and_dynamics_in_trial = gtk_button_new_with_label("InTrial");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_display_currents_and_dynamics_in_trial, TRUE, TRUE, 0);
+	btn_display_currents_and_dynamics_trial_available = gtk_button_new_with_label("TrialAvail");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_display_currents_and_dynamics_trial_available, TRUE, TRUE, 0);
+	btn_display_currents_and_dynamics_in_refractory = gtk_button_new_with_label("InRefrac");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_display_currents_and_dynamics_in_refractory, TRUE, TRUE, 0);
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
 
@@ -599,9 +694,11 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 
 ///	GRAPHS
 
- 	hbox = gtk_hbox_new(TRUE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 2,7, 0, 3);
-//	current_pattern_graph = allocate_current_pattern_graph(hbox, current_pattern_graph);
+ 	current_pattern_graph_hbox = gtk_hbox_new(TRUE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), current_pattern_graph_hbox, 2,7, 0, 3);
+
+ 	neuron_dynamics_graph_hbox = gtk_hbox_new(TRUE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), neuron_dynamics_graph_hbox, 2,7, 3, 6);
 
 /////// LAST COLUMN
 
@@ -655,6 +752,10 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
     	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);
     	g_signal_connect(G_OBJECT(btn_submit_num_of_currents), "clicked", G_CALLBACK(submit_num_of_currents_button_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_submit_current_lengths), "clicked", G_CALLBACK(submit_current_lengths_button_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_generate_current_injection_graphs), "clicked", G_CALLBACK(generate_current_injection_graphs_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_layer);
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
@@ -664,7 +765,7 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
      	g_signal_connect(G_OBJECT(btn_create_firing_rate_view), "clicked", G_CALLBACK(create_firing_rate_view_button_func), NULL);	     		  	
     	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
       	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
-      	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+
       	g_signal_connect(G_OBJECT(btn_add_trial_type), "clicked", G_CALLBACK(add_trial_type_button_func ), NULL);       	
 	g_signal_connect(G_OBJECT(btn_draw_template), "clicked", G_CALLBACK(draw_template_button_func), NULL);
 	g_signal_connect(G_OBJECT(btn_clear_template), "clicked", G_CALLBACK(clear_template_button_func), NULL);	
@@ -691,7 +792,9 @@ bool create_current_pattern_view_gui(GtkWidget *tabs)
 */
 // 	initialize_graphs(table);
 
-	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
+	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);		
+	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
+	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, FALSE);	
 	return TRUE;
 
 }
@@ -756,25 +859,73 @@ static void add_neurons_to_layer_button_func(void)
 
 static void submit_num_of_currents_button_func(void)
 {
+	char *end_ptr;
 	TrialsData *trials_data = get_bmi_simulation_spike_generator_trials_data();
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
-	unsigned int num_of_trial_start_available_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_trial_start_available_currents)));
-	unsigned int num_of_in_refractory_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_refractory_currents)));
-	unsigned int num_of_in_trial_currents = atoi(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_trial_currents)));
+	unsigned int num_of_trial_start_available_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_trial_start_available_currents)), &end_ptr, 10);
+	unsigned int num_of_in_refractory_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_refractory_currents)), &end_ptr, 10);
+	unsigned int num_of_in_trial_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_trial_currents)), &end_ptr, 10);
 	if (trials_data == NULL)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "trials_data == NULL.");
 	if (spike_gen_data == NULL)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
 
 	spike_gen_data->injection_current = allocate_injection_current_data(spike_gen_data->network, trials_data, spike_gen_data->injection_current , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
-/*	if (parker_sochacki_set_order_tolerance(spike_pattern_generator_get_network(), (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
-		gtk_widget_set_sensitive(btn_add_trial_type, TRUE);*/
+	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
+	gtk_widget_set_sensitive(btn_submit_current_lengths, TRUE);	
 }
 
-void submit_parker_sochacki_params_button_func(void)
+static void submit_current_lengths_button_func(void)
 {
-/*	if (parker_sochacki_set_order_tolerance(spike_pattern_generator_get_network(), (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
-		gtk_widget_set_sensitive(btn_add_trial_type, TRUE);*/
+	char *end_ptr;
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	unsigned int trial_start_available_current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_trial_start_available_current_num)), &end_ptr, 10);
+	unsigned int in_refractory_current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_in_refractory_current_num)), &end_ptr, 10);
+	TimeStamp trial_start_available_current_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_trial_start_available_current_length)), &end_ptr, 10);
+	TimeStamp in_refractory_current_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_in_refractory_current_length)), &end_ptr, 10);
+	if (! submit_current_length_trial_start_available_status(spike_gen_data->network, spike_gen_data->injection_current , trial_start_available_current_num, trial_start_available_current_length))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_current_lengths_button_func", "! submit_current_length_trial_start_available_status().");
+	if (! submit_current_length_in_refractory_status(spike_gen_data->network, spike_gen_data->injection_current, in_refractory_current_num, in_refractory_current_length))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_current_lengths_button_func", "! submit_current_length_in_refractory_status().");
+	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
+	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, TRUE);	
+}
+
+static void generate_current_injection_graphs_button_func(void)
+{
+	TimeStamp max_num_of_samples = 0;
+	unsigned int i, j;
+	TrialsData *trials_data = get_bmi_simulation_spike_generator_trials_data();
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	for (i = 0;  i < spike_gen_data->injection_current->current_templates->num_of_trial_start_available_currents; i++)
+	{	
+		if (spike_gen_data->injection_current->current_templates->trial_start_available_currents[i].num_of_current_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->injection_current->current_templates->trial_start_available_currents[i].num_of_current_samples;
+	}
+	for (i = 0;  i < spike_gen_data->injection_current->current_templates->num_of_in_refractory_currents; i++)
+	{	
+		if (spike_gen_data->injection_current->current_templates->in_refractory_currents[i].num_of_current_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->injection_current->current_templates->in_refractory_currents[i].num_of_current_samples;
+	}
+	for (i = 0; i < trials_data->trial_types_data.num_of_types; i++)
+	{
+		for (j = 0; j < spike_gen_data->injection_current->current_templates->num_of_in_trial_currents; j++)  // actually unnecessary, just to be straightforward
+		{	
+			if (spike_gen_data->injection_current->current_templates->in_trial_currents[i][j].num_of_current_samples > max_num_of_samples)
+				max_num_of_samples = spike_gen_data->injection_current->current_templates->in_trial_currents[i][j].num_of_current_samples;
+		}
+	}
+	current_pattern_graph = allocate_current_pattern_graph(current_pattern_graph_hbox, current_pattern_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);			
+	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, FALSE);	
+}
+
+static void submit_parker_sochacki_params_button_func(void)
+{	
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	if (! parker_sochacki_set_order_tolerance(spike_gen_data->network, (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
 }
 
 void interrogate_network_button_func(void)

@@ -35,7 +35,7 @@ struct __ParkerSochackiPolynomialVals
 
 
 
-bool parker_sochacki_set_order_tolerance(Network *network, int max_ps_order, double ps_error_tolerance);
+bool parker_sochacki_set_order_tolerance(Network *network, unsigned int max_ps_order, double ps_error_tolerance);
 int get_maximum_parker_sochacki_order(void);
 double get_maximum_parker_sochacki_error_tolerance(void);
 TimeStamp evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time);

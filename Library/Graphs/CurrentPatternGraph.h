@@ -11,19 +11,19 @@ typedef struct 	__CurrentPatternGraph 	CurrentPatternGraph;
 #include <gtkdatabox_grid.h>
 #include "../../../BlueSpike/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
-#include "../Patterns/CurrentPatterns.h"
 
 struct  __CurrentPatternGraph
 {
-	CurrentPatterns* current_patterns;
 	GtkWidget *box;
 	GtkWidget *databox;
 	GtkDataboxGraph *graph;
 	float *x;
 	float *y;
+	unsigned int num_of_data_points;
+	TimeStamp sampling_interval;
 };
 
-CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatternGraph *graph);
+CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
 
 
 #endif
