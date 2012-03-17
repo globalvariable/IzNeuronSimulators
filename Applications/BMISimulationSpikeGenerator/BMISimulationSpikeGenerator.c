@@ -76,3 +76,8 @@ SpikeGenData* get_bmi_simulation_spike_generator_spike_gen_data(void)
 {
 	return bmi_simulation_spike_gen_data;
 }
+
+void bmi_simulation_spike_generator_kill_rt_task(void)
+{
+	bmi_simulation_spike_generator_rt_task_stay_alive = 0;
+}

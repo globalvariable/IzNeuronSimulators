@@ -14,7 +14,7 @@ void set_bmi_simulation_spike_generator_trials_data(TrialsData *data);
 TrialsData * get_bmi_simulation_spike_generator_trials_data(void);
 void set_bmi_simulation_spike_generator_spike_gen_data(SpikeGenData *data);
 SpikeGenData* get_bmi_simulation_spike_generator_spike_gen_data(void);
-
+void bmi_simulation_spike_generator_kill_rt_task(void);
 
 
 #endif

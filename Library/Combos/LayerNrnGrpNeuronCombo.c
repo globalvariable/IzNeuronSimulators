@@ -125,7 +125,7 @@ bool update_texts_of_combos_when_change(LayerNrnGrpNeuronCombo *combos, Network 
 		if (!get_num_of_neurons_in_neuron_group(network, layer_num, neuron_group_num  , &num_of_neurons_in_neuron_group))
 			return print_message(ERROR_MSG ,"NeuroSim", "NeuroSimCombos", "update_texts_of_combos_when_change", NULL);		
 		if (num_of_neurons_in_neuron_group == 0)	
-			return print_message(ERROR_MSG ,"NeuroSim", "NeuroSimCombos", " update_texts_of_combos_when_change", "num of neurons in neuron group is 0");		
+			return print_message(ERROR_MSG ,"NeuroSim", "NeuroSimCombos", " update_texts_of_combos_when_change", "num of neurons in neuron group is 0.");		
 		for (i=0; i < num_of_neurons_in_neuron_group ; i++)
 		{
 			sprintf(temp, "%d" , i);
@@ -134,5 +134,15 @@ bool update_texts_of_combos_when_change(LayerNrnGrpNeuronCombo *combos, Network 
 		combos->num_of_texts_in_neuron_combo = num_of_neurons_in_neuron_group;	
 		gtk_combo_box_set_active(GTK_COMBO_BOX(combos->combo_neuron), 0);	
 	}
+	return TRUE;
+}
+
+bool layer_neuron_group_neuron_get_selected(LayerNrnGrpNeuronCombo *combos, unsigned int *layer_num, unsigned int *nrn_grp_num, unsigned int *nrn_num)
+{
+	if (combos == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "NeuroSimCombos", "layer_neuron_group_neuron_get_selected", "combos == NULL.");
+	*layer_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_layer));		
+	*nrn_grp_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron_group));
+	*nrn_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron));
 	return TRUE;
 }

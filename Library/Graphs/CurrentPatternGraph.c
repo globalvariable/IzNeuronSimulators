@@ -14,6 +14,7 @@ CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatt
 	graph = g_new0(CurrentPatternGraph,1);
 	graph->num_of_data_points = num_of_data_points;
 	graph->sampling_interval = sampling_interval;
+	graph->graph_len = sampling_interval*num_of_data_points;
 	GdkColor color_bg;
 	GdkColor color_line;
 	GdkColor color_grid;
@@ -42,10 +43,57 @@ CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatt
 		graph->x[i] = i*sampling_interval/1000000;
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, num_of_data_points*sampling_interval/1000000, 200, -200);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100 , (graph->graph_len/1000000) + 100, 200, -200);	
 
 	gtk_widget_show_all(hbox);	
 
 	return graph;			
 }
 
+bool update_current_pattern_graph(CurrentPatternGraph *graph)
+{
+	float max_y = 0, min_y = 0;
+	float *y = graph->y;
+	unsigned int i;
+	unsigned int num_of_data_points = graph->num_of_data_points;
+
+	for (i = 0; i < num_of_data_points; i++)
+	{
+		if (y[i] > max_y)
+			max_y = y[i];
+		if (y[i] < min_y)
+			min_y = graph->y[i];
+	}
+	if (max_y < 100)
+		max_y = 100;
+	else if (max_y < 200)
+		max_y = 200;
+	else if (max_y < 300)
+		max_y = 300;
+	else if (max_y < 400)
+		max_y = 400;
+	else 
+		max_y = max_y+100;
+
+	if (min_y > 0)
+		min_y = 0;
+	else if (min_y > -100)
+		min_y = -100;
+	else if (min_y > -200)
+		min_y = -200;
+	else 
+		min_y = min_y-100;
+
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100 , (graph->graph_len/1000000) + 100, max_y, min_y);
+	return TRUE;	
+}
+
+bool clear_current_pattern_graph(CurrentPatternGraph *graph)
+{
+	unsigned int i;
+	unsigned int num_of_data_points = graph->num_of_data_points;
+	float *y = graph->y;
+	for (i = 0; i < num_of_data_points; i++)
+		y[i] = 0;
+	return TRUE;
+}

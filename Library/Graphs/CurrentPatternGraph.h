@@ -21,9 +21,10 @@ struct  __CurrentPatternGraph
 	float *y;
 	unsigned int num_of_data_points;
 	TimeStamp sampling_interval;
+	TimeStamp graph_len;
 };
 
 CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
-
-
+bool update_current_pattern_graph(CurrentPatternGraph *graph);
+bool clear_current_pattern_graph(CurrentPatternGraph *graph);
 #endif

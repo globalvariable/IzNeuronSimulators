@@ -13,6 +13,7 @@ NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynam
 	graph = g_new0(NeuronDynamicsGraph,1);
 	graph->num_of_data_points = num_of_data_points;
 	graph->sampling_interval = sampling_interval;
+	graph->graph_len = sampling_interval*num_of_data_points;
 	GdkColor color_bg;
 	GdkColor color_line;
 	GdkColor color_grid;
@@ -48,7 +49,56 @@ NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynam
 	return graph;						
 }
 
+bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph)
+{
+	float max_y = 0, min_y = 0;
+	float *y = graph->y;
+	unsigned int i;
+	unsigned int num_of_data_points = graph->num_of_data_points;
 
+	for (i = 0; i < num_of_data_points; i++)
+	{
+		if (y[i] > max_y)
+			max_y = y[i];
+		if (y[i] < min_y)
+			min_y = y[i];
+	}
+	if (max_y < 100)
+		max_y = 100;
+	else if (max_y < 200)
+		max_y = 200;
+	else if (max_y < 300)
+		max_y = 300;
+	else if (max_y < 400)
+		max_y = 400;
+	else 
+		max_y = max_y+100;
+
+	if (min_y > 0)
+		min_y = 0;
+	else if (min_y > -100)
+		min_y = -100;
+	else if (min_y > -200)
+		min_y = -200;
+	else if (min_y > -300)
+		min_y = -300;
+	else
+		min_y = min_y-100;
+
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100 , (graph->graph_len/1000000) + 100, max_y, min_y);
+
+	return TRUE;	
+}
+
+bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph)
+{
+	unsigned int i;
+	unsigned int num_of_data_points = graph->num_of_data_points;
+	float *y = graph->y;
+	for (i = 0; i < num_of_data_points; i++)
+		y[i] = 0;
+	return TRUE;
+}
 
 
 

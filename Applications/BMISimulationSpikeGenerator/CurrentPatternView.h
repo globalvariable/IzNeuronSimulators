@@ -1,10 +1,11 @@
-#ifndef INJECTION_CURRENT_VIEW_H
-#define INJECTION_CURRENT_VIEW_H
+#ifndef CURRENT_PATTERN_VIEW_H
+#define CURRENT_PATTERN_VIEW_H
 
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <math.h>
 #include "BMISimulationSpikeGenerator.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/IzNeuron/Neuron.h"
@@ -12,6 +13,7 @@
 #include "../../../BlueSpike/Library/Misc/Randn.h"
 #include "../../../ExperimentControllers/TrialControllers/Library/Combos/TrialTypesCombo.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
+#include "../../Library/Combos/NeuronDynamicsCombo.h"
 #include "../../Library/SpikeGenData/SpikeGenData.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"

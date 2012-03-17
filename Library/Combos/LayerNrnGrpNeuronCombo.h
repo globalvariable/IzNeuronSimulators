@@ -23,6 +23,7 @@ struct __LayerNrnGrpNeuronCombo
 LayerNrnGrpNeuronCombo* allocate_layer_neuron_group_neuron_combos(void);
 bool update_texts_of_combos_when_add_remove(LayerNrnGrpNeuronCombo *combos, Network *network);
 bool update_texts_of_combos_when_change(LayerNrnGrpNeuronCombo *combos, Network *network, GtkWidget *changed_combo);
+bool layer_neuron_group_neuron_get_selected(LayerNrnGrpNeuronCombo *combos, unsigned int *layer_num, unsigned int *nrn_grp_num, unsigned int *nrn_num);
 
 
 

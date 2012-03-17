@@ -23,11 +23,13 @@ struct  __NeuronDynamicsGraph
 	float *y;
 	unsigned int num_of_data_points;
 	TimeStamp sampling_interval;
+	TimeStamp graph_len;
 };
 
 
 NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
-
+bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
+bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
 
 
 #endif
