@@ -186,9 +186,39 @@ bool submit_current_length_in_refractory_status(Network *network, CurrentTemplat
 	return TRUE;
 }
 
-CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer)
+CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer, unsigned int buffer_size)
 {
-	return NULL;
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+
+	if (network == NULL)
+		return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_templates", "network == NULL.");
+	if (buffer != NULL)
+	{
+		buffer = deallocate_current_pattern_buffer(network, buffer);
+		buffer = allocate_current_pattern_buffer(network, buffer, buffer_size);
+		return buffer;
+	}
+	buffer = g_new0(CurrentPatternBuffer,1);
+
+	if (!get_num_of_layers_in_network(network, &num_of_layers))
+		return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of layers. Already allocated some data. Take care of that data.");
+	for (i = 0; i < num_of_layers; i++)
+	{
+		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
+			return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neuron groups. Already allocated some data. Take care of that data.");
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
+				return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neurons. Already allocated some data. Take care of that data.");	
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)	// allocate in trial current lengths since those are determined by trialcontroller. submit lengths for others separately.
+			{
+				buffer->neuron_current_buffer[i][j][k] = g_new0(InjectionCurrent, buffer_size);
+			}
+		}
+	}	
+	buffer->buffer_size = buffer_size;
+	return buffer;
 }
 CurrentPatternBuffer* deallocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer)
 {
