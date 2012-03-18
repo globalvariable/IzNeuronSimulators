@@ -60,7 +60,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	ptr_ps_vals = ptr_neuron->ps_vals;
 					
 	printf ("--------------Interrogating Neuron Dynamics ---------\n");		
-	printf ("address:%u\n",  (NeuronAddress)ptr_neuron);	
+	printf ("address:%lu\n",  (NeuronAddress)ptr_neuron);	
 	printf ("layer:%d\n",  ptr_neuron->layer);
 	printf ("neuron group:%d\n",  ptr_neuron->neuron_group);	
 	printf ("neuron num:%d\n",  ptr_neuron->neuron_num);
@@ -95,7 +95,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
 		{
 			printf ("%llu\t\t", ptr_neuron_event_buffer->time[i]);
-			printf ("%u\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
+			printf ("%lu\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
 			printf ("%.5f\n", ptr_neuron_event_buffer->weight[i]);				
 		}
 	}
@@ -112,7 +112,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
 		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
 		{
-			printf ("%u\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
+			printf ("%lu\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
 			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		
 			printf ("%.5f\n", ptr_neuron_syn_list->weight[i]);				
 		}

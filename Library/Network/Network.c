@@ -216,7 +216,7 @@ bool connect_network_layer_to_network_layer(Network *network, int ThisLayer, int
 	ptr_this_layer  = network->layers[ThisLayer];
 	ptr_target_layer  = network->layers[TargetLayer];
 	
-	if (ptr_this_layer->connected_to_network_layer == ptr_target_layer)
+	if (ptr_this_layer->connected_to_network_layer == ptr_target_layer)    // HANDLE THIS, BUG
 	{
 		printf ("Layer %d is already connected to layer %d\n", ThisLayer, TargetLayer);
 		return FALSE;		
@@ -253,7 +253,7 @@ bool connect_network_layer_to_network_layer(Network *network, int ThisLayer, int
 		}
 	}
 	
-	ptr_this_layer->connected_to_network_layer = ptr_target_layer;
+	ptr_this_layer->connected_to_network_layer = ptr_target_layer;   // HANDLE THIS, BUG
 
 	printf ("Connection of %d neurons in layer %d with %d synapses to layer %d is successful\n",counter_neurons, ThisLayer, counter_synapses, TargetLayer);	
 	return TRUE;
@@ -397,11 +397,11 @@ void interrogate_network(Network *network)
 	}
 	for (i = 0; i < network->layer_count; i++)
 	{
-		printf("Layer: %u\t is connected to Network Layer (address): %d.\n", i, (unsigned int)ptr_layer->connected_to_network_layer);
+		printf("Layer: %u\t is connected to Network Layer (address): %lu.\n", i, (unsigned long int)ptr_layer->connected_to_network_layer);
 	}
 	for (i = 0; i < network->layer_count; i++)
 	{
-		printf("Layer: %u\t is connected to External Network Layer (address): %d.\n", i, (unsigned int)ptr_layer->connected_to_ext_network_layer);
+		printf("Layer: %u\t is connected to External Network Layer (address): %lu.\n", i, (unsigned long int)ptr_layer->connected_to_ext_network_layer);
 	}		
 	printf("------------ Interrogating Network...Complete ----------------\n");	
 }

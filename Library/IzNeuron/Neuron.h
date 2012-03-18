@@ -2,7 +2,7 @@
 #define NEURON_H
 
 typedef struct __Neuron Neuron;
-typedef unsigned int NeuronAddress;
+typedef unsigned long int NeuronAddress;
 
 #include <stdbool.h>
 #include <gtk/gtk.h>

@@ -19,7 +19,7 @@ LayerNrnGrpNeuronCombo* allocate_layer_neuron_group_neuron_combos(void)
 bool update_texts_of_combos_when_add_remove(LayerNrnGrpNeuronCombo *combos, Network *network)
 {
 	int i;
-	int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
  	char temp[20];	
  	
  	combos->updating =1;	
@@ -85,7 +85,7 @@ bool update_texts_of_combos_when_add_remove(LayerNrnGrpNeuronCombo *combos, Netw
 bool update_texts_of_combos_when_change(LayerNrnGrpNeuronCombo *combos, Network *network, GtkWidget *changed_combo)
 {
 	int i;
-	int num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
  	char temp[20];	
  	int layer_num; 
  	int neuron_group_num; 

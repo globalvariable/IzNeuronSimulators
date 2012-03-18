@@ -8,7 +8,6 @@ typedef struct __NeuronCurrentTemplate NeuronCurrentTemplate;
 typedef struct __CurrentPatternTemplate CurrentPatternTemplate;
 typedef struct __CurrentTemplate CurrentTemplate;
 typedef struct __CurrentPatternBuffer CurrentPatternBuffer;
-typedef struct __InjectionCurrentData InjectionCurrentData;
 
 #include <stdbool.h>
 #include <gtk/gtk.h>
@@ -61,20 +60,13 @@ struct __CurrentPatternBuffer
 	unsigned int			buff_size;
 };
 
-struct __InjectionCurrentData
-{
-	CurrentTemplate		*current_templates;
-	CurrentPatternBuffer	*current_pattern_buffer;
-};
+CurrentTemplate* allocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents);
+CurrentTemplate* deallocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data);
+bool submit_current_length_trial_start_available_status(Network *network, CurrentTemplate* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length);
+bool submit_current_length_in_refractory_status(Network *network, CurrentTemplate* current_data, unsigned int in_refractory_current_num, TimeStamp current_length);
 
-InjectionCurrentData* allocate_injection_current_data(Network *network, TrialsData *trials_data, InjectionCurrentData* injection_current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents);
-InjectionCurrentData* deallocate_injection_current_data(Network *network, TrialsData *trials_data, InjectionCurrentData* injection_current_data);
-bool submit_current_length_trial_start_available_status(Network *network, InjectionCurrentData* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length);
-bool submit_current_length_in_refractory_status(Network *network, InjectionCurrentData* current_data, unsigned int in_refractory_current_num, TimeStamp current_length);
-bool submit_initialization_current(InjectionCurrentData* current_data, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp duration, double max_current);
-bool submit_noise_params(InjectionCurrentData* current_data, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp noise_addition_interval, double noise_variance);
-bool submit_current_template_sample(InjectionCurrentData* current_data, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, TimeStamp sampling_time, double current);
-bool interrogate_neuron_current_pattern_params(InjectionCurrentData* current_data, unsigned int trial_num, unsigned int pattern_type_num, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num);
+CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer);
+CurrentPatternBuffer* deallocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer);
 
 
 #endif

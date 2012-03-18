@@ -23,6 +23,9 @@ void create_gui(void)
  	if (! create_current_pattern_view_gui(tabs))
 		return;     
 
+ 	if (! create_buffers_view_gui(tabs))
+		return;     
+
 	gtk_widget_show_all(window);
 
 //	initialize_spike_pattern_generator_data_read_write_handlers();

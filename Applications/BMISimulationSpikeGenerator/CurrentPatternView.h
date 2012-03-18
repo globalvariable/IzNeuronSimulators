@@ -21,14 +21,9 @@
 #define LINE 0
 #define SIN 1
 #define COS 2
-#define CLEAR 3
 #define pi 3.141592653589793
 
 bool create_current_pattern_view_gui(GtkWidget *tabs);
-
-void interrogate_network_button_func(void); 		
-void interrogate_neuron_button_func(void);
-
 
 
 

@@ -12,7 +12,8 @@ typedef struct __SpikeGenData SpikeGenData;
 struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeData
 {
 	Network						*network;
-	InjectionCurrentData			*injection_current;
+	CurrentTemplate				*current_templates;
+	CurrentPatternBuffer			*current_pattern_buffer;
 	NeuronDynamicsBuffer			*neuron_dynamics_pattern_buffer;
 };
 
