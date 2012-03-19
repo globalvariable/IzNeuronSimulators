@@ -7,5 +7,6 @@
 
 // Functions
 void create_gui(void);
+GtkWidget *get_gui_tabs(void);
 
 #endif

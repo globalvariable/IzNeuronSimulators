@@ -42,7 +42,7 @@ NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynam
 		graph->x[i] = i*sampling_interval/1000000;
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, num_of_data_points*sampling_interval/1000000, 200, -200);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100, (graph->graph_len/1000000)+ 100, 200, -200);	
 
 	gtk_widget_show_all(hbox);	
 

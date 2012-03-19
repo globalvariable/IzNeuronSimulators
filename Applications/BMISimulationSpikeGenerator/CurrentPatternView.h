@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "BMISimulationSpikeGenerator.h"
+#include "BuffersView.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/IzNeuron/Neuron.h"
 #include "../../Library/IzNeuron/NeuronTypes.h"
@@ -23,7 +24,7 @@
 #define COS 2
 #define pi 3.141592653589793
 
-bool create_current_pattern_view_gui(GtkWidget *tabs);
+bool create_current_pattern_view_gui(void);
 
 
 

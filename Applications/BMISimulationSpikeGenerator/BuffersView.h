@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "BMISimulationSpikeGenerator.h"
 
-bool create_buffers_view_gui(GtkWidget *tabs);
+bool create_buffers_view_gui(void);
 
 
 

@@ -120,14 +120,14 @@ static void quit_button_func(void);
 
 
 
-bool create_current_pattern_view_gui(GtkWidget *tabs)
+bool create_current_pattern_view_gui(void)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
 
         frame = gtk_frame_new ("");
         frame_label = gtk_label_new ("     Network & Currents     ");      
    
-        gtk_notebook_append_page (GTK_NOTEBOOK (tabs), frame, frame_label);  
+        gtk_notebook_append_page (GTK_NOTEBOOK (get_gui_tabs()), frame, frame_label);  
 
 
  	hbox = gtk_hbox_new(TRUE, 0);
@@ -820,6 +820,8 @@ static void submit_num_of_currents_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
 
 	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, trials_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+	if (!create_buffers_view_gui())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_current_lengths, TRUE);	
 }
@@ -848,20 +850,20 @@ static void generate_current_injection_graphs_button_func(void)
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	for (i = 0;  i < spike_gen_data->current_templates->num_of_trial_start_available_currents; i++)
 	{	
-		if (spike_gen_data->current_templates->trial_start_available_currents[i].num_of_current_samples > max_num_of_samples)
-			max_num_of_samples = spike_gen_data->current_templates->trial_start_available_currents[i].num_of_current_samples;
+		if (spike_gen_data->current_templates->trial_start_available_currents[i].num_of_template_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->current_templates->trial_start_available_currents[i].num_of_template_samples;
 	}
 	for (i = 0;  i < spike_gen_data->current_templates->num_of_in_refractory_currents; i++)
 	{	
-		if (spike_gen_data->current_templates->in_refractory_currents[i].num_of_current_samples > max_num_of_samples)
-			max_num_of_samples = spike_gen_data->current_templates->in_refractory_currents[i].num_of_current_samples;
+		if (spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples;
 	}
 	for (i = 0; i < trials_data->trial_types_data.num_of_types; i++)
 	{
 		for (j = 0; j < spike_gen_data->current_templates->num_of_in_trial_currents; j++)  // actually unnecessary, just to be straightforward
 		{	
-			if (spike_gen_data->current_templates->in_trial_currents[i][j].num_of_current_samples > max_num_of_samples)
-				max_num_of_samples = spike_gen_data->current_templates->in_trial_currents[i][j].num_of_current_samples;
+			if (spike_gen_data->current_templates->in_trial_currents[i][j].num_of_template_samples > max_num_of_samples)
+				max_num_of_samples = spike_gen_data->current_templates->in_trial_currents[i][j].num_of_template_samples;
 		}
 	}
 	current_pattern_graph = allocate_current_pattern_graph(current_pattern_graph_hbox, current_pattern_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
@@ -969,8 +971,8 @@ static void copy_drawn_to_template_in_trial_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
-	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_current_samples; i++)
-		current_templates->in_trial_currents[trial_type_idx][current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i] = current_pattern_graph->y[i];
+	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
+		current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
 static void copy_drawn_to_template_trial_available_button_func(void)
 {
@@ -986,8 +988,8 @@ static void copy_drawn_to_template_trial_available_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	 
-	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_current_samples; i++)
-		current_templates->trial_start_available_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i] = current_pattern_graph->y[i];
+	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_template_samples; i++)
+		current_templates->trial_start_available_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
 static void copy_drawn_to_template_in_refractory_button_func(void)
 {
@@ -1003,8 +1005,8 @@ static void copy_drawn_to_template_in_refractory_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_refractory_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
-	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_current_samples; i++)
-		current_templates->in_refractory_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i] = current_pattern_graph->y[i];
+	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_template_samples; i++)
+		current_templates->in_refractory_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
 static void display_currents_and_dynamics_in_trial_button_func(void)
 {
@@ -1037,9 +1039,9 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
-	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_current_samples; i++)
+	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
 	{
-		y[i] = current_templates->in_trial_currents[trial_type_idx][current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i];
+		y[i] = current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
 		neuron->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval);
@@ -1096,9 +1098,9 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
-	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_current_samples; i++)
+	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_template_samples; i++)
 	{
-		y[i] = current_templates->trial_start_available_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i];
+		y[i] = current_templates->trial_start_available_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
 		neuron->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval);
@@ -1155,9 +1157,9 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
-	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_current_samples; i++)
+	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_template_samples; i++)
 	{
-		y[i] = current_templates->in_refractory_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].current[i];
+		y[i] = current_templates->in_refractory_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
 		neuron->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval);
@@ -1198,8 +1200,8 @@ static void add_noise_in_trial_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
-	current_templates->in_trial_currents[trial_type_idx][current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_trial_currents[trial_type_idx][current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_addition_interval = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
+	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_trial_available_button_func(void)
 {
@@ -1214,8 +1216,8 @@ static void add_noise_trial_available_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
-	current_templates->trial_start_available_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->trial_start_available_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
+	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_in_refractory_button_func(void)
 {
@@ -1230,8 +1232,8 @@ static void add_noise_in_refractory_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_refractory_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "current_num >= num_of_trial_start_available_currents.");	
-	current_templates->in_refractory_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_refractory_currents[current_num].templates[layer_num][nrn_grp_num][nrn_num].noise_params.noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
+	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 
 void interrogate_network_button_func(void)
