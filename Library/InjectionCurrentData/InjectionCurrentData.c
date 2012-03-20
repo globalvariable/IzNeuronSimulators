@@ -68,6 +68,7 @@ CurrentTemplate* allocate_current_templates(Network *network, TrialsData *trials
 		{
 			current_data->in_trial_currents[n][m].template_samples = g_new0(NeuronCurrentSample, trials_data->trial_types_data.type_data[n].constraints.max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 			current_data->in_trial_currents[n][m].num_of_template_samples = trials_data->trial_types_data.type_data[n].constraints.max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+			current_data->in_trial_currents[n][m].template_length = trials_data->trial_types_data.type_data[n].constraints.max_trial_length;
 			for (k = 0; k < current_data->in_trial_currents[n][m].num_of_template_samples ; k++)
 			{
 				if (!get_num_of_layers_in_network(network, &num_of_layers))
@@ -132,6 +133,7 @@ bool submit_current_length_trial_start_available_status(Network *network, Curren
 		print_message(WARNING_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "Template for this one was submitted previously. Template allocation will be done without deallocation for it  !!!");		
 	current_data->trial_start_available_currents[trial_start_available_current_num].template_samples = g_new0(NeuronCurrentSample, current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	current_data->trial_start_available_currents[trial_start_available_current_num].num_of_template_samples = current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	current_data->trial_start_available_currents[trial_start_available_current_num].template_length = current_length;
 	for (k = 0; k < current_data->trial_start_available_currents[trial_start_available_current_num].num_of_template_samples; k++)
 	{
 		if (!get_num_of_layers_in_network(network, &num_of_layers))
@@ -174,6 +176,7 @@ bool submit_current_length_in_refractory_status(Network *network, CurrentTemplat
 		print_message(WARNING_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "Template for this one was submitted previously. Template allocation will be done without deallocation for it  !!!");	
 	current_data->in_refractory_currents[in_refractory_current_num].template_samples = g_new0(NeuronCurrentSample, current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	current_data->in_refractory_currents[in_refractory_current_num].num_of_template_samples = current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	current_data->in_refractory_currents[in_refractory_current_num].template_length = current_length;
 	for (k = 0; k < current_data->in_refractory_currents[in_refractory_current_num].num_of_template_samples; k++)
 	{
 		if (!get_num_of_layers_in_network(network, &num_of_layers))
@@ -236,9 +239,6 @@ CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentP
 		}
 	}	
 	buffer->buffer_size = buffer_size;
-	buffer->start_times_trial_available_currents = allocate_current_pattern_start_times(buffer->start_times_trial_available_currents, 50);
-	buffer->start_times_in_refractory_currents = allocate_current_pattern_start_times(buffer->start_times_in_refractory_currents, 50);
-	buffer->start_times_in_trial_currents = allocate_current_pattern_start_times(buffer->start_times_in_trial_currents, 50);
 	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Created current_pattern_buffer.");
 	return buffer;
 }
@@ -247,25 +247,113 @@ CurrentPatternBuffer* deallocate_current_pattern_buffer(Network *network, Curren
 	return NULL;
 }
 
-CurrentStartTimes* allocate_current_pattern_start_times(CurrentStartTimes* buffer, unsigned int buffer_size)
+bool determine_in_trial_current_number_randomly(CurrentTemplate* current_template, unsigned int *current_num)	
 {
-	if (buffer != NULL)
-	{
-		buffer = deallocate_current_pattern_start_times(buffer);
-		buffer = allocate_current_pattern_start_times(buffer, buffer_size);
-		return buffer;
-	}  
-	buffer = g_new0(CurrentStartTimes, 1);
-	buffer->start_times = g_new0(TimeStamp, buffer_size);
-	buffer->buffer_size = buffer_size;
-	print_message(INFO_MSG ,"TrialControllers", "TrialsData", "allocate_current_pattern_start_times", "Created current_pattern_start_times_buffer.");
-	return buffer;
+	if (current_template == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "determine_in_trial_current_number_randomly", "current_template == NULL.");	
+	*current_num = (unsigned int)(current_template->num_of_in_trial_currents* get_rand_number());
+	return TRUE;
 }
-CurrentStartTimes* deallocate_current_pattern_start_times(CurrentStartTimes* buffer)
+
+bool determine_trial_start_available_current_number_randomly(CurrentTemplate* current_template, unsigned int *current_num)	
 {
-	if (buffer == NULL)
-		return (CurrentStartTimes*)print_message(BUG_MSG ,"TrialControllers", "TrialsData", "deallocate_current_pattern_start_times", "buffer == NULL.");    
-	g_free(buffer->start_times);
-	g_free(buffer);
-	return NULL;	
+	if (current_template == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "determine_in_trial_current_number_randomly", "current_template == NULL.");	
+	*current_num = (unsigned int)(current_template->num_of_trial_start_available_currents* get_rand_number());
+	return TRUE;
+}
+
+bool determine_in_refractory_current_number_randomly(CurrentTemplate* current_template, unsigned int *current_num)	
+{
+	if (current_template == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "determine_in_trial_current_number_randomly", "current_template == NULL.");	
+	*current_num = (unsigned int)(current_template->num_of_in_refractory_currents* get_rand_number());
+	return TRUE;
+}
+
+bool get_in_trial_current_pattern_template(CurrentTemplate* current_template, CurrentPatternTemplate** pattern_template, unsigned int trial_type_idx, unsigned int current_num)
+{
+	* pattern_template = &(current_template->in_trial_currents[trial_type_idx][current_num]);
+	return TRUE;
+}
+bool get_trial_start_available_current_pattern_template(CurrentTemplate* current_template, CurrentPatternTemplate** pattern_template, unsigned int current_num)
+{
+	* pattern_template = &(current_template->trial_start_available_currents[current_num]);
+	return TRUE;
+}	
+bool get_in_refractory_current_pattern_template(CurrentTemplate* current_template, CurrentPatternTemplate** pattern_template, unsigned int current_num)
+{
+	* pattern_template = &(current_template->in_refractory_currents[current_num]);
+	return TRUE;
+}
+
+void reset_prev_noise_addition_times_for_current_template(Network *network, CurrentPatternTemplate* pattern_template)
+{
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+			{
+				pattern_template->noise_params[i][j][k].prev_noise_addition_time = 0;
+			}
+		}
+	}
+}
+
+bool load_current_template_sample_to_neurons_with_noise(Network *network, CurrentPatternTemplate* pattern_template, unsigned int current_template_read_idx, TimeStamp now)
+{
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	InjectionCurrent ***current_samples =  pattern_template->template_samples[current_template_read_idx].current_sample;
+	CurrentNoiseParams *neuron_noise_params;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+			{
+				neuron_noise_params = &(pattern_template->noise_params[i][j][k]);
+				if ((now - neuron_noise_params->prev_noise_addition_time) >=  (neuron_noise_params->noise_addition_interval))
+				{
+					get_neuron_address(network, i, j, k)->I_inject = current_samples[i][j][k] + randn_notrig(0, neuron_noise_params->noise_variance);
+					neuron_noise_params->prev_noise_addition_time = now;
+				}
+			}
+		}
+	}
+	return TRUE;
+}
+
+bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer)
+{
+	unsigned int i, j, k;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	InjectionCurrent ***current_samples =  current_pattern_buffer->current_buffer[current_pattern_buffer->buff_write_idx].current_sample;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+			{
+				current_samples[i][j][k] = get_neuron_address(network, i, j, k)->I_inject;
+			}
+		}
+	}
+	if (current_pattern_buffer->buff_write_idx + 1 == current_pattern_buffer->buffer_size)
+		current_pattern_buffer->buff_write_idx = 0;
+	else
+		current_pattern_buffer->buff_write_idx++;
+	return TRUE;
 }
