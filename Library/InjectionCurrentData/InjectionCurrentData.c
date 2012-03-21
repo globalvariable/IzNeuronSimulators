@@ -120,7 +120,7 @@ CurrentTemplate* deallocate_current_templates(Network *network, TrialsData *tria
 //	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_templates", "Destroyed current_templates.");
 	return NULL;
 }
-bool submit_current_length_trial_start_available_status(Network *network, CurrentTemplate* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length)
+bool submit_current_length_trial_start_available_status(Network *network, CurrentTemplate* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length, bool *has_unallocated_current_template)
 {
 	unsigned int i, j, k, m;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -130,40 +130,56 @@ bool submit_current_length_trial_start_available_status(Network *network, Curren
 	if (trial_start_available_current_num >= current_data->num_of_trial_start_available_currents)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "trial_start_available_current_num >= current_data->current_templates.num_of_trial_start_available_currents.");
 	if (current_data->trial_start_available_currents[trial_start_available_current_num].template_samples != NULL)
-		print_message(WARNING_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "Template for this one was submitted previously. Template allocation will be done without deallocation for it  !!!");		
+	{
+		for (k = 0; k < current_data->trial_start_available_currents[trial_start_available_current_num].num_of_template_samples; k++)
+		{
+			get_num_of_layers_in_network(network, &num_of_layers);
+			for (i = 0; i < num_of_layers; i++)
+			{	
+				get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+				for (j=0; j<num_of_neuron_groups_in_layer; j++)
+				{
+					get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+					g_free(current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample[i][j]);
+				}
+				g_free(current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample[i]);
+			}
+			g_free(current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample);
+		}
+		g_free(current_data->trial_start_available_currents[trial_start_available_current_num].template_samples);	
+		current_data->trial_start_available_currents[trial_start_available_current_num].template_samples = NULL;
+	}	
 	current_data->trial_start_available_currents[trial_start_available_current_num].template_samples = g_new0(NeuronCurrentSample, current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	current_data->trial_start_available_currents[trial_start_available_current_num].num_of_template_samples = current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	current_data->trial_start_available_currents[trial_start_available_current_num].template_length = current_length;
 	for (k = 0; k < current_data->trial_start_available_currents[trial_start_available_current_num].num_of_template_samples; k++)
 	{
-		if (!get_num_of_layers_in_network(network, &num_of_layers))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "Couldn' t retrieve number of layers. Already allocated some data. Take care of that data.");
+		get_num_of_layers_in_network(network, &num_of_layers);
 		current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample = g_new0(InjectionCurrent**, num_of_layers);
 		for (i = 0; i < num_of_layers; i++)
 		{	
-			if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "Couldn' t retrieve number of neuron groups. Already allocated some data. Take care of that data.");
+			get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
 			current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample[i] = g_new0(InjectionCurrent*, num_of_neuron_groups_in_layer);
 			for (j=0; j<num_of_neuron_groups_in_layer; j++)
 			{
-				if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-					return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", "Couldn' t retrieve number of neurons. Already allocated some data. Take care of that data.");
+				get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 				current_data->trial_start_available_currents[trial_start_available_current_num].template_samples[k].current_sample[i][j] = g_new0(InjectionCurrent, num_of_neurons_in_neuron_group);
 			}
 		}
 	}
-
+	*has_unallocated_current_template = FALSE;
 	for (m = 0; m < current_data->num_of_trial_start_available_currents; m++)
 	{	
 		if (current_data->trial_start_available_currents[m].template_samples == NULL)
 		{
+			*has_unallocated_current_template = TRUE;
 			sprintf (str, "Still there are unallocated current patterns for trial start available current %d.", m);
 			print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_trial_start_available_status", str);
 		}
 	}
 	return TRUE;
 }
-bool submit_current_length_in_refractory_status(Network *network, CurrentTemplate* current_data, unsigned int in_refractory_current_num, TimeStamp current_length)
+bool submit_current_length_in_refractory_status(Network *network, CurrentTemplate* current_data, unsigned int in_refractory_current_num, TimeStamp current_length, bool *has_unallocated_current_template)
 {
 	unsigned int i, j, k, m;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -173,32 +189,50 @@ bool submit_current_length_in_refractory_status(Network *network, CurrentTemplat
 	if (in_refractory_current_num >= current_data->num_of_in_refractory_currents)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "in_refractory_current_num >= current_data->current_templates.in_refractory_current_num.");
 	if (current_data->in_refractory_currents[in_refractory_current_num].template_samples != NULL)
-		print_message(WARNING_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "Template for this one was submitted previously. Template allocation will be done without deallocation for it  !!!");	
+	{
+		for (k = 0; k < current_data->in_refractory_currents[in_refractory_current_num].num_of_template_samples; k++)
+		{
+			get_num_of_layers_in_network(network, &num_of_layers);
+			for (i = 0; i < num_of_layers; i++)
+			{
+				get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+				for (j=0; j<num_of_neuron_groups_in_layer; j++)
+				{
+					get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+					g_free(current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample[i][j]);
+				}
+				g_free(current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample[i]);
+			}
+			g_free(current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample);
+		}
+		g_free(current_data->in_refractory_currents[in_refractory_current_num].template_samples);		
+		current_data->in_refractory_currents[in_refractory_current_num].template_samples = NULL;	
+	}
+
 	current_data->in_refractory_currents[in_refractory_current_num].template_samples = g_new0(NeuronCurrentSample, current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	current_data->in_refractory_currents[in_refractory_current_num].num_of_template_samples = current_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	current_data->in_refractory_currents[in_refractory_current_num].template_length = current_length;
 	for (k = 0; k < current_data->in_refractory_currents[in_refractory_current_num].num_of_template_samples; k++)
 	{
-		if (!get_num_of_layers_in_network(network, &num_of_layers))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "Couldn' t retrieve number of layers. Already allocated some data. Take care of that data.");
+		get_num_of_layers_in_network(network, &num_of_layers);
 		current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample = g_new0(InjectionCurrent**, num_of_layers);
 		for (i = 0; i < num_of_layers; i++)
 		{
-			if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "Couldn' t retrieve number of neuron groups. Already allocated some data. Take care of that data.");
+			get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
 			current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample[i] = g_new0(InjectionCurrent*, num_of_neuron_groups_in_layer);
 			for (j=0; j<num_of_neuron_groups_in_layer; j++)
 			{
-				if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-					return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", "Couldn' t retrieve number of neurons. Already allocated some data. Take care of that data.");
+				get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 				current_data->in_refractory_currents[in_refractory_current_num].template_samples[k].current_sample[i][j] = g_new0(InjectionCurrent, num_of_neurons_in_neuron_group);
 			}
 		}
 	}
+	*has_unallocated_current_template = FALSE;
 	for (m = 0; m < current_data->num_of_in_refractory_currents; m++)
 	{	
 		if (current_data->in_refractory_currents[m].template_samples == NULL)
 		{
+			*has_unallocated_current_template = TRUE;
 			sprintf (str, "Still there are unallocated current patterns for in refractory current %d.", m);
 			print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_current_length_in_refractory_status", str);
 		}
@@ -209,7 +243,7 @@ bool submit_current_length_in_refractory_status(Network *network, CurrentTemplat
 
 CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer, unsigned int buffer_size)
 {
-	unsigned int i, j;
+	unsigned int i, j, k;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 
 	if (network == NULL)
@@ -223,19 +257,22 @@ CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentP
 	buffer = g_new0(CurrentPatternBuffer,1);
 	buffer->current_buffer = g_new0(NeuronCurrentSample, buffer_size);
 
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-		return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of layers. Already allocated some data. Take care of that data.");
-	buffer->current_buffer->current_sample = g_new0(InjectionCurrent**, num_of_layers);
-	for (i = 0; i < num_of_layers; i++)
+	for (k = 0; k <  buffer_size; k++)
 	{
-		if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
-			return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neuron groups. Already allocated some data. Take care of that data.");
-		buffer->current_buffer->current_sample[i] = g_new0(InjectionCurrent*, num_of_neuron_groups_in_layer);
-		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		if (!get_num_of_layers_in_network(network, &num_of_layers))
+			return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of layers. Already allocated some data. Take care of that data.");
+		buffer->current_buffer[k].current_sample = g_new0(InjectionCurrent**, num_of_layers);
+		for (i = 0; i < num_of_layers; i++)
 		{
-			if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
-				return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neurons. Already allocated some data. Take care of that data.");	
-			buffer->current_buffer->current_sample[i][j] = g_new0(InjectionCurrent, num_of_neurons_in_neuron_group);
+			if(!get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer))
+				return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neuron groups. Already allocated some data. Take care of that data.");
+			buffer->current_buffer[k].current_sample[i] = g_new0(InjectionCurrent*, num_of_neuron_groups_in_layer);
+			for (j=0; j<num_of_neuron_groups_in_layer; j++)
+			{
+				if (!get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group))
+					return (CurrentPatternBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer", "Couldn' t retrieve number of neurons. Already allocated some data. Take care of that data.");	
+				buffer->current_buffer[k].current_sample[i][j] = g_new0(InjectionCurrent, num_of_neurons_in_neuron_group);
+			}
 		}
 	}	
 	buffer->buffer_size = buffer_size;
@@ -351,7 +388,7 @@ bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPat
 			}
 		}
 	}
-	if (current_pattern_buffer->buff_write_idx + 1 == current_pattern_buffer->buffer_size)
+	if ((current_pattern_buffer->buff_write_idx + 1) == current_pattern_buffer->buffer_size)
 		current_pattern_buffer->buff_write_idx = 0;
 	else
 		current_pattern_buffer->buff_write_idx++;

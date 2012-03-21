@@ -6,8 +6,21 @@ static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;
 static void *bmi_simulation_spike_generator_rt_handler(void *args); 
 static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trials_data, Network *network, CurrentTemplate *current_templates, CurrentPatternBuffer *current_pattern_buffer, NeuronDynamicsBuffer	*neuron_dynamics_buffer, TimeStamp *integration_start_time,  TimeStamp *integration_end_time, unsigned int num_of_layers, char *message);
 
+void bmi_simulation_spike_generator_create_rt_thread(void)
+{
+	static bool first = TRUE;
+	if (first)
+	{
+		bmi_simulation_spike_generator_rt_thread = rt_thread_create( bmi_simulation_spike_generator_rt_handler, NULL, 10000);
+		first = FALSE;
+	}
+	else
+	{
+		print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_create_rt_thread", "CANNOT create rt_thread again. Should restart the program. ");	//  use of static variables in bmi_simulation_spike_generator_integration_handler are not designed for re-use. Should clear all read or write indexes (current, templates) for restart of rt_thread. 
+	}
+}
 
-static void *bmi_simulation_spike_generator_rt_handler(void *args)
+static void *bmi_simulation_spike_generator_rt_handler(void *args)		
 {
 	RT_TASK *handler;
         RTIME period;
@@ -74,6 +87,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 	{
 		trials_status_event_buff_write_idx_prev = trials_data->trials_status_event_buffer.buff_write_idx;
 		last_trial_status_event = get_last_trial_status_event_item(trials_data);
+		printf("%u\n", last_trial_status_event.status_type);		
 		switch (last_trial_status_event.status_type)
 		{
 			case TRIAL_STATUS_TRIALS_DISABLED:	// ignore handling
@@ -227,7 +241,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 				return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_rt_handler", "default - switch.");
 		}
 	}
-	else // change in trial status
+	else // no change in trial status
 	{
 		switch (last_trial_status_event.status_type)
 		{
@@ -366,6 +380,8 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 void bmi_simulation_spike_generator_kill_rt_task(void)
 {
 	bmi_simulation_spike_generator_rt_task_stay_alive = 0;
+	rt_make_soft_real_time();
+	rt_thread_join(bmi_simulation_spike_generator_rt_thread);   // test segmentation fault
 }
 
 

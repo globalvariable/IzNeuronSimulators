@@ -10,7 +10,7 @@
 
 
 void bmi_simulation_spike_generator_kill_rt_task(void);
-
+void bmi_simulation_spike_generator_create_rt_thread(void);
 
 
 

@@ -1,8 +1,5 @@
 #include "BuffersView.h"
 
-static GtkWidget *btn_start_spike_generation;
-static GtkWidget *btn_pause_spike_generation;
-static GtkWidget *btn_stop_spike_generation;
 static GtkWidget *btn_enable_current_buffer_visualization;
 static GtkWidget *btn_enable_neuron_dynamics_buffer_visualization;
 
@@ -32,22 +29,6 @@ bool create_buffers_view_gui(void)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 0,1, 0, 6);  
 
-  	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	lbl = gtk_label_new("--- Spike Generator ---");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl,TRUE,TRUE,0);
-
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_start_spike_generation = gtk_button_new_with_label("Start");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_start_spike_generation, TRUE, TRUE, 0);
-	btn_pause_spike_generation = gtk_button_new_with_label("Pause");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_pause_spike_generation, TRUE, TRUE, 0);
-	btn_stop_spike_generation = gtk_button_new_with_label("Stop");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_stop_spike_generation, TRUE, TRUE, 0);
-
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -70,9 +51,6 @@ bool create_buffers_view_gui(void)
  	hbox = gtk_hbox_new(TRUE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 1, 8, 0, 3);
 
-
-
-	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
 	current_pattern_buffer_graph = allocate_current_pattern_graph(hbox, current_pattern_buffer_graph, 1000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 
  	hbox = gtk_hbox_new(TRUE, 0);

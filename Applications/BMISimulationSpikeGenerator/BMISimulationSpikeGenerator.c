@@ -16,7 +16,6 @@ int main( int argc, char *argv[])
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "spike_generator_trials_data == NULL."); return -1; }
 	bmi_simulation_spike_generator_trials_data->num_of_other_procs++;
 	bmi_simulation_spike_gen_data = allocate_spike_generator_data(bmi_simulation_spike_gen_data, bmi_simulation_spike_generator_trials_data);
-//	bmi_simulation_spike_generator_rt_thread = rt_thread_create( bmi_simulation_spike_generator_rt_handler, NULL, 10000);
 	gtk_init(&argc, &argv);
 	create_gui();
 	gtk_main();
