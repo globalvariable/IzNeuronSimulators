@@ -139,8 +139,6 @@ bool update_texts_of_combos_when_change(LayerNrnGrpNeuronCombo *combos, Network 
 
 bool layer_neuron_group_neuron_get_selected(LayerNrnGrpNeuronCombo *combos, unsigned int *layer_num, unsigned int *nrn_grp_num, unsigned int *nrn_num)
 {
-	if (combos == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "NeuroSimCombos", "layer_neuron_group_neuron_get_selected", "combos == NULL.");
 	*layer_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_layer));		
 	*nrn_grp_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron_group));
 	*nrn_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron));

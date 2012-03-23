@@ -23,6 +23,10 @@ NeuronDynamicsCombo* allocate_neuron_dynamics_combo(GtkWidget *hbox, NeuronDynam
 	return combo;
 }
 
-
+bool neuron_dynamics_combo_get_selected(NeuronDynamicsCombo *combo, int *idx)
+{
+	*idx =  gtk_combo_box_get_active (GTK_COMBO_BOX(combo->combo));		
+	return TRUE;
+}
 
 

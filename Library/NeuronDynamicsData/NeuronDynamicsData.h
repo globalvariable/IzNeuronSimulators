@@ -25,9 +25,11 @@ struct __NeuronDynamicsBuffer
 {
 	NetworkNeuronDynamics 	*buffer;
 	unsigned int 				buff_write_idx;
+	unsigned int 				buffer_size;
 };
 
 
-NeuronDynamicsBuffer* allocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer_data);
-NeuronDynamicsBuffer* deallocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer_data);
+NeuronDynamicsBuffer* allocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer, unsigned int buffer_size);
+NeuronDynamicsBuffer* deallocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer);
+bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer);
 #endif

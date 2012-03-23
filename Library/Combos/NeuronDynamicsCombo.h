@@ -12,7 +12,7 @@ struct  __NeuronDynamicsCombo
 };
 
 NeuronDynamicsCombo* allocate_neuron_dynamics_combo(GtkWidget *hbox, NeuronDynamicsCombo *combo);
-
+bool neuron_dynamics_combo_get_selected(NeuronDynamicsCombo *combo, int *idx);
 
 
 #endif

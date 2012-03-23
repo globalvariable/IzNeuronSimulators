@@ -117,7 +117,7 @@ CurrentTemplate* allocate_current_templates(Network *network, TrialsData *trials
 }
 CurrentTemplate* deallocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data)
 {
-//	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_templates", "Destroyed current_templates.");
+	print_message(BUG_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_templates", "Not implemented.");
 	return NULL;
 }
 bool submit_current_length_trial_start_available_status(Network *network, CurrentTemplate* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length, bool *has_unallocated_current_template)
@@ -281,6 +281,7 @@ CurrentPatternBuffer* allocate_current_pattern_buffer(Network *network, CurrentP
 }
 CurrentPatternBuffer* deallocate_current_pattern_buffer(Network *network, CurrentPatternBuffer *buffer)
 {
+	print_message(BUG_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_pattern_buffer", "Not implemented.");	
 	return NULL;
 }
 

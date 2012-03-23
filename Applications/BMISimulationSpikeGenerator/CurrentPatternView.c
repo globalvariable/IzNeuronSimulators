@@ -843,8 +843,7 @@ static void submit_num_of_currents_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
 
 	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, trials_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
-	if (!create_buffers_view_gui())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
+
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_current_lengths, TRUE);	
 }
@@ -897,6 +896,7 @@ static void generate_current_injection_graphs_button_func(void)
 	current_pattern_graph = allocate_current_pattern_graph(current_pattern_graph_hbox, current_pattern_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
+	spike_gen_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(spike_gen_data->network, spike_gen_data->neuron_dynamics_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
 	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
 	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, TRUE);
 	gtk_widget_set_sensitive(btn_draw_template, TRUE);
@@ -916,8 +916,9 @@ static void generate_current_injection_graphs_button_func(void)
 
 static void start_spike_generation_button_func(void)
 {	
-	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
-	
+	if (!create_buffers_view_gui())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
+
 	gtk_widget_set_sensitive(btn_start_spike_generation, FALSE);	
 	bmi_simulation_spike_generator_create_rt_thread();		
 }
@@ -1243,7 +1244,7 @@ static void add_noise_in_trial_button_func(void)
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
 	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_trial_available_button_func(void)
 {
@@ -1259,7 +1260,7 @@ static void add_noise_trial_available_button_func(void)
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_in_refractory_button_func(void)
 {
@@ -1275,7 +1276,7 @@ static void add_noise_in_refractory_button_func(void)
 	if (current_num >= current_templates->num_of_in_refractory_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 
 void interrogate_network_button_func(void)
@@ -1475,10 +1476,8 @@ static void quit_button_func(void)
 {
 	get_bmi_simulation_spike_generator_trials_data()->num_of_other_procs--;
 	bmi_simulation_spike_generator_kill_rt_task();
-//	rt_thread_join(bmi_trial_controller_get_rt_thread());
 	if (! delete_rt_task_from_rt_tasks_data(SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_PERIOD ))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "quit_button_func", "! delete_rt_task_from_rt_tasks_data().");	
- //	deallocate_trials_data(bmi_trial_controller_get_trials_data());
 	print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "quit_button_func", "QUIT.");				
 	gtk_main_quit();	
 

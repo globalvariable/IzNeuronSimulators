@@ -4,7 +4,7 @@ static int bmi_simulation_spike_generator_rt_thread = 0;
 static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;
 
 static void *bmi_simulation_spike_generator_rt_handler(void *args); 
-static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trials_data, Network *network, CurrentTemplate *current_templates, CurrentPatternBuffer *current_pattern_buffer, NeuronDynamicsBuffer	*neuron_dynamics_buffer, TimeStamp *integration_start_time,  TimeStamp *integration_end_time, unsigned int num_of_layers, char *message);
+static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trials_data, Network *network, CurrentTemplate *current_templates, CurrentPatternBuffer *current_pattern_buffer, NeuronDynamicsBuffer	*neuron_dynamics_buffer, TimeStamp integration_start_time,  TimeStamp integration_end_time, unsigned int num_of_layers, char *message);
 
 void bmi_simulation_spike_generator_create_rt_thread(void)
 {
@@ -44,7 +44,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
         period = nano2count(SPIKE_GENERATOR_PERIOD);
         rt_task_make_periodic(handler, rt_get_time() + period, period);
 	prev_time = rt_get_cpu_time_ns();	
-	integration_start_time = shared_memory->rt_tasks_data.current_system_time;	
+	integration_start_time = ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_neuron_dynamics (network);
 	if (!get_num_of_layers_in_network(network, &num_of_layers))
 		return (void *)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "Couldn' t retrieve number of layers.");	
@@ -57,19 +57,20 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 		evaluate_and_save_jitter(SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, prev_time, curr_time);
 		prev_time = curr_time;
 		// routines
-		integration_end_time =  shared_memory->rt_tasks_data.current_system_time;
-		if(! bmi_simulation_spike_generator_integration_handler(trials_data, network, current_templates, current_pattern_buffer, neuron_dynamics_pattern_buffer, &integration_start_time, &integration_end_time, num_of_layers, message))
+		integration_end_time =  ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+		if(! bmi_simulation_spike_generator_integration_handler(trials_data, network, current_templates, current_pattern_buffer, neuron_dynamics_pattern_buffer, integration_start_time, integration_end_time, num_of_layers, message))
 			return (void *)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! bmi_simulation_spike_generator_integration_handler().");
+		integration_start_time = integration_end_time;
 		// routines	
 		evaluate_and_save_period_run_time(SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, curr_time, rt_get_cpu_time_ns());		
         }
+	rt_make_soft_real_time();
         rt_task_delete(handler);
-
 	print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "rt_task_delete().");		
         return 0;
 }
 
-static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trials_data, Network *network, CurrentTemplate *current_templates, CurrentPatternBuffer *current_pattern_buffer, NeuronDynamicsBuffer	*neuron_dynamics_buffer, TimeStamp *integration_start_time,  TimeStamp *integration_end_time, unsigned int num_of_layers, char *message)
+static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trials_data, Network *network, CurrentTemplate *current_templates, CurrentPatternBuffer *current_pattern_buffer, NeuronDynamicsBuffer	*neuron_dynamics_buffer, TimeStamp integration_start_time,  TimeStamp integration_end_time, unsigned int num_of_layers, char *message)
 {
 	static unsigned int trials_status_event_buff_write_idx_prev = 0;	// TrialController increments write idx at start up, then this proc detects any change. 
 	static TrialStatusEventItem last_trial_status_event;
@@ -87,7 +88,12 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 	{
 		trials_status_event_buff_write_idx_prev = trials_data->trials_status_event_buffer.buff_write_idx;
 		last_trial_status_event = get_last_trial_status_event_item(trials_data);
-		printf("%u\n", last_trial_status_event.status_type);		
+		if (!get_trial_status_type_string(last_trial_status_event.status_type, message))  
+			return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! get_trial_status_type_string()");	
+		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);								
+		if (!get_trial_type_string(last_trial_status_event.additional_data, message))
+			return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! get_trial_type_string()");	
+		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);								
 		switch (last_trial_status_event.status_type)
 		{
 			case TRIAL_STATUS_TRIALS_DISABLED:	// ignore handling
@@ -100,15 +106,16 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 						get_trial_type_idx_in_trials_data(trials_data, last_trial_status_event.additional_data, &trial_type_idx);
 						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, trial_type_idx, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
+						current_template_in_use->template_start_time = integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
-						for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
 							current_template_read_idx++;
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -119,26 +126,30 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									{
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+										if (spike_time != MAX_TIME_STAMP)
+										{
+											// write to spike_time_stamp_buffer
+										}
 									}
 								}
 							}		
 						}
-						*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;					
 						break;									
 					case TRIAL_TYPE_BMI_RT_SIMULATION_RIGHT_TARGET:	
 						determine_in_trial_current_number_randomly(current_templates, &current_template_num_in_use);
 						get_trial_type_idx_in_trials_data(trials_data, last_trial_status_event.additional_data, &trial_type_idx);
 						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, trial_type_idx, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
+						current_template_in_use->template_start_time = integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
-						for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
 							current_template_read_idx++;
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -149,11 +160,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									{
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+										if (spike_time != MAX_TIME_STAMP)
+										{
+											// write to spike_time_stamp_buffer
+										}
 									}
 								}
 							}		
 						}
-						*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;					
 						break;	
 					default:
 						get_trial_type_string(last_trial_status_event.additional_data, message);
@@ -165,16 +179,16 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 				determine_in_refractory_current_number_randomly(current_templates, &current_template_num_in_use);
 				get_in_refractory_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 				current_template_read_idx = 0;
-				current_template_in_use->template_start_time = *integration_start_time;   
+				current_template_in_use->template_start_time = integration_start_time;   
 				reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
-				for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 				{
 					if (time_ns >= (current_template_in_use->template_start_time + current_template_in_use->template_length))
 					{
 						determine_in_refractory_current_number_randomly(current_templates, &current_template_num_in_use);
 						get_in_refractory_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   
+						current_template_in_use->template_start_time = integration_start_time;   
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);					
 					}
 					load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -182,6 +196,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -192,26 +207,29 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							{
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+								if (spike_time != MAX_TIME_STAMP)
+								{
+									// write to spike_time_stamp_buffer
+								}
 							}
 						}
 					}		
 				}
-				*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;	
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
 				determine_trial_start_available_current_number_randomly(current_templates, &current_template_num_in_use);
 				get_trial_start_available_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 				current_template_read_idx = 0;
-				current_template_in_use->template_start_time = *integration_start_time;   
+				current_template_in_use->template_start_time = integration_start_time;   
 				reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
-				for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 				{
 					if (time_ns >= (current_template_in_use->template_start_time + current_template_in_use->template_length))
 					{
 						determine_trial_start_available_current_number_randomly(current_templates, &current_template_num_in_use);
 						get_trial_start_available_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   
+						current_template_in_use->template_start_time = integration_start_time;   
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);			
 					}
 					load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -219,6 +237,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -229,11 +248,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							{
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+								if (spike_time != MAX_TIME_STAMP)
+								{
+									// write to spike_time_stamp_buffer
+								}
 							}
 						}
 					}		
 				}
-				*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 				break;
 			default: 
 				get_trial_status_type_string(last_trial_status_event.status_type, message);
@@ -251,13 +273,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 				switch (last_trial_status_event.additional_data)
 				{
 					case TRIAL_TYPE_BMI_RT_SIMULATION_LEFT_TARGET:
-						for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
 							current_template_read_idx++;
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -268,20 +291,25 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									{
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+										if (spike_time != MAX_TIME_STAMP)
+										{
+											// write to spike_time_stamp_buffer
+										}
 									}
 								}
 							}		
 						}
-						*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;					
+
 						break;									
 					case TRIAL_TYPE_BMI_RT_SIMULATION_RIGHT_TARGET:	
-						for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
 							current_template_read_idx++;
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -292,11 +320,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									{
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+										if (spike_time != MAX_TIME_STAMP)
+										{
+											// write to spike_time_stamp_buffer
+										}
 									}
 								}
 							}		
 						}
-						*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;					
 						break;	
 					default:
 						get_trial_type_string(last_trial_status_event.additional_data, message);
@@ -305,14 +336,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 				}				
 				break;	
 			case TRIAL_STATUS_IN_REFRACTORY:	
-				for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 				{
 					if (time_ns >= (current_template_in_use->template_start_time + current_template_in_use->template_length))  // restart current injection with new template since duration of this template is completed. 
 					{
 						determine_in_refractory_current_number_randomly(current_templates, &current_template_num_in_use);
 						get_in_refractory_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   
+						current_template_in_use->template_start_time = integration_start_time;   
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);					
 					}
 					load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -320,6 +351,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -330,21 +362,24 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							{
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+								if (spike_time != MAX_TIME_STAMP)
+								{
+									// write to spike_time_stamp_buffer
+								}
 							}
 						}
 					}		
 				}
-				*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;	
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
-				for (time_ns = *integration_start_time; time_ns < *integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 				{
 					if (time_ns >= (current_template_in_use->template_start_time + current_template_in_use->template_length))
 					{
 						determine_trial_start_available_current_number_randomly(current_templates, &current_template_num_in_use);
 						get_trial_start_available_current_pattern_template(current_templates, &current_template_in_use, current_template_num_in_use);
 						current_template_read_idx = 0;
-						current_template_in_use->template_start_time = *integration_start_time;   
+						current_template_in_use->template_start_time = integration_start_time;   
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);			
 					}
 					load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -352,6 +387,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -362,11 +398,14 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							{
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+								if (spike_time != MAX_TIME_STAMP)
+								{
+									// write to spike_time_stamp_buffer
+								}
 							}
 						}
 					}		
 				}
-				*integration_start_time = time_ns - PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 				break;
 			default: 
 				get_trial_status_type_string(last_trial_status_event.status_type, message);
@@ -380,8 +419,6 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 void bmi_simulation_spike_generator_kill_rt_task(void)
 {
 	bmi_simulation_spike_generator_rt_task_stay_alive = 0;
-	rt_make_soft_real_time();
-	rt_thread_join(bmi_simulation_spike_generator_rt_thread);   // test segmentation fault
 }
 
 
