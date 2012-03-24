@@ -2,7 +2,7 @@
 
 
 
-NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network, GtkWidget *hbox, NetworkSpikePatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height)
+NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network, GtkWidget *hbox, NetworkSpikePatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_slide, TimeStamp spike_buffer_followup_latency)
 {
 	GdkColor color_bg;
 	GdkColor color_line;
@@ -15,11 +15,19 @@ NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network,
 		print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "allocate_network_spike_pattern_graph", "graph != NULL");	
 		return graph;
 	}
+	if (spike_buffer_followup_latency < 100000000)
+		print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "allocate_network_spike_pattern_graph", "spike_buffer_followup_latency < 100 ms");			
 	graph = g_new0(NetworkSpikePatternGraph,1);	
 	graph->num_of_data_points = num_of_data_points;
 	graph->sampling_interval = sampling_interval;
 	graph->graph_len = sampling_interval*num_of_data_points;
 	graph->graph_len_ms = graph->graph_len/1000000;
+	graph->num_of_data_points_to_slide = num_of_data_points_to_slide;
+	graph->graph_len_to_slide = sampling_interval*num_of_data_points_to_slide;
+	graph->spike_buffer_followup_latency = spike_buffer_followup_latency;
+	get_num_of_neurons_in_network(network, &num_of_all_neurons_in_network);
+	graph->spike_handling_buffer = allocate_spike_data(graph->spike_handling_buffer, (unsigned int)(num_of_all_neurons_in_network*(spike_buffer_followup_latency/1000000000.0)*500) ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+
 	color_bg.red = 0;
 	color_bg.green = 0;
 	color_bg.blue = 0;
@@ -56,7 +64,7 @@ NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network,
 				graph->neuron_graphs[i][j][k].x = g_new0(float, num_of_data_points);  
 				graph->neuron_graphs[i][j][k].y = g_new0(float, num_of_data_points);
 				for (m = 0; m < num_of_data_points; m++)
-					graph->neuron_graphs[i][j][k].x[m] = m*sampling_interval/1000000;
+					graph->neuron_graphs[i][j][k].x[m] = (m*sampling_interval)/1000000;
 				graph->neuron_graphs[i][j][k].graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->neuron_graphs[i][j][k].x, graph->neuron_graphs[i][j][k].y, &color_line, 0));
 				gtk_databox_graph_add (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), graph->neuron_graphs[i][j][k].graph);	
 				gtk_databox_set_total_limits (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), 0, (graph->graph_len_ms), 1.0, 0.9);	
@@ -68,10 +76,14 @@ NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network,
 	return graph;						
 }
 
-bool clear_network_spike_pattern_graph_y_axes(Network* network, NetworkSpikePatternGraph *graph)
+bool slide_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraph *graph)
 {
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	unsigned int i, j, k, m;
+	unsigned int slide = graph->num_of_data_points_to_slide; 
+	unsigned int end_idx = graph->num_of_data_points;
+	unsigned int clear_start_idx = end_idx - slide;
+
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{
@@ -81,21 +93,22 @@ bool clear_network_spike_pattern_graph_y_axes(Network* network, NetworkSpikePatt
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				for (m = 0; m < graph->num_of_data_points; m++)
-					graph->neuron_graphs[i][j][k].y[m] =0;
+				for (m = slide; m < end_idx; m++)
+					graph->neuron_graphs[i][j][k].y[m-slide] = graph->neuron_graphs[i][j][k].y[m];
+				for (m = clear_start_idx ; m < end_idx; m++)
+					graph->neuron_graphs[i][j][k].y[m] = 0;				
 			}
 		}
 	}
 	return TRUE;
 }
 
-bool 
-
-/*
-bool update_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraph *graph, SpikeData *spike_data, TimeStamp current_time)
+bool set_total_limits_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraph *graph)
 {
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	unsigned int i, j, k, m;
+	unsigned int i, j, k;
+	NeuronSpikePatternGraph ***neuron_graphs = graph->neuron_graphs;
+	unsigned int 	graph_len_ms = graph->graph_len_ms;
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{
@@ -105,10 +118,9 @@ bool update_network_spike_pattern_graph(Network* network, NetworkSpikePatternGra
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				for (m = 0; m < num_of_data_points; m++)
-					graph->neuron_graphs[i][j][k].y[m] =0;
+				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0, graph_len_ms, 1.0, 0.9);	
 			}
 		}
 	}
 	return TRUE;
-}*/
+}

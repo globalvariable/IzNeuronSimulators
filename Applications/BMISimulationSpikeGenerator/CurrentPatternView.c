@@ -899,7 +899,7 @@ static void generate_current_injection_graphs_button_func(void)
 	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
 	spike_gen_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(spike_gen_data->network, spike_gen_data->neuron_dynamics_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
 	get_num_of_neurons_in_network(spike_gen_data->network, &num_of_all_neurons_in_network);
-	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, num_of_all_neurons_in_network*6*500 ); // 6 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, num_of_all_neurons_in_network*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
 	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, TRUE);
 	gtk_widget_set_sensitive(btn_draw_template, TRUE);
