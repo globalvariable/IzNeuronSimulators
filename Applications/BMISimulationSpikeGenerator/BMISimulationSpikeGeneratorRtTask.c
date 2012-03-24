@@ -127,9 +127,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 										if (spike_time != MAX_TIME_STAMP)
-										{
-											// write to spike_time_stamp_buffer
-										}
+											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
 							}		
@@ -161,9 +159,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 										if (spike_time != MAX_TIME_STAMP)
-										{
-											// write to spike_time_stamp_buffer
-										}
+											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
 							}		
@@ -208,9 +204,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 								if (spike_time != MAX_TIME_STAMP)
-								{
-									// write to spike_time_stamp_buffer
-								}
+									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
 					}		
@@ -249,9 +243,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 								if (spike_time != MAX_TIME_STAMP)
-								{
-									// write to spike_time_stamp_buffer
-								}
+									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
 					}		
@@ -292,9 +284,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 										if (spike_time != MAX_TIME_STAMP)
-										{
-											// write to spike_time_stamp_buffer
-										}
+											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
 							}		
@@ -321,9 +311,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 										neuron = get_neuron_address(network, i, j, k);
 										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 										if (spike_time != MAX_TIME_STAMP)
-										{
-											// write to spike_time_stamp_buffer
-										}
+											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
 							}		
@@ -363,9 +351,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 								if (spike_time != MAX_TIME_STAMP)
-								{
-									// write to spike_time_stamp_buffer
-								}
+									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
 					}		
@@ -399,9 +385,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 								neuron = get_neuron_address(network, i, j, k);
 								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 								if (spike_time != MAX_TIME_STAMP)
-								{
-									// write to spike_time_stamp_buffer
-								}
+									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
 					}		

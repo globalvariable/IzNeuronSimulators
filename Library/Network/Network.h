@@ -48,6 +48,6 @@ void interrogate_network(Network *network);
 bool get_num_of_layers_in_network(Network *network, unsigned int *num_of_layers);
 bool get_num_of_neuron_groups_in_layer(Network *network, unsigned int layer, unsigned int *num_of_neuron_groups);
 bool get_num_of_neurons_in_neuron_group(Network *network, unsigned int layer, unsigned int neuron_group, unsigned int *num_of_neurons);
-
-
+bool get_num_of_neurons_in_network(Network *network, unsigned int *num_of_neurons);
+bool get_num_of_neuron_groups_in_network(Network *network, unsigned int *num_of_neuron_groups);
 #endif

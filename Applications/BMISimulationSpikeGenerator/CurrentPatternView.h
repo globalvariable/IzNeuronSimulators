@@ -8,6 +8,7 @@
 #include <math.h>
 #include "BMISimulationSpikeGenerator.h"
 #include "BuffersView.h"
+#include "SpikePatternView.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/IzNeuron/Neuron.h"
 #include "../../Library/IzNeuron/NeuronTypes.h"

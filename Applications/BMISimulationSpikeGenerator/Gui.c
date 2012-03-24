@@ -20,7 +20,7 @@ void create_gui(void)
   	gtk_window_set_title(GTK_WINDOW(window), "BMISimulationSpikeGenerator");
   	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 
-  	vbox = gtk_vbox_new(FALSE, 0);
+  	vbox = gtk_vbox_new(TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
 	bmi_simulation_spike_generator_gui_tabs = gtk_notebook_new ();

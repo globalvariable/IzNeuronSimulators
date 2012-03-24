@@ -409,20 +409,12 @@ void interrogate_network(Network *network)
 
 bool get_num_of_layers_in_network(Network *network, unsigned int *num_of_layers)
 {
-	*num_of_layers = 0;
-	if (!is_network_allocated(network))
-		return FALSE;
 	*num_of_layers = network->layer_count; 
 	return TRUE;	
 }
 
 bool get_num_of_neuron_groups_in_layer(Network *network, unsigned int layer, unsigned int *num_of_neuron_groups)
 {
-	*num_of_neuron_groups = 0;
-	if (!is_network_allocated(network))
-		return FALSE;
-	if (is_layer_free (network, layer))
-		return FALSE;		
 	*num_of_neuron_groups = network->layers[layer]->neuron_group_count;
 	return TRUE;
 }
@@ -430,15 +422,38 @@ bool get_num_of_neuron_groups_in_layer(Network *network, unsigned int layer, uns
 
 bool get_num_of_neurons_in_neuron_group(Network *network, unsigned int layer, unsigned int neuron_group,unsigned int *num_of_neurons)
 {
-	if (!is_network_allocated(network))
-		return FALSE;
-	if (is_layer_free (network, layer))
-		return FALSE;
-	if (is_neuron_group_free (network, layer, neuron_group))
-		return FALSE;
 	*num_of_neurons = network->layers[layer]->neuron_groups[neuron_group]->neuron_count;
 	return TRUE;
 }
 
+bool get_num_of_neurons_in_network(Network *network, unsigned int *num_of_neurons)
+{
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int i, j;
+	*num_of_neurons = 0;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			*num_of_neurons = *num_of_neurons + num_of_neurons_in_neuron_group;
+		}
+	}
+	return TRUE;	
+}
 
-
+bool get_num_of_neuron_groups_in_network(Network *network, unsigned int *num_of_neuron_groups)
+{
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer;
+	unsigned int i;
+	*num_of_neuron_groups = 0;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		*num_of_neuron_groups = *num_of_neuron_groups + num_of_neuron_groups_in_layer;
+	}
+	return TRUE;	
+}

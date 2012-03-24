@@ -104,7 +104,7 @@ bool create_buffers_view_gui(void)
 	else
 		previous_start_idx_to_plot = (previous_start_idx_to_plot-1) * num_of_data_points_of_buffer_graphs;  // read previous section
 
-	g_timeout_add(500, timeout_callback, NULL);
+	g_timeout_add(100, timeout_callback, NULL);
 
 	return TRUE;
 }
