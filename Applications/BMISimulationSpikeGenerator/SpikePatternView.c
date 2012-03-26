@@ -84,7 +84,7 @@ static gboolean timeout_callback(gpointer user_data)
 	TimeStamp 				spike_time;
 	SpikeTimeStampItem		*spike_item;
 	
-	if (slide_request)
+	if (slide_request)   // it is necessary otherwise set_total_limits cannot display slided and clear graph part. 
 	{
 		slide_network_spike_pattern_graph(spike_gen_data->network, network_spike_pattern_graph);
 		slide_request = FALSE;
