@@ -3,6 +3,7 @@
 static GtkWidget *btn_pause;
 static NetworkSpikePatternGraph *network_spike_pattern_graph = NULL;
 static bool paused = TRUE;
+static bool slide_request = FALSE;
 
 static unsigned int blue_spike_spike_buffer_read_idx;
 static unsigned int blue_spike_spike_buffer_size;
@@ -82,17 +83,21 @@ static gboolean timeout_callback(gpointer user_data)
 	unsigned int 				spike_handling_buff_idx_write;
 	TimeStamp 				spike_time;
 	SpikeTimeStampItem		*spike_item;
+	
+	if (slide_request)
+	{
+		slide_network_spike_pattern_graph(spike_gen_data->network, network_spike_pattern_graph);
+		slide_request = FALSE;
+	}	
 	if (!paused)
 	{
-
 		current_time = shared_memory->rt_tasks_data.current_system_time;
 		blue_spike_buff_idx_write = shared_memory->spike_time_stamp.buff_idx_write;
 		spike_handling_buff_idx_write = network_spike_pattern_graph->spike_handling_buffer->buff_idx_write;
 		buffering_start_time = network_spike_pattern_graph->buffering_start_time;
-		buffering_end_time = network_spike_pattern_graph->buffering_start_time + network_spike_pattern_graph->graph_len_to_slide;
+		buffering_end_time = buffering_start_time + network_spike_pattern_graph->graph_len_to_slide;
 		if (current_time > (buffering_end_time + network_spike_pattern_graph->spike_buffer_followup_latency) )
 		{
-			network_spike_pattern_graph->buffering_start_time = buffering_end_time; // prepare for next acquisition
 			while (graph_spike_buffer_read_idx !=  spike_handling_buff_idx_write) 	// first handle graph' s spike buffer
 			{
 				spike_item = &(graph_spike_handling_buffer_buff[graph_spike_buffer_read_idx]);
@@ -101,7 +106,7 @@ static gboolean timeout_callback(gpointer user_data)
 					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - buffering_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
 					write_to_spike_data(graph_spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);
-				if (graph_spike_handling_buffer_buff[graph_spike_buffer_read_idx].peak_time < buffering_start_time)
+				if (spike_time < buffering_start_time)
 					return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "SpikePatternView", "gboolean timeout_callback", "graph_buffer_spike_time < buffering_start_time");	
 				graph_spike_buffer_read_idx++;
 				if (graph_spike_buffer_read_idx == graph_spike_buffer_size)
@@ -115,14 +120,15 @@ static gboolean timeout_callback(gpointer user_data)
 					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - buffering_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
 					write_to_spike_data(graph_spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);
-				if (blue_spike_handling_buffer_buff[blue_spike_spike_buffer_read_idx].peak_time < buffering_start_time)	
+				if (spike_time < buffering_start_time)
 					return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "SpikePatternView", "gboolean timeout_callback", "blue_spike_spike_time < buffering_start_time");	
 				blue_spike_spike_buffer_read_idx++;
 				if (blue_spike_spike_buffer_read_idx == blue_spike_spike_buffer_size)
 					blue_spike_spike_buffer_read_idx = 0;
 			}
-			set_total_limits_network_spike_pattern_graph(spike_gen_data->network, neuron_graphs);
-			slide_network_spike_pattern_graph(spike_gen_data->network, network_spike_pattern_graph);
+			set_total_limits_network_spike_pattern_graph(spike_gen_data->network, network_spike_pattern_graph);
+			slide_request = TRUE;
+			network_spike_pattern_graph->buffering_start_time = buffering_end_time; // prepare for next acquisition
 		}
 		else		// do not plot if current time is not larger than buffering_end_time. Only handle buffers.
 		{
@@ -134,7 +140,7 @@ static gboolean timeout_callback(gpointer user_data)
 					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - buffering_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
 					write_to_spike_data(graph_spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);
-				if (graph_spike_handling_buffer_buff[graph_spike_buffer_read_idx].peak_time < buffering_start_time)
+				if (spike_time < buffering_start_time)
 					return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "SpikePatternView", "gboolean timeout_callback", "graph_buffer_spike_time < buffering_start_time");	
 				graph_spike_buffer_read_idx++;
 				if (graph_spike_buffer_read_idx == graph_spike_buffer_size)
@@ -166,6 +172,7 @@ static void pause_button_func (void)
 		network_spike_pattern_graph->buffering_start_time = shared_memory->rt_tasks_data.current_system_time;
 		blue_spike_spike_buffer_read_idx = shared_memory->spike_time_stamp.buff_idx_write;
 		graph_spike_buffer_read_idx = network_spike_pattern_graph->spike_handling_buffer->buff_idx_write;
+		slide_network_spike_pattern_graph(spike_gen_data->network, network_spike_pattern_graph);
 		paused = FALSE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause),"R");
 	}

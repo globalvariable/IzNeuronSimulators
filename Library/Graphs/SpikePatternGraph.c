@@ -67,7 +67,7 @@ NetworkSpikePatternGraph* allocate_network_spike_pattern_graph(Network* network,
 					graph->neuron_graphs[i][j][k].x[m] = (m*sampling_interval)/1000000;
 				graph->neuron_graphs[i][j][k].graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->neuron_graphs[i][j][k].x, graph->neuron_graphs[i][j][k].y, &color_line, 0));
 				gtk_databox_graph_add (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), graph->neuron_graphs[i][j][k].graph);	
-				gtk_databox_set_total_limits (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), 0, (graph->graph_len_ms), 1.0, 0.9);	
+				gtk_databox_set_total_limits (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), 0.0, (graph->graph_len_ms), 1.0, 0.9);	
 			}
 		}
 	}
@@ -96,7 +96,9 @@ bool slide_network_spike_pattern_graph(Network* network, NetworkSpikePatternGrap
 				for (m = slide; m < end_idx; m++)
 					graph->neuron_graphs[i][j][k].y[m-slide] = graph->neuron_graphs[i][j][k].y[m];
 				for (m = clear_start_idx ; m < end_idx; m++)
-					graph->neuron_graphs[i][j][k].y[m] = 0;				
+				{
+					graph->neuron_graphs[i][j][k].y[m] = 0;
+				}				
 			}
 		}
 	}
@@ -118,7 +120,7 @@ bool set_total_limits_network_spike_pattern_graph(Network* network, NetworkSpike
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0, graph_len_ms, 1.0, 0.9);	
+				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0.0, graph_len_ms, 1.0, 0.9);	
 			}
 		}
 	}
