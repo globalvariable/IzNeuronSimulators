@@ -684,6 +684,8 @@ bool create_current_pattern_view_gui(void)
     	g_signal_connect(G_OBJECT(btn_submit_num_of_currents), "clicked", G_CALLBACK(submit_num_of_currents_button_func), NULL);
     	g_signal_connect(G_OBJECT(btn_submit_current_lengths), "clicked", G_CALLBACK(submit_current_lengths_button_func), NULL);
     	g_signal_connect(G_OBJECT(btn_generate_current_injection_graphs), "clicked", G_CALLBACK(generate_current_injection_graphs_button_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
+      	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
       	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_start_spike_generation), "clicked", G_CALLBACK(start_spike_generation_button_func), NULL);
 
@@ -710,8 +712,7 @@ bool create_current_pattern_view_gui(void)
 /*     	g_signal_connect(G_OBJECT(btn_refresh_screen), "clicked", G_CALLBACK(refresh_screen_button_func), NULL);
      	g_signal_connect(G_OBJECT(btn_submit_initial_current_params), "clicked", G_CALLBACK(submit_initial_current_params_button_func), NULL);	     		  	
      	g_signal_connect(G_OBJECT(btn_create_firing_rate_view), "clicked", G_CALLBACK(create_firing_rate_view_button_func), NULL);	     		  	
-    	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
-      	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
+
 
       	g_signal_connect(G_OBJECT(btn_add_trial_type), "clicked", G_CALLBACK(add_trial_type_button_func ), NULL);       	
 	g_signal_connect(G_OBJECT(btn_draw_template), "clicked", G_CALLBACK(draw_template_button_func), NULL);
@@ -901,7 +902,7 @@ static void generate_current_injection_graphs_button_func(void)
 	get_num_of_neurons_in_network(spike_gen_data->network, &num_of_all_neurons_in_network);
 	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, num_of_all_neurons_in_network*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
-	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, TRUE);
+	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, FALSE);
 	gtk_widget_set_sensitive(btn_draw_template, TRUE);
 	gtk_widget_set_sensitive(btn_clear_template, TRUE);
 	gtk_widget_set_sensitive(btn_copy_drawn_to_template_in_trial, TRUE);
@@ -1285,14 +1286,14 @@ static void add_noise_in_refractory_button_func(void)
 
 void interrogate_network_button_func(void)
 {
-//	interrogate_network(spike_pattern_generator_get_network());
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	interrogate_network(spike_gen_data->network);
 } 		
 
 void interrogate_neuron_button_func(void)
 {
-/*	interrogate_neuron	(	spike_pattern_generator_get_network(), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_layer)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron_group)), 
-						gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron)) 
-					);*/
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	interrogate_neuron	(spike_gen_data->network, gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_layer)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron_group)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron)) );
 }
 
 void create_directory_button_func(void)
