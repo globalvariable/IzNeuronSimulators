@@ -29,6 +29,9 @@ void create_gui(void)
 	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hybrid_bmi_gui_tabs), GTK_POS_TOP);
         gtk_box_pack_start(GTK_BOX(vbox),hybrid_bmi_gui_tabs, TRUE, TRUE, 0);
 
+ 	if (! create_network_view_gui())
+		return;     
+
 	gtk_widget_show_all(window);
 
   		   				

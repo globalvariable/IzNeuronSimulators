@@ -39,7 +39,7 @@ void save_button_func(void);
 void load_button_func(void);
 void fill_notes_text_view(void);
 void set_directory_btn_select_directory(void);
-void set_neuron_param_entries(int neuron_type);
+
 
 
 

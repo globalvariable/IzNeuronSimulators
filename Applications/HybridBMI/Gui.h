@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
-
+#include "NetworkView.h"
 // Functions
 void create_gui(void);
 GtkWidget *get_gui_tabs(void);

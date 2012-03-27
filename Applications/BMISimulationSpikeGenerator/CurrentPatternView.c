@@ -25,6 +25,10 @@ static GtkWidget *entry_add_neurons_to_layer;
 static GtkWidget *btn_interrogate_network;
 static GtkWidget *btn_interrogate_neuron;
 
+static GtkWidget *entry_parker_sochacki_err_tol;
+static GtkWidget *entry_parker_sochacki_max_order;
+static GtkWidget *btn_submit_parker_sochacki_params;
+
 static GtkWidget *entry_num_of_trial_start_available_currents;
 static GtkWidget *entry_num_of_in_refractory_currents;
 static GtkWidget *entry_num_of_in_trial_currents;
@@ -37,9 +41,7 @@ static GtkWidget *entry_trial_start_available_current_length;
 static GtkWidget *btn_submit_current_lengths;
 static GtkWidget *btn_generate_current_injection_graphs;
 
-static GtkWidget *entry_parker_sochacki_err_tol;
-static GtkWidget *entry_parker_sochacki_max_order;
-static GtkWidget *btn_submit_parker_sochacki_params;
+
 
 static GtkWidget *current_pattern_graph_hbox;
 static CurrentPatternGraph *current_pattern_graph = NULL;
@@ -115,10 +117,9 @@ static void add_noise_in_trial_button_func(void);
 static void add_noise_trial_available_button_func(void);
 static void add_noise_in_refractory_button_func(void);
 
-
 static void quit_button_func(void);
 
-
+static void set_neuron_param_entries(int neuron_type);
 
 
 bool create_current_pattern_view_gui(void)
@@ -155,8 +156,6 @@ bool create_current_pattern_view_gui(void)
 	{
 		gtk_combo_box_append_text(GTK_COMBO_BOX(combo_neuron_type), get_neuron_type_string(i, neuron_type_str));
 	}
- 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), 1);
-
 
  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -288,7 +287,8 @@ bool create_current_pattern_view_gui(void)
         entry_tau_inhibitory = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_tau_inhibitory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_tau_inhibitory, 50, 25) ;	
-	
+
+ 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), 1);	
 	set_neuron_param_entries(1);			
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -313,6 +313,20 @@ bool create_current_pattern_view_gui(void)
 	gtk_widget_set_size_request(entry_add_neurons_to_layer, 50, 25) ;	
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
+ 	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_interrogate_network = gtk_button_new_with_label("Interrogate Network");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_network, TRUE, TRUE, 0);	
+
+ 	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_interrogate_neuron = gtk_button_new_with_label("Interrogate Neuron");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_neuron, TRUE, TRUE, 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);        
@@ -339,20 +353,6 @@ bool create_current_pattern_view_gui(void)
 	btn_submit_parker_sochacki_params = gtk_button_new_with_label("Submit Parker-Sochacki Params");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
 	
-        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,10);	
-
- 	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_interrogate_network = gtk_button_new_with_label("Interrogate Network");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_network, TRUE, TRUE, 0);	
-
- 	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_interrogate_neuron = gtk_button_new_with_label("Interrogate Neuron");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_interrogate_neuron, TRUE, TRUE, 0);
-
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,10);	
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -1419,7 +1419,7 @@ void fill_notes_text_view(void)
 }
 
 
-void set_neuron_param_entries(int neuron_type)
+static void set_neuron_param_entries(int neuron_type)
 {
 	char str[20];
 	
