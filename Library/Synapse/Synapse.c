@@ -1,27 +1,44 @@
 #include "Synapse.h"
 
-int create_synapse(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, float connection_probability)
+bool create_synapse(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, double connection_probability, bool *did_connection)
 {
 
-	int i;
+	unsigned int i;
 	NeuronSynapseList	*ptr_neuron_synapse_list;
-	Neuron 			**to = NULL;
-	SynapticDelay		*delay = NULL;
+	Neuron				**to = NULL;
+	SynapticDelay			*delay = NULL;
 	SynapticWeight		*weight = NULL;	
-	
+	*did_connection = FALSE;
+	if (EPSP_delay_min>EPSP_delay_max)
+
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "EPSP_delay_min>EPSP_delay_max.");	 
+	if (IPSP_delay_min>IPSP_delay_max)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "IPSP_delay_min>IPSP_delay_max.");	
+	if (weight_excitatory_min > weight_excitatory_max)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_excitatory_min > weight_excitatory_max.");	
+ 	if (weight_inhibitory_min > weight_inhibitory_max)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_inhibitory_min > weight_inhibitory_max.");	
+ 	if (weight_excitatory_min<=0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_excitatory_min<=0.");	
+ 	if (weight_inhibitory_min<=0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_excitatory_min<=0.");	
+ 	if (weight_excitatory_max<=0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_excitatory_max<=0.");	
+ 	if (weight_inhibitory_max<=0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "weight_excitatory_max<=0.");	
+ 	if (EPSP_delay_min < MINIMUM_EPSP_DELAY)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "EPSP_delay_min < MINIMUM_EPSP_DELAY.");	
+ 	if (IPSP_delay_min < MINIMUM_IPSP_DELAY)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "IPSP_delay_min < MINIMUM_IPSP_DELAY.");	
+
 	srand ( time(NULL) );
-	if (   ( rand() /  ((float) RAND_MAX))  <= connection_probability )
+	if (   ( rand() /  ((double) RAND_MAX))  <= connection_probability )
 	{	
 		ptr_neuron_synapse_list = this_neuron->syn_list;
 
 		to = g_new0(Neuron *,ptr_neuron_synapse_list->num_of_synapses+1);
 		delay = g_new0(SynapticDelay,ptr_neuron_synapse_list->num_of_synapses+1);
 		weight = g_new0(SynapticWeight,ptr_neuron_synapse_list->num_of_synapses+1);
-		if ((to == NULL) || (delay == NULL) || (weight == NULL))
-		{
-			printf("Synapse: ERROR: Couldn' t allocate synapse list for neuron (Layer: %d, Neuron Group: %d, Neuron Num: %d)\n", this_neuron->layer, this_neuron->neuron_group, this_neuron->neuron_num);
-			return -1;
-		}
 	
 		for (i = 0; i < ptr_neuron_synapse_list->num_of_synapses; i++)
 		{
@@ -50,13 +67,11 @@ int create_synapse(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight we
 			ptr_neuron_synapse_list->weight[i] = (weight_excitatory_max-weight_excitatory_min) * (rand()/ ((double)RAND_MAX) ) + weight_excitatory_min;
 		}					
 		ptr_neuron_synapse_list->num_of_synapses++;
-		
-		if (increment_neuron_event_buffer_size(target_neuron))
-			return 1;
-		else
-			return -1;
+		if (!increment_neuron_event_buffer_size(target_neuron))
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "! increment_neuron_event_buffer_size().");
+		*did_connection = TRUE;		
 	}
-	return 0;
+	return TRUE;
 }
 
 void destroy_neuron_synapse_list(Neuron *neuron)

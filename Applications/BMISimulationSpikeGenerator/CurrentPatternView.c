@@ -822,8 +822,9 @@ static void add_neurons_to_layer_button_func(void)
 
 static void submit_parker_sochacki_params_button_func(void)
 {	
+	char *end_ptr;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
-	if (! parker_sochacki_set_order_tolerance(spike_gen_data->network, (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+	if (! parker_sochacki_set_order_tolerance(spike_gen_data->network, strtoull(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order)), &end_ptr, 10), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
@@ -998,7 +999,7 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 {
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	if (spike_gen_data == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "spike_gen_data == NULL.");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "combos_select_neuron_func", "spike_gen_data == NULL.");
 	if(!update_texts_of_combos_when_change(combos_select_neuron, spike_gen_data->network, changed_combo))
 		return;
 }

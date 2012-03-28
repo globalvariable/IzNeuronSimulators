@@ -7,30 +7,25 @@ static bool increment_number_of_neuron_group_in_external_network_layer(ExtNetwor
 
 ExtNetwork* allocate_external_network(ExtNetwork *network)
 {
-	if (!is_allocated(network, FALSE, "ExtNetwork", "allocate_external_network", 0, NULL, EXPECTS_ALLOCATED))
-	{
-		network =	g_new0(ExtNetwork, 1);
-		if (!is_allocated(network, TRUE, "ExtNetwork", "allocate_external_network", ALLOCATION_FAILED, NULL, EXPECTS_ALLOCATED))
-			return NULL;	
-		printf("ExtNetwork: INFO: Created external network.\n");
-		return network;		
-	}
-	else
+	if (network != NULL)
 	{
 		network = deallocate_external_network(network);
 		network = allocate_external_network(network);
-		return network;			
-	}
+		return network;
+	}	
+	network = g_new0(ExtNetwork,1);
+	print_message(INFO_MSG ,"IzNeuronSimulators", "ExtNetwork", "allocate_external_network", "Created external_network.");
+	return network;			
 }
 
 ExtNetwork* deallocate_external_network(ExtNetwork *network)
 {
 	ExtLayer		*ptr_layer = NULL;
 	ExtNeuronGroup	*ptr_neuron_group = NULL;
-	int i, j;
+	unsigned int i, j;
 	
-	if (!is_allocated(network, TRUE, "ExtNetwork", "deallocate_external_network", ALLOCATION_WARNING, NULL, EXPECTS_ALLOCATED))
-		return NULL;		
+	if (network == NULL)
+		return (ExtNetwork*)print_message(BUG_MSG ,"IzNeuronSimulators", "Network", "deallocate_external_network", "network == NULL.");		
 
 	for (i = 0; i < network->layer_count; i++)
 	{
@@ -46,17 +41,14 @@ ExtNetwork* deallocate_external_network(ExtNetwork *network)
 	}
 	g_free(network->layers);
 	g_free(network);
-	printf("ExtNetwork: INFO: Destroyed existing external network.\n");	
+	print_message(INFO_MSG ,"IzNeuronSimulators", "ExtNetwork", "deallocate_external_network", "Destroyed external_network.");
 	return NULL;		
 }
 
-bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer, bool inhibitory)
+bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, unsigned int num_of_neuron, unsigned int layer, bool inhibitory)
 {
 	if (ext_network == NULL)
-	{
-		printf("ExtNetwork: ERROR: external_network was not allocated\n.");
-		return FALSE;
-	}
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_neurons_to_external_network_layer", "network == NULL.");		
 
 	if ((layer > ext_network->layer_count) || (layer < 0) )
 	{
@@ -104,7 +96,7 @@ static bool increment_number_of_external_network_layers(ExtNetwork *ext_network)
 		return FALSE;	
 	ext_network->layers[ext_network->layer_count] = ptr_layer;
 	
-	printf("ExtNetwork: INFO: Incremented number of layers from %d to %d\n", ext_network->layer_count, ext_network->layer_count+1);	
+//	printf("ExtNetwork: INFO: Incremented number of layers from %d to %d\n", ext_network->layer_count, ext_network->layer_count+1);	
 		
 	ext_network->layer_count++;
 
@@ -135,14 +127,14 @@ static bool add_neuron_group_to_external_network_layer(ExtNetwork *ext_network, 
 		if( !initialize_ext_neuron(&(ptr_neuron_group->neurons[i]), inhibitory))
 			return FALSE;
 	}
-	printf("ExtNetwork: Additon of %d neurons to layer %d is successful\n", num_of_neuron, layer);
+//	printf("ExtNetwork: Additon of %d neurons to layer %d is successful\n", num_of_neuron, layer);
 	return TRUE;
 		
 }
 
 static bool increment_number_of_neuron_group_in_external_network_layer(ExtNetwork *ext_network, int layer)
 {
-	int i;
+	unsigned int i;
 	ExtLayer		*ptr_layer = NULL;
 	ExtNeuronGroup	**ptr_neuron_groups = NULL;	
 	ExtNeuronGroup	*ptr_neuron_group = NULL;
@@ -168,9 +160,27 @@ static bool increment_number_of_neuron_group_in_external_network_layer(ExtNetwor
 		
 	ptr_layer->neuron_groups[ptr_layer->neuron_group_count] = ptr_neuron_group;
 	
-	printf("ExtNetwork: INFO: Incremented number of neuron groups from %d to %d in layer %d\n", ptr_layer->neuron_group_count, ptr_layer->neuron_group_count +1, layer);	
+//	printf("ExtNetwork: INFO: Incremented number of neuron groups from %d to %d in layer %d\n", ptr_layer->neuron_group_count, ptr_layer->neuron_group_count +1, layer);	
 		
 	ptr_layer->neuron_group_count++;
+
+	return TRUE;		
+}
+
+bool increment_ext_to_int_network_layer_connection_matrix(ExtNetwork *ext_network)
+{
+	unsigned int i, j;
+	Layer		**connected_to_internal_network_layer;			
+	for (i = 0; i < ext_network->connected_to_internal_network->layer_count; i++)		// copy layer connection matrix
+	{
+		connected_to_internal_network_layer = g_new0(Layer*, ext_network->connected_to_internal_network->layer_count+1);
+		for (j = 0; j < ext_network->connected_to_internal_network->layer_count; j++)
+		{
+			connected_to_internal_network_layer[j] = ext_network->layers[i]->connected_to_internal_network_layer[j];
+		}
+		g_free(ext_network->layers[i]->connected_to_internal_network_layer);
+		ext_network->layers[i]->connected_to_internal_network_layer = connected_to_internal_network_layer;
+	}
 
 	return TRUE;		
 }

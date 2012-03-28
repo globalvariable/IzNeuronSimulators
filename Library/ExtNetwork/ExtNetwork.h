@@ -11,29 +11,29 @@ typedef struct 	__ExtNetwork 	ExtNetwork;
 
 struct __ExtNetwork
 {
-	ExtLayer	**layers;
-	int 		layer_count;
+	Network		*connected_to_internal_network;
+	ExtLayer		**layers;
+	unsigned int	layer_count;
 };
 
 struct __ExtLayer
 {
 	ExtNeuronGroup	**neuron_groups;
-	int 				neuron_group_count;
-	ExtLayer			*connected_to_ext_network_layer;
-	Layer			*connected_to_network_layer;
+	unsigned int		neuron_group_count;
+	Layer			**connected_to_internal_network_layer;
 };
 
 struct __ExtNeuronGroup
 {
 	ExtNeuron	*neurons;
-	int 			neuron_count;
+	unsigned int	neuron_count;
 };
 
 
 
 ExtNetwork* allocate_external_network(ExtNetwork *network);
 ExtNetwork* deallocate_external_network(ExtNetwork *network);
-bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, int num_of_neuron, int layer, bool inhibitory);
-
+bool add_neurons_to_external_network_layer(ExtNetwork *ext_network, unsigned int num_of_neuron, unsigned int layer, bool inhibitory);
+bool increment_ext_to_int_network_layer_connection_matrix(ExtNetwork *ext_network);
 
 #endif

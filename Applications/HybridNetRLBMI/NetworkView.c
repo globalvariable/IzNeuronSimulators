@@ -1,6 +1,6 @@
 #include "NetworkView.h"
 
-
+// FIRST COLUMN
 static GtkWidget *combo_neuron_type;
 static GtkWidget *entry_a;
 static GtkWidget *entry_b;
@@ -57,14 +57,35 @@ static GtkWidget *btn_connect_external_layer_to_internal_layer;
 static GtkWidget *entry_external_layer_num_to_connect;
 static GtkWidget *entry_internal_layer_num_to_connect_external_layer_to;
 
+// SECOND COLUMN
+static LayerNrnGrpNeuronCombo *combos_select_neuron;
+static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
+static GtkWidget *entry_I_inject;
+static GtkWidget *btn_submit_injection_current;
+
+static GtkWidget *entry_simulation_length;
+
+static GtkWidget *btn_simulate_with_no_reward;
+static GtkWidget *btn_simulate_with_reward;
+static GtkWidget *btn_simulate_with_punishment;
+
+// FIRST COLUMN
+static void combo_neuron_type_func (void);
+static void add_neurons_to_layer_button_func(void);
+static void interrogate_network_button_func(void); 		
+static void interrogate_neuron_button_func(void);
 static void set_neuron_param_entries(int neuron_type);
+static void submit_parker_sochacki_params_button_func(void);
+
+// SECOND COLUMN
+static void combos_select_neuron_func(GtkWidget *changed_combo);
 
 bool create_network_view_gui(void)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
 
         frame = gtk_frame_new ("");
-        frame_label = gtk_label_new ("     Network & Currents     ");      
+        frame_label = gtk_label_new ("     Network & Reward     ");      
    
         gtk_notebook_append_page (GTK_NOTEBOOK (get_gui_tabs()), frame, frame_label);  
 
@@ -572,10 +593,136 @@ bool create_network_view_gui(void)
 	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect_external_layer_to), "0");	
 	gtk_widget_set_size_request(entry_internal_layer_num_to_connect_external_layer_to, 30, 25);
 
+///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 1,2, 0, 6);  
+
+  	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	combos_select_neuron = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_layer , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_neuron->combo_neuron_group, TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_neuron , TRUE,TRUE,0);
+	combo_neuron_dynamics = allocate_neuron_dynamics_combo(hbox, combo_neuron_dynamics);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_injection_current = gtk_button_new_with_label("Submit Injection Current");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_injection_current, FALSE, FALSE, 0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	entry_I_inject =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_I_inject, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_I_inject, 40, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_I_inject), "0");	
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("Simulation Length(ms):");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);	
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	entry_simulation_length = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_simulation_length, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_simulation_length, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_simulation_length), "1000");	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	
+	btn_simulate_with_no_reward = gtk_button_new_with_label("No Reward");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate_with_no_reward, TRUE, TRUE, 0);
+	btn_simulate_with_reward = gtk_button_new_with_label("Reward");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate_with_reward, TRUE, TRUE, 0);
+	btn_simulate_with_punishment = gtk_button_new_with_label("Punish");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate_with_punishment, TRUE, TRUE, 0);
+
+	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);
+    	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
+      	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
+      	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+	g_signal_connect(G_OBJECT(combos_select_neuron->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_layer);
+	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
+
+
+	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
+
 	return TRUE;
 }
 
+static void combo_neuron_type_func (void)
+{
+	int neuron_type;
+	neuron_type = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_type));
+	set_neuron_param_entries(neuron_type);	
+}
 
+static void add_neurons_to_layer_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	int num_of_neuron;
+	int layer; 
+	double a;
+	double b;
+	double c;
+	double d;
+	double k;
+	double C;
+	double v_resting;
+	double v_threshold;
+	double v_peak;
+	bool inhibitory;
+	double E_excitatory;
+	double E_inhibitory;
+	double tau_excitatory;
+	double tau_inhibitory;
+	int randomize_params;
+
+ 	num_of_neuron = (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_num_of_neuron_for_group)));
+	layer = (int)atof(gtk_entry_get_text(GTK_ENTRY(entry_add_neurons_to_layer))); 
+	a = atof(gtk_entry_get_text(GTK_ENTRY(entry_a)));
+	b = atof(gtk_entry_get_text(GTK_ENTRY(entry_b)));
+	c = atof(gtk_entry_get_text(GTK_ENTRY(entry_c)));
+	d = atof(gtk_entry_get_text(GTK_ENTRY(entry_d)));
+	k = atof(gtk_entry_get_text(GTK_ENTRY(entry_k)));
+	C = atof(gtk_entry_get_text(GTK_ENTRY(entry_C)));
+	v_resting = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_resting)));
+	v_threshold = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_threshold)));
+	v_peak = atof(gtk_entry_get_text(GTK_ENTRY(entry_v_peak)));
+	inhibitory = (bool)atof(gtk_entry_get_text(GTK_ENTRY(entry_inhibitory)));
+	E_excitatory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_excitatory)));
+	E_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_E_inhibitory)));
+	tau_excitatory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_excitatory)));
+	tau_inhibitory = atof(gtk_entry_get_text(GTK_ENTRY(entry_tau_inhibitory)));
+	randomize_params = 0;
+
+	if (!add_neurons_to_layer(bmi_data->int_network, num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+		return;
+	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, bmi_data->int_network))
+		return;
+	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, TRUE);		
+	return;
+}
+
+void interrogate_network_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	interrogate_network(bmi_data->int_network);
+} 		
+
+void interrogate_neuron_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	interrogate_neuron	(bmi_data->int_network, gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_layer)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron_group)), gtk_combo_box_get_active (GTK_COMBO_BOX(combos_select_neuron->combo_neuron)) );
+}
 
 static void set_neuron_param_entries(int neuron_type)
 {
@@ -634,3 +781,24 @@ static void set_neuron_param_entries(int neuron_type)
 	gtk_entry_set_text(GTK_ENTRY(entry_tau_inhibitory), str);	
 
 }
+
+static void combos_select_neuron_func(GtkWidget *changed_combo)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	if (bmi_data == NULL)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_neuron_func", "bmi_data == NULL.");
+	if(!update_texts_of_combos_when_change(combos_select_neuron, bmi_data->int_network, changed_combo))
+		return;
+}
+
+static void submit_parker_sochacki_params_button_func(void)
+{	
+	char *end_ptr;
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	if (! parker_sochacki_set_order_tolerance(bmi_data->int_network, strtoull(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order)), &end_ptr, 10), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
+	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
+	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
+}
+
+
