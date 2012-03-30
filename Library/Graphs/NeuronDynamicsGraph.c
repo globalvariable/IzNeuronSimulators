@@ -101,7 +101,26 @@ bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph)
 }
 
 
+bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStamp new_length, bool log_request)
+{
+	unsigned int num_of_data_points;
+	if (new_length == graph->graph_len)
+		return TRUE;
+	
+	if (log_request)
+		print_message(INFO_MSG ,"NeuroSim", "NeuronDynamicsGraph", "change_length_of_neuron_dynamics_graph", "Changing graph length");		
 
+	gtk_databox_graph_remove (GTK_DATABOX (graph->databox), graph->graph);
+	g_object_unref(graph->graph);
+	g_free(graph->x);  
+	g_free(graph->y);  
+	num_of_data_points = new_length/graph->sampling_interval;
+	graph->x = g_new0(float, num_of_data_points);  
+	graph->y = g_new0(float, num_of_data_points);	
+	graph->num_of_data_points = num_of_data_points;
+	graph->graph_len =  new_length;
+	return TRUE;
+}
 
 
 

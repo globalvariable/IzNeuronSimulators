@@ -35,8 +35,6 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 	Neuron 			**events_from;
 	SynapticWeight		*event_weights;	
 	int 				event_buff_size;
-	pthread_mutex_t 	*mutex_event_buff;
-
 	int 				idx, end_idx; 	
 	
 	neuron_event_buffer = neuron->event_buff;
@@ -45,8 +43,7 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 	event_weights = neuron_event_buffer->weight;	
 	events_from = neuron_event_buffer->from;
 	
-	mutex_event_buff = &(neuron_event_buffer->mutex);	
-	pthread_mutex_lock(mutex_event_buff);
+	pthread_mutex_lock(&(neuron_event_buffer->mutex));
 	
 	ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);
 	ptr_event_buffer_read_idx = &(neuron_event_buffer->read_idx);
@@ -61,6 +58,7 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 		printf("ERROR: Event.c: Layer %d:\n", neuron->layer);
 		printf("ERROR: Event.c: Neuron Group %d:\n", neuron->neuron_group);
 		printf("ERROR: Event.c: Neuron Number %d:\n", neuron->neuron_num);	
+		pthread_mutex_unlock(&(neuron_event_buffer->mutex));
 		return 0;			
 	}
 	
@@ -106,7 +104,9 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 		*ptr_event_buffer_write_idx = 0;
 	else
 		(*ptr_event_buffer_write_idx)++;
-	pthread_mutex_unlock(mutex_event_buff);	
+	pthread_mutex_unlock(&(neuron_event_buffer->mutex));
+	printf("%llu\n", neuron_event_buffer->time[0]);
+	printf("%llu\n", neuron_event_buffer->time[1]);
 	return 1;
 }
 
@@ -177,4 +177,17 @@ void destroy_neuron_event_buffer(Neuron *neuron)
 	g_free(ptr_neuron_event_buffer);
 	
 	return;
+}
+
+void destroy_ext_neuron_event_buffer(ExtNeuron *neuron)
+{
+	NeuronEventBuffer *ptr_neuron_event_buffer;
+	
+	ptr_neuron_event_buffer = neuron->event_buff;
+
+	g_free(ptr_neuron_event_buffer->time);
+	g_free(ptr_neuron_event_buffer->from);	
+ 	g_free(ptr_neuron_event_buffer->weight);
+
+	g_free(ptr_neuron_event_buffer);
 }

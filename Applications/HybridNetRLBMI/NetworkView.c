@@ -69,6 +69,9 @@ static GtkWidget *btn_simulate_with_no_reward;
 static GtkWidget *btn_simulate_with_reward;
 static GtkWidget *btn_simulate_with_punishment;
 
+// GRAPHS
+static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
+
 // FIRST COLUMN
 static void combo_neuron_type_func (void);
 static void add_neurons_to_layer_button_func(void);
@@ -77,8 +80,12 @@ static void interrogate_neuron_button_func(void);
 static void set_neuron_param_entries(int neuron_type);
 static void submit_parker_sochacki_params_button_func(void);
 
+static void connect_internal_layer_to_internal_layer_button_func(void);
+static void connect_external_layer_to_internal_layer_button_func(void);
 // SECOND COLUMN
 static void combos_select_neuron_func(GtkWidget *changed_combo);
+static void submit_injection_current_button_func(void);
+static void simulate_with_no_reward_button_func(void);
 
 bool create_network_view_gui(void)
 {
@@ -643,15 +650,27 @@ bool create_network_view_gui(void)
 	btn_simulate_with_punishment = gtk_button_new_with_label("Punish");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate_with_punishment, TRUE, TRUE, 0);
 
+/////////  GRAPHS  ////////////////////////////////
+
+ 	hbox = gtk_hbox_new(TRUE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 2,7, 0, 3);
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+
+
 	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
     	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);
     	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
       	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
       	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_connect_internal_layer_to_internal_layer), "clicked", G_CALLBACK(connect_internal_layer_to_internal_layer_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_connect_external_layer_to_internal_layer), "clicked", G_CALLBACK(connect_external_layer_to_internal_layer_button_func), NULL);
+
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_layer);
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
 
+      	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 
@@ -782,6 +801,55 @@ static void set_neuron_param_entries(int neuron_type)
 
 }
 
+static void submit_parker_sochacki_params_button_func(void)
+{	
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	if (! parker_sochacki_set_order_tolerance(bmi_data->int_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
+	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
+	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
+}
+
+static void connect_internal_layer_to_internal_layer_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	unsigned int this_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect)));
+	unsigned int target_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect_internal_layer_to)));
+	SynapticWeight weight_excitatory_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_weight_excitatory_max)));
+	SynapticWeight weight_excitatory_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_weight_excitatory_min)));
+	SynapticWeight weight_inhibitory_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_weight_inhibitory_max)));
+	SynapticWeight weight_inhibitory_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_weight_inhibitory_max)));
+	SynapticDelay EPSP_delay_max = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_max))));
+	SynapticDelay EPSP_delay_min = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_min))));
+	SynapticDelay IPSP_delay_max = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_max))));
+	SynapticDelay IPSP_delay_min = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_min))));
+	double excitatory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_excitatory_connection_probability)));
+	double inhibitory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_inhibitory_connection_probability)));
+
+	if (! connect_network_layer_to_network_layer(bmi_data->int_network, this_layer, target_layer, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_max, EPSP_delay_min, IPSP_delay_max, IPSP_delay_min, excitatory_connection_probability, inhibitory_connection_probability))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_internal_layer_to_internal_layer_button_func", "! connect_network_layer_to_network_layer().");		
+}
+
+static void connect_external_layer_to_internal_layer_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	unsigned int this_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_external_layer_num_to_connect)));
+	unsigned int target_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect_external_layer_to)));
+	SynapticWeight weight_excitatory_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_weight_excitatory_max)));
+	SynapticWeight weight_excitatory_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_weight_excitatory_min)));
+	SynapticWeight weight_inhibitory_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_weight_inhibitory_max)));
+	SynapticWeight weight_inhibitory_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_weight_inhibitory_max)));
+	SynapticDelay EPSP_delay_max = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_max))));
+	SynapticDelay EPSP_delay_min = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_min))));
+	SynapticDelay IPSP_delay_max = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_max))));
+	SynapticDelay IPSP_delay_min = (SynapticDelay)(1000000*atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_min))));
+	double excitatory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_excitatory_connection_probability)));
+	double inhibitory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_inhibitory_connection_probability)));
+
+	if (! connect_ext_network_layer_to_int_network_layer(bmi_data->ext_network, this_layer, target_layer, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_max, EPSP_delay_min, IPSP_delay_max, IPSP_delay_min, excitatory_connection_probability, inhibitory_connection_probability))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_external_layer_to_internal_layer_button_func", "! connect_ext_network_layer_to_int_network_layer().");		
+}
+
 static void combos_select_neuron_func(GtkWidget *changed_combo)
 {
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
@@ -791,14 +859,75 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 		return;
 }
 
-static void submit_parker_sochacki_params_button_func(void)
-{	
-	char *end_ptr;
+static void submit_injection_current_button_func(void)
+{
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
-	if (! parker_sochacki_set_order_tolerance(bmi_data->int_network, strtoull(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order)), &end_ptr, 10), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
-	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
-	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
+	unsigned int layer_num, nrn_grp_num, nrn_num;
+	Neuron *neuron;
+	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_injection_current_button_func", "! layer_neuron_group_neuron_get_selected().");
+	neuron = get_neuron_address(bmi_data->int_network, layer_num, nrn_grp_num, nrn_num);
+	neuron->I_inject =  atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
 }
 
+
+static void simulate_with_no_reward_button_func(void)
+{
+	char *end_ptr;
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	Neuron *neuron;
+	float *y_neuron_dynamics = neuron_dynamics_graph->y;
+	TimeStamp sampling_interval = neuron_dynamics_graph->sampling_interval;
+	unsigned int i, j, k;
+	unsigned int layer_num, nrn_grp_num, nrn_num;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	TimeStamp time_ns;
+	TimeStamp spike_time;
+	TimeStamp simulation_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length)), &end_ptr, 10);
+	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
+	if (! change_length_of_neuron_dynamics_graph(neuron_dynamics_graph,simulation_length , TRUE))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! change_length_of_neuron_dynamics_graph().");	
+	reset_all_network_neuron_dynamics (bmi_data->int_network);
+	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! layer_neuron_group_neuron_get_selected().");
+	get_num_of_layers_in_network(bmi_data->int_network, &num_of_layers);
+	for (time_ns = 0; time_ns < simulation_length; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+	{
+		for (i = 0; i < num_of_layers; i++)
+		{	
+			get_num_of_neuron_groups_in_layer(bmi_data->int_network, i, &num_of_neuron_groups_in_layer);
+			for (j=0; j<num_of_neuron_groups_in_layer; j++)
+			{
+				get_num_of_neurons_in_neuron_group(bmi_data->int_network, i, j, &num_of_neurons_in_neuron_group);
+				for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+				{
+					neuron = get_neuron_address(bmi_data->int_network, i, j, k);
+					spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+//					if (spike_time != MAX_TIME_STAMP)
+					if ((i != layer_num) || (j != nrn_grp_num) || (k != nrn_num))
+						continue;
+					switch (neuron_dynamics_type_idx)
+					{
+						case DYNAMICS_TYPE_V:
+							y_neuron_dynamics[time_ns/sampling_interval] = neuron->v;
+							break; 
+						case DYNAMICS_TYPE_U:
+							y_neuron_dynamics[time_ns/sampling_interval] = neuron->u;
+							break; 
+						case DYNAMICS_TYPE_E:
+							y_neuron_dynamics[time_ns/sampling_interval] = neuron->conductance_excitatory;
+							break; 
+						case DYNAMICS_TYPE_I:
+							y_neuron_dynamics[time_ns/sampling_interval] = neuron->conductance_inhibitory;
+							break; 
+						default:
+							return (void)print_message(BUG_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "Invalid neuron_dynamics_type_idx.");
+					}		
+				}
+			}
+		}		
+	}
+	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	
+}
 

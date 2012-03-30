@@ -9,7 +9,7 @@
 #include "../../Library/IzNeuron/NeuronTypes.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
-
+#include "../../Library/Graphs/NeuronDynamicsGraph.h"
 bool create_network_view_gui(void);
 
 

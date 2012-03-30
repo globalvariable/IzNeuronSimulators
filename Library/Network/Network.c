@@ -76,8 +76,6 @@ bool add_neurons_to_layer(Network *network, unsigned int num_of_neuron, unsigned
 	{
 		if (!increment_number_of_layers(network))
 			return FALSE;
-		if (!increment_ext_to_int_network_layer_connection_matrix(network->connection_from_ext_network))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_neurons_to_layer", "increment_ext_to_int_network_layer_connection_matrix().");				
 	}	
 	
 	if (!add_neuron_group_to_layer(network, layer, num_of_neuron, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
@@ -91,7 +89,7 @@ static bool increment_number_of_layers(Network *network)
 	unsigned int i, j;
 	Layer		**ptr_layers = NULL;
 	Layer		*ptr_layer = NULL;	
-	Layer		**connected_to_network_layer;			
+	Layer		**connected_to_network_layer=NULL;			
 	ptr_layers = g_new0(Layer*, network->layer_count+1);
 	if (ptr_layers == NULL)
 	{
@@ -108,20 +106,23 @@ static bool increment_number_of_layers(Network *network)
 	ptr_layer = g_new0(Layer,1);	// add new layer
 	network->layers[network->layer_count] = ptr_layer;
 
+	network->layers[network->layer_count]->connected_to_network_layer = g_new0(Layer*, network->layer_count + 1);
 	for (i = 0; i < network->layer_count; i++)		// copy layer connection matrix
 	{
 		connected_to_network_layer = g_new0(Layer*, network->layer_count+1);
 		for (j = 0; j < network->layer_count; j++)
-		{
+		{	
 			connected_to_network_layer[j] = network->layers[i]->connected_to_network_layer[j];
 		}
 		g_free(network->layers[i]->connected_to_network_layer);
 		network->layers[i]->connected_to_network_layer = connected_to_network_layer;
 	}
+	if (!increment_ext_to_int_network_layer_connection_matrix(network->connection_from_ext_network))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_neurons_to_layer", "increment_ext_to_int_network_layer_connection_matrix().");		
 
 	network->layer_count++;
 
-	printf("Network: INFO: Incremented number of layers from %d to %d\n", network->layer_count, network->layer_count+1);		
+	printf("Network: INFO: Incremented number of layers from %d to %d\n", network->layer_count -1 , network->layer_count);		
 	return TRUE;			
 }
 
@@ -190,7 +191,7 @@ static bool increment_number_of_neuron_group_in_layer(Network *network, int laye
 
 
 
-bool connect_network_layer_to_network_layer(Network *network, unsigned int this_layer, unsigned int target_layer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_min, SynapticDelay EPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay IPSP_delay_max, double connection_probability)
+bool connect_network_layer_to_network_layer(Network *network, unsigned int this_layer, unsigned int target_layer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_max, SynapticDelay EPSP_delay_min, SynapticDelay IPSP_delay_max, SynapticDelay IPSP_delay_min, double excitatory_connection_probability, double inhibitory_connection_probability)
 {
 	Layer		*ptr_this_layer = NULL;
 	Layer		*ptr_target_layer = NULL;	
@@ -199,7 +200,7 @@ bool connect_network_layer_to_network_layer(Network *network, unsigned int this_
 	Neuron		*ptr_this_neuron = NULL;
 	Neuron		*ptr_target_neuron = NULL;
 	unsigned int counter_neurons = 0, counter_synapses = 0;
-	bool layers_connected = FALSE, neurons_connected = FALSE;
+	bool layers_connected = FALSE, neuron_connected = FALSE;
 	unsigned int i, j, k, m;
 
 	if (network->layer_count <= this_layer)
@@ -230,10 +231,10 @@ bool connect_network_layer_to_network_layer(Network *network, unsigned int this_
 					ptr_target_neuron = &(ptr_target_neuron_group->neurons[m]);
 					if (ptr_this_neuron == ptr_target_neuron)
 						continue; // Do not connect the neuron to itself
-					neurons_connected = FALSE;
-					if (!create_synapse(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, connection_probability, &neurons_connected))
+					neuron_connected = FALSE;
+					if (!create_synapse(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, excitatory_connection_probability, inhibitory_connection_probability, &neuron_connected))
 						return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_network_layer_to_network_layer", "! create_synapse().");		
-					if (neurons_connected)
+					if (neuron_connected)
 						counter_synapses++;
 				}
 			}
@@ -347,7 +348,7 @@ void reset_all_network_neuron_dynamics (Network *network)
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
 				ptr_neuron->v = 0;	// according to ParkerSochacki method.   v_resting is accepted as 0;  // Take a look at initialize_neuron
-				ptr_neuron->u = ptr_neuron->b * ptr_neuron->v;
+				ptr_neuron->u = 0;
 				ptr_neuron->conductance_excitatory = 0;
 				ptr_neuron->conductance_inhibitory = 0;	
 				clear_neuron_event_buffer(ptr_neuron);		
@@ -449,9 +450,9 @@ bool is_layer_connected_to_layer(Network *network, unsigned int this_layer, unsi
 
 	*connected = FALSE;
 	if (network->layer_count <= this_layer)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_network_layer_to_network_layer", "network->layer_count <= this_layer.");	 
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "is_layer_connected_to_layer", "network->layer_count <= this_layer.");	 
 	if (network->layer_count <= target_layer)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_network_layer_to_network_layer", "network->layer_count <= target_layer.");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "is_layer_connected_to_layer", "network->layer_count <= target_layer.");	
 
 	ptr_this_layer  = network->layers[this_layer];
 	ptr_target_layer  = network->layers[target_layer];

@@ -22,7 +22,8 @@ ExtNetwork* deallocate_external_network(ExtNetwork *network)
 {
 	ExtLayer		*ptr_layer = NULL;
 	ExtNeuronGroup	*ptr_neuron_group = NULL;
-	unsigned int i, j;
+	ExtNeuron	*ptr_neuron = NULL;
+	unsigned int i, j, k;
 	
 	if (network == NULL)
 		return (ExtNetwork*)print_message(BUG_MSG ,"IzNeuronSimulators", "Network", "deallocate_external_network", "network == NULL.");		
@@ -33,6 +34,12 @@ ExtNetwork* deallocate_external_network(ExtNetwork *network)
 		for (j = 0; j < ptr_layer->neuron_group_count; j++)
 		{
 			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			{
+				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				destroy_ext_neuron_event_buffer(ptr_neuron);
+				destroy_ext_neuron_synapse_list(ptr_neuron);	
+			}
 			g_free(ptr_neuron_group->neurons);
 			g_free(ptr_neuron_group);
 		}
@@ -170,8 +177,10 @@ static bool increment_number_of_neuron_group_in_external_network_layer(ExtNetwor
 bool increment_ext_to_int_network_layer_connection_matrix(ExtNetwork *ext_network)
 {
 	unsigned int i, j;
-	Layer		**connected_to_internal_network_layer;			
-	for (i = 0; i < ext_network->connected_to_internal_network->layer_count; i++)		// copy layer connection matrix
+	Layer		**connected_to_internal_network_layer;		
+	if (ext_network == NULL) // no ext network so no connection from ext_network
+		return TRUE;
+	for (i = 0; i < ext_network->layer_count; i++)		// copy layer connection matrix
 	{
 		connected_to_internal_network_layer = g_new0(Layer*, ext_network->connected_to_internal_network->layer_count+1);
 		for (j = 0; j < ext_network->connected_to_internal_network->layer_count; j++)
@@ -185,3 +194,80 @@ bool increment_ext_to_int_network_layer_connection_matrix(ExtNetwork *ext_networ
 	return TRUE;		
 }
 
+
+bool connect_ext_network_layer_to_int_network_layer(ExtNetwork *ext_network, unsigned int this_layer, unsigned int target_layer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_max, SynapticDelay EPSP_delay_min, SynapticDelay IPSP_delay_max, SynapticDelay IPSP_delay_min, double excitatory_connection_probability, double inhibitory_connection_probability)
+{
+	ExtLayer		*ptr_this_layer = NULL;
+	Layer		*ptr_target_layer = NULL;	
+	ExtNeuronGroup	*ptr_this_neuron_group = NULL;
+	NeuronGroup	*ptr_target_neuron_group = NULL;	
+	ExtNeuron		*ptr_this_neuron = NULL;
+	Neuron		*ptr_target_neuron = NULL;
+	unsigned int counter_neurons = 0, counter_synapses = 0;
+	bool layers_connected = FALSE, neuron_connected = FALSE;
+	unsigned int i, j, k, m;
+
+	if (ext_network->layer_count <= this_layer)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "connect_ext_network_layer_to_int_network_layer", "ext_network->layer_count <= this_layer.");	 
+	if (ext_network->connected_to_internal_network->layer_count <= target_layer)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "connect_ext_network_layer_to_int_network_layer", "ext_network->connected_to_internal_network->layer_count <= target_layer.");	 
+
+	ptr_this_layer = ext_network->layers[this_layer];
+	ptr_target_layer = ext_network->connected_to_internal_network->layers[target_layer];
+	
+	if (! is_ext_network_layer_connected_to_int_network_layer(ext_network, this_layer, target_layer, &layers_connected))	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "connect_ext_network_layer_to_int_network_layer", "! is_ext_network_layer_connected_to_int_network_layer().");	
+	if (layers_connected)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "connect_ext_network_layer_to_int_network_layer", "this_layer already connected to target_layer.");		
+
+	for (i=0; i < ptr_this_layer->neuron_group_count; i++)
+	{
+		ptr_this_neuron_group = ptr_this_layer->neuron_groups[i];
+		for (j=0; j<ptr_this_neuron_group->neuron_count; j++)
+		{
+			ptr_this_neuron = &(ptr_this_neuron_group->neurons[j]);
+			counter_neurons++;
+			for (k=0; k< ptr_target_layer->neuron_group_count; k++)
+			{
+				ptr_target_neuron_group = ptr_target_layer->neuron_groups[k];
+				for (m=0; m<ptr_target_neuron_group->neuron_count; m++)
+				{		
+					ptr_target_neuron = &(ptr_target_neuron_group->neurons[m]);
+					neuron_connected = FALSE;
+					if (!create_synapse_from_ext_neuron_to_int_neuron(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, excitatory_connection_probability, inhibitory_connection_probability, &neuron_connected))
+						return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "connect_ext_network_layer_to_int_network_layerr", "! create_synapse_from_ext_neuron_to_int_neuron().");		
+					if (neuron_connected)
+						counter_synapses++;
+				}
+			}
+		}
+	}
+	
+	ptr_this_layer->connected_to_internal_network_layer[target_layer] = ptr_target_layer;  
+
+	printf ("Connection of %u neurons in ext network layer %u with %u synapses to internal network layer %u is successful\n",counter_neurons, this_layer, counter_synapses, target_layer);	
+	return TRUE;
+}
+
+bool is_ext_network_layer_connected_to_int_network_layer(ExtNetwork *ext_network, unsigned int this_layer, unsigned int target_layer, bool *connected)
+{
+	unsigned int i;
+	ExtLayer		*ptr_this_layer = NULL;
+	Layer		*ptr_target_layer = NULL;	
+
+	*connected = FALSE;
+	if (ext_network->layer_count <= this_layer)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "is_ext_networkl_layer_connected_to_int_network_layer", "network->layer_count <= this_layer.");	 
+	if (ext_network->connected_to_internal_network->layer_count <= target_layer)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "is_ext_networkl_layer_connected_to_int_network_layer", "ext_network->connected_to_internal_network->layer_count <= target_layer.");	
+
+	ptr_this_layer  = ext_network->layers[this_layer];
+	ptr_target_layer  = ext_network->connected_to_internal_network->layers[target_layer];
+	
+	for (i = 0; i < ext_network->connected_to_internal_network->layer_count; i++)
+	{
+		if (ptr_this_layer->connected_to_internal_network_layer[i] == ptr_target_layer)
+			*connected = TRUE;
+	}
+	return TRUE;	
+}

@@ -30,6 +30,6 @@ struct  __NeuronDynamicsGraph
 NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynamicsGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
 bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
 bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
-
+bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStamp new_length, bool log_request);
 
 #endif

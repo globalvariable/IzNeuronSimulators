@@ -28,4 +28,5 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 bool increment_neuron_event_buffer_size(Neuron *neuron);
 void clear_neuron_event_buffer(Neuron *neuron);
 void destroy_neuron_event_buffer(Neuron *neuron);
+void destroy_ext_neuron_event_buffer(ExtNeuron *neuron);
 #endif
