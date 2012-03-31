@@ -271,3 +271,17 @@ bool is_ext_network_layer_connected_to_int_network_layer(ExtNetwork *ext_network
 	}
 	return TRUE;	
 }
+
+ExtNeuron* get_ext_neuron_address(ExtNetwork *network, unsigned int layer, unsigned int nrn_grp, unsigned int nrn_num)
+{
+	ExtLayer 		*ptr_layer; 
+	ExtNeuronGroup 	*ptr_neuron_group;
+	ExtNeuron			*ptr_neuron = NULL;	
+	ptr_layer  = network->layers[layer];
+	ptr_neuron_group = ptr_layer->neuron_groups[nrn_grp];
+	ptr_neuron = &(ptr_neuron_group->neurons[nrn_num]);
+	if (ptr_neuron == NULL)
+		return (ExtNeuron*)print_message(ERROR_MSG ,"IzNeuronSimulators", "ExtNetwork", "get_ext_neuron_address", "ptr_neuron == NULL.");
+	return ptr_neuron ;
+}
+

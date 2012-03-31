@@ -69,6 +69,8 @@ static GtkWidget *btn_simulate_with_no_reward;
 static GtkWidget *btn_simulate_with_reward;
 static GtkWidget *btn_simulate_with_punishment;
 
+static GtkWidget *btn_start_hybrid_network;
+
 // GRAPHS
 static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
@@ -86,6 +88,8 @@ static void connect_external_layer_to_internal_layer_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void submit_injection_current_button_func(void);
 static void simulate_with_no_reward_button_func(void);
+
+static void start_hybrid_network_button_func(void);
 
 bool create_network_view_gui(void)
 {
@@ -650,6 +654,16 @@ bool create_network_view_gui(void)
 	btn_simulate_with_punishment = gtk_button_new_with_label("Punish");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_simulate_with_punishment, TRUE, TRUE, 0);
 
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	
+	btn_start_hybrid_network = gtk_button_new_with_label("Start Hybrid Network");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_start_hybrid_network, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
 /////////  GRAPHS  ////////////////////////////////
 
 	vbox = gtk_vbox_new(TRUE, 0);
@@ -683,6 +697,8 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
+      	g_signal_connect(G_OBJECT(btn_start_hybrid_network), "clicked", G_CALLBACK(start_hybrid_network_button_func), NULL);
+
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
@@ -690,6 +706,7 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
+	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
 	return TRUE;
 }
 
@@ -828,6 +845,7 @@ static void submit_parker_sochacki_params_button_func(void)
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
+	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
 }
 
 static void connect_internal_layer_to_internal_layer_button_func(void)
@@ -954,3 +972,13 @@ static void simulate_with_no_reward_button_func(void)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	
 }
 
+
+static void start_hybrid_network_button_func(void)
+{
+/*	if (!create_buffers_view_gui())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
+	if (!create_spike_pattern_view_gui())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_spike_pattern_view_gui().");	*/
+	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
+	hybrid_net_rl_bmi_create_rt_threads();		
+}

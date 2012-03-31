@@ -1,5 +1,5 @@
-#ifndef HYBRID_BMI_H
-#define HYBRID_BMI_H
+#ifndef HYBRID_NET_RL_BMI_H
+#define HYBRID_NET_RL_BMI_H
 
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;

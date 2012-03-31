@@ -1,14 +1,13 @@
 #include "Event.h"
 
-int schedule_event(Neuron *nrn, double dt_part, TimeStamp integration_start_time)
+bool schedule_event(Neuron *nrn, TimeStamp event_time)
 {
-	int i;
+	unsigned int i;
 	NeuronSynapseList *neuron_synapse_list;
-
 	Neuron 			**synapse_to;
 	SynapticDelay		*synapse_delay;
-	SynapticWeight		*synapse_weight;
-	int 				num_of_synapses;
+	SynapticWeight	*synapse_weight;
+	unsigned int		num_of_synapses;
 	TimeStamp		scheduled_event_time;
 	
 	neuron_synapse_list = nrn->syn_list;
@@ -19,14 +18,14 @@ int schedule_event(Neuron *nrn, double dt_part, TimeStamp integration_start_time
 	
 	for (i = 0; i < num_of_synapses; i++)
 	{
-		scheduled_event_time = synapse_delay[i]+integration_start_time+ (dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE);
-		if (!insert_synaptic_event(synapse_to[i], scheduled_event_time, synapse_weight[i], nrn))
-			return 0;
+		scheduled_event_time = synapse_delay[i]+event_time;
+		if (! insert_synaptic_event(synapse_to[i], scheduled_event_time, synapse_weight[i], nrn))
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Event", "schedule_event_from_internal_neuron_to_internal_neuron", "! insert_synaptic_event().");
 	}
-	return 1;	
+	return TRUE;	
 }
 
-int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double weight, Neuron *event_from)
+bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double weight, Neuron *event_from)
 {
 	NeuronEventBuffer	*neuron_event_buffer;
 	unsigned int		*ptr_event_buffer_write_idx;   	
@@ -60,7 +59,7 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 		printf("ERROR: Event.c: Neuron Group %d:\n", neuron->neuron_group);
 		printf("ERROR: Event.c: Neuron Number %d:\n", neuron->neuron_num);	
 		pthread_mutex_unlock(&(neuron_event_buffer->mutex));
-		return 0;
+		return FALSE;
 	}
 	
 	do {
@@ -110,7 +109,7 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 		printf("%llu\n", neuron_event_buffer->time[idx]);
 	printf("---------------\n");
 //	printf("%u\n", neuron_event_buffer->write_idx);
-	return 1;
+	return TRUE;
 }
 
 bool increase_neuron_event_buffer_size(Neuron *neuron, unsigned int amount)

@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "Gui.h"
 #include "HybridNetRLBMI.h"
+#include "HybridNetRLBMIRtTask.h"
 #include "../../Library/IzNeuron/Neuron.h"
 #include "../../Library/IzNeuron/NeuronTypes.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"

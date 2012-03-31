@@ -192,16 +192,16 @@ bool parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, 
 	conductance_inhibitory_pol_vals[0] =  nrn->conductance_inhibitory;
 	chi_pol_vals[0] = nrn->k*nrn->v - conductance_excitatory_pol_vals[0] - conductance_inhibitory_pol_vals[0] - nrn->k_v_threshold;
 //	(chi = kv - eta - gamma - k*v_t)
-	dt = (integration_end_time - integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE;     // for 1ms step size
+	dt = (integration_end_time - integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE;     // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
 	p=parker_sochacki_step(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, dt);
 //	printf("%f\t %d\n ", nrn->v, p);
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
 		*spike_generated = TRUE;
-		*spike_time = integration_start_time+((TimeStamp)((dt_part*1000000)+0.5));
-		printf("---------------->  Spike time%.15f\n", ((integration_start_time)/1000000.0)+dt_part);		
-		if (!schedule_event(nrn, dt_part, integration_start_time))
+		*spike_time = integration_start_time+((TimeStamp)((dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+0.5)); // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
+		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
+		if (!schedule_event(nrn, *spike_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 
 		parker_sochacki_update(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, dt_part, p);

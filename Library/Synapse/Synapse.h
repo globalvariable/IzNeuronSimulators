@@ -27,7 +27,7 @@ struct __NeuronSynapseList
 	Neuron 			**to;
 	SynapticDelay		*delay;
 	SynapticWeight	*weight;
-	int 				num_of_synapses;	// Determine event_buff_size by incrementing with each connection. Finally allocate the event buffers (time, *from, weight)
+	unsigned int		num_of_synapses;	// Determine event_buff_size by incrementing with each connection. Finally allocate the event buffers (time, *from, weight)
 };
 
 ///////       Fuctions

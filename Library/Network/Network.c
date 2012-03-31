@@ -312,14 +312,6 @@ Neuron* get_neuron_address(Network *network, int layer, int nrn_grp, int nrn_num
 	Layer *ptr_layer; 
 	NeuronGroup *ptr_neuron_group;
 	Neuron		*ptr_neuron = NULL;	
-	if (!is_network_allocated(network))
-		return NULL;
-	if (is_layer_free (network, layer))
-		return NULL;
-	if (is_neuron_group_free (network, layer, nrn_grp))
-		return NULL;
-	if (!is_neuron(network, layer, nrn_grp, nrn_num))
-		return NULL;	
 	ptr_layer  = network->layers[layer];
 	ptr_neuron_group = ptr_layer->neuron_groups[nrn_grp];
 	ptr_neuron = &(ptr_neuron_group->neurons[nrn_num]);
@@ -356,7 +348,28 @@ void reset_all_network_neuron_dynamics (Network *network)
 		}
 	}	
 }
+void reset_all_network_neuron_injection_currents (Network *network)
+{
+	int i, j, k;
+	Layer		*ptr_layer = NULL;
+	NeuronGroup	*ptr_neuron_group = NULL;
+	Neuron		*ptr_neuron = NULL;
 
+	
+	for (i=0; i<network->layer_count; i++)
+	{
+		ptr_layer = network->layers[i];
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			{
+				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				ptr_neuron->I_inject = 0;	// according to ParkerSochacki method.   v_resting is accepted as 0;  // Take a look at initialize_neuron
+			}					
+		}
+	}	
+}
 void interrogate_network(Network *network)
 {
 	int i, j;
