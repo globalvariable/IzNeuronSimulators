@@ -6,8 +6,17 @@ typedef struct 	__NeuronSynapseList		NeuronSynapseList;
 typedef unsigned int 	SynapticDelay;		// No problem would appear when adding to TimeStamp type (long long unsigned int)
 typedef double 		SynapticWeight;
 
-#define MINIMUM_EPSP_DELAY 1000000
-#define MINIMUM_IPSP_DELAY 1000000
+/// determine values below according to the latency due to PARKER_SOCHACKI_INTEGRATION_STEP_SIZE. 
+#define MINIMUM_INTERNAL_TO_INTERNAL_NEURON_EPSP_DELAY 1000000
+#define MAXIMUM_INTERNAL_TO_INTERNAL_NEURON_EPSP_DELAY 3000000
+#define MINIMUM_INTERNAL_TO_INTERNAL_NEURON_IPSP_DELAY 1000000
+#define MAXIMUM_INTERNAL_TO_INTERNAL_NEURON_IPSP_DELAY 3000000
+
+/// determine values below according to the latency due to BlueSpike spike detection - Ext to Internal network event scheduler and internal network simulation period. 
+#define MINIMUM_EXTERNAL_TO_INTERNAL_NEURON_EPSP_DELAY 3000000		
+#define MAXIMUM_EXTERNAL_TO_INTERNAL_NEURON_EPSP_DELAY 5000000
+#define MINIMUM_EXTERNAL_TO_INTERNAL_NEURON_IPSP_DELAY 3000000
+#define MAXIMUM_EXTERNAL_TO_INTERNAL_NEURON_IPSP_DELAY 5000000
 
 #include "../IzNeuron/Neuron.h"
 #include "../ExtNeuron/ExtNeuron.h"

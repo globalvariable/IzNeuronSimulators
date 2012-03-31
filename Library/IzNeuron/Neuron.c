@@ -35,8 +35,6 @@ bool initialize_neuron_params(Neuron *nrn, int layer, int neuron_group, int neur
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
 	pthread_mutex_init(&(nrn->event_buff->mutex), NULL);
-	if (!increment_neuron_event_buffer_size(nrn))	// if only one connection buffer write idx will be reset to zero(refer to neuron_event_buffer->write_idx++)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "create_synapse", "! increment_neuron_event_buffer_size().");
 	if (nrn->ps_vals != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
@@ -113,7 +111,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	{
 		printf ("Number of Synapses: %d\n", ptr_neuron_syn_list->num_of_synapses);
 		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
-		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
+		for (i = 0; i < ptr_neuron_syn_list->num_of_synapses; i++)
 		{
 			printf ("%lu\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
 			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		

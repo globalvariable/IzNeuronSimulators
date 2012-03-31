@@ -83,6 +83,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 	Neuron *neuron;
 	TimeStamp time_ns;
 	TimeStamp spike_time;
+	bool spike_generated;
 
 	if (trials_data->trials_status_event_buffer.buff_write_idx != trials_status_event_buff_write_idx_prev) // there is a change in trial_status
 	{
@@ -125,8 +126,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 									{
 										neuron = get_neuron_address(network, i, j, k);
-										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-										if (spike_time != MAX_TIME_STAMP)
+										if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+										if (spike_generated)
 											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
@@ -157,8 +159,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 									{
 										neuron = get_neuron_address(network, i, j, k);
-										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-										if (spike_time != MAX_TIME_STAMP)
+										if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+										if (spike_generated)
 											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
@@ -202,8 +205,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 							{
 								neuron = get_neuron_address(network, i, j, k);
-								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-								if (spike_time != MAX_TIME_STAMP)
+								if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+									return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+								if (spike_generated)
 									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
@@ -241,8 +245,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 							{
 								neuron = get_neuron_address(network, i, j, k);
-								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-								if (spike_time != MAX_TIME_STAMP)
+								if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+									return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+								if (spike_generated)
 									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
@@ -282,8 +287,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 									{
 										neuron = get_neuron_address(network, i, j, k);
-										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-										if (spike_time != MAX_TIME_STAMP)
+										if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+										if (spike_generated)
 											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
@@ -309,8 +315,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 									for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 									{
 										neuron = get_neuron_address(network, i, j, k);
-										spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-										if (spike_time != MAX_TIME_STAMP)
+										if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+										if (spike_generated)
 											write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 									}
 								}
@@ -349,8 +356,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 							{
 								neuron = get_neuron_address(network, i, j, k);
-								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-								if (spike_time != MAX_TIME_STAMP)
+								if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+								if (spike_generated)
 									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}
@@ -383,8 +391,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 							{
 								neuron = get_neuron_address(network, i, j, k);
-								spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-								if (spike_time != MAX_TIME_STAMP)
+								if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+											return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
+								if (spike_generated)
 									write_generated_spike_to_blue_spike_buffer(i,j,k,spike_time);
 							}
 						}

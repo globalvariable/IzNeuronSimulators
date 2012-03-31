@@ -97,23 +97,18 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Net
 	return TRUE;
 }
 
-TimeStamp evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time)
-{
-
+bool evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, bool *spike_generated, TimeStamp *spike_time)	// Assume that only once a spike can be generated per step (0.25 ms).
+{			
 	TimeStamp 		integration_start_ns;
-
 	NeuronEventBuffer	*neuron_event_buffer;
-	
 	TimeStamp		*event_times;			
 //	Neuron 			**event_from;		no need to handle this to evaluate neuron dynamics	
-	SynapticWeight		*event_weights;			
-	int 				event_buff_size;			
-	int				*ptr_event_buffer_write_idx;  		
-	int				*ptr_event_buffer_read_idx; 		
-
-	int				idx, end_idx;	
+	SynapticWeight	*event_weights;			
+	unsigned int		event_buff_size;			
+	unsigned int		*ptr_event_buffer_write_idx;  		
+	unsigned int		*ptr_event_buffer_read_idx; 		
+	unsigned int		idx, end_idx;	
 	TimeStamp		event_time;	
-	TimeStamp		spike_time;	
 	
 	neuron_event_buffer = nrn->event_buff;
 	event_times = neuron_event_buffer->time;
@@ -126,39 +121,42 @@ TimeStamp evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_t
 	
 	idx = *ptr_event_buffer_read_idx;
 	end_idx = *ptr_event_buffer_write_idx;
-
+	// spikes times were already sorted during scheduling.
 	while (idx != end_idx)		// There is a check for event buffer overflow in schedule_events()
 	{
 		event_time = event_times[idx];
 		if (event_time >= end_time)	// Do not handle if it is at start of next step or later than that
 			break;
-		if (event_time < start_time)	// this function handles sorted synaptic events. the events are sorted during buffering
+		if (event_time < integration_start_ns)	// this function handles sorted synaptic events. the events are sorted during buffering
 		{
 			printf ("Simulate: BUG: evaluate_neuron_dyn - Simulate.c\n");
 			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);		
 			printf ("Simulate: BUG: There must be a problem at event sorting\n");	
 			return 0;
 		}
-		spike_time = parker_sochacki_integration(nrn, integration_start_ns, event_time);
+		if (!parker_sochacki_integration(nrn, integration_start_ns, event_time, spike_generated, spike_time))
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");			
 		if (event_weights[idx] > 0)
 			nrn->conductance_excitatory += event_weights[idx];
 		else if (event_weights[idx] < 0)
 			nrn->conductance_inhibitory -= event_weights[idx];	
 		else
 			printf ("BUG: evaluate_neuron_dyn - Simulate.c  -----> Weight cannot be zero\n");	
+		printf ("%llu %f\n", event_time, event_weights[idx]);
 		integration_start_ns = event_time;
 		idx++;
 		if (idx == event_buff_size)
 			idx = 0;
+		*ptr_event_buffer_read_idx = idx;		// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
 	}
-	spike_time = parker_sochacki_integration(nrn, integration_start_ns, end_time);
-	*ptr_event_buffer_read_idx = end_idx;			// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
-	return spike_time ;	// Assume that only once a spike can be generated per step (0.25 ms).
+	if (!parker_sochacki_integration(nrn, integration_start_ns, end_time, spike_generated, spike_time))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
+	return TRUE ;	
 }
 
 
 
-TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time)
+bool parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time, bool *spike_generated, TimeStamp *spike_time)
 {
 	double *v_pol_vals;			// size should be parker_sochacki_max_order + 1
 	double *u_pol_vals;
@@ -169,11 +167,11 @@ TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_t
 	double *a_pol_vals;
 	double *conductance_decay_rate_excitatory_pol_vals;
 	double *conductance_decay_rate_inhibitory_pol_vals;
-	TimeStamp		spike_time = MAX_TIME_STAMP;	
 	double dt_part;
 	double dt;
 	int p;
-	
+
+	*spike_generated = FALSE;	
 	ParkerSochackiPolynomialVals *polynomial_vals;
 
 	polynomial_vals = nrn->ps_vals;
@@ -200,10 +198,11 @@ TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_t
 	if (nrn->v  > nrn->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
 		dt_part = newton_raphson_peak_detection(nrn->v_peak, v_pol_vals, p, dt);
-		spike_time = integration_start_time+((TimeStamp)((dt_part*1000000)+0.5));
+		*spike_generated = TRUE;
+		*spike_time = integration_start_time+((TimeStamp)((dt_part*1000000)+0.5));
 		printf("---------------->  Spike time%.15f\n", ((integration_start_time)/1000000.0)+dt_part);		
-		if (!schedule_events(nrn, dt_part, integration_start_time))
-			return 0;
+		if (!schedule_event(nrn, dt_part, integration_start_time))
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 
 		parker_sochacki_update(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, dt_part, p);
 		v_pol_vals[0] = nrn->c;    ///   v = c
@@ -213,7 +212,7 @@ TimeStamp parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_t
 		chi_pol_vals[0] = nrn->k*nrn->c - conductance_excitatory_pol_vals[0] - conductance_inhibitory_pol_vals[0] - nrn->k_v_threshold;    //   used c instead of v since both same but v has not been updated
 		p=parker_sochacki_step(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, dt-dt_part);
 	}
-	return spike_time;
+	return TRUE;
 }
 
 int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double dt)
@@ -340,7 +339,7 @@ double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, d
 	return dt_part;
 }
 
-int parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double dt, int p)
+void parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double dt, int p)
 {
 	int i;
 	double *u;
@@ -360,7 +359,7 @@ int parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_
 		*conductance_excitatory = conductance_excitatory_pol_vals[i] +  (*conductance_excitatory) * dt;
 		*conductance_inhibitory = conductance_inhibitory_pol_vals[i] +  (*conductance_inhibitory) * dt;
 	}
-	return 0;
+	return;
 }
 
 void clear_parker_sochacki_polynomials(Network *network, int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group) /// For debugging, delete when testing complete

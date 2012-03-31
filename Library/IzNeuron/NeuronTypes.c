@@ -16,8 +16,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -50;
 		*v_peak = 48;
 		*inhibitory = 0;
-		*E_excitatory = -65;
-		*E_inhibitory = -65;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;	
 	} 
@@ -34,8 +34,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -40;
 		*v_peak = 35;
 		*inhibitory = 0;
-		*E_excitatory = -60;
-		*E_inhibitory = -60;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;
 	}
@@ -52,8 +52,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -45;
 		*v_peak = 50;
 		*inhibitory = 0;
-		*E_excitatory = -75;
-		*E_inhibitory = -75;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;				
 	}
@@ -70,8 +70,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -40;
 		*v_peak = 25;
 		*inhibitory = 0;
-		*E_excitatory = -60;
-		*E_inhibitory = -60;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;		
 	}
@@ -88,8 +88,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -45;
 		*v_peak = 50;
 		*inhibitory = 1;
-		*E_excitatory = -75;
-		*E_inhibitory = -75;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;		
 	}
@@ -106,8 +106,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*v_threshold = -40;
 		*v_peak = 25;
 		*inhibitory = 1;
-		*E_excitatory = -60;
-		*E_inhibitory = -60;
+		*E_excitatory = 0;
+		*E_inhibitory = -80;
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;		
 	}

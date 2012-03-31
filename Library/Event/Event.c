@@ -1,6 +1,6 @@
 #include "Event.h"
 
-int schedule_events(Neuron *nrn, double dt_part, TimeStamp integration_start_time)
+int schedule_event(Neuron *nrn, double dt_part, TimeStamp integration_start_time)
 {
 	int i;
 	NeuronSynapseList *neuron_synapse_list;
@@ -29,20 +29,20 @@ int schedule_events(Neuron *nrn, double dt_part, TimeStamp integration_start_tim
 int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double weight, Neuron *event_from)
 {
 	NeuronEventBuffer	*neuron_event_buffer;
-	int				*ptr_event_buffer_write_idx;   	
-	int				*ptr_event_buffer_read_idx;
+	unsigned int		*ptr_event_buffer_write_idx;   	
+	unsigned int		*ptr_event_buffer_read_idx;
 	TimeStamp		*event_times;
 	Neuron 			**events_from;
-	SynapticWeight		*event_weights;	
-	int 				event_buff_size;
-	int 				idx, end_idx; 	
+	SynapticWeight	*event_weights;	
+	unsigned int 		event_buff_size;
+	unsigned int 		idx, end_idx, buff_last_idx; 	
 	
 	neuron_event_buffer = neuron->event_buff;
 	event_buff_size = neuron_event_buffer->buff_size;
 	event_times = neuron_event_buffer->time;
 	event_weights = neuron_event_buffer->weight;	
 	events_from = neuron_event_buffer->from;
-	
+	printf("new_event %llu\n", scheduled_event_time);
 	pthread_mutex_lock(&(neuron_event_buffer->mutex));
 	
 	ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);
@@ -51,7 +51,8 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 	idx = *ptr_event_buffer_write_idx;
 	end_idx = *ptr_event_buffer_read_idx; 
 
-	if ((idx + 1) == end_idx)
+	if ((((idx + 1) == event_buff_size) && (end_idx == 0)) || ((idx + 1) == end_idx))		// if write idx catches read idx (buffer full)
+//	if ((((*ptr_event_buffer_write_idx + 1) == event_buff_size) && (*ptr_event_buffer_read_idx == 0)) || ((*ptr_event_buffer_write_idx + 1) == *ptr_event_buffer_read_idx))	
 	{
 		printf("ERROR: Event.c: insert_synaptic_event().\n");
 		printf("ERROR: Event.c: Event buffer is full for this neuron:\n");
@@ -59,63 +60,61 @@ int insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, double
 		printf("ERROR: Event.c: Neuron Group %d:\n", neuron->neuron_group);
 		printf("ERROR: Event.c: Neuron Number %d:\n", neuron->neuron_num);	
 		pthread_mutex_unlock(&(neuron_event_buffer->mutex));
-		return 0;			
+		return 0;
 	}
 	
 	do {
-		if (scheduled_event_time < event_times[idx])		// push buffed item to the next index
-		{
-			if (idx + 1 == event_buff_size)	// reached end of buffer	
+		if (idx == 0)
+		{	
+			buff_last_idx = event_buff_size-1;
+			if (scheduled_event_time < event_times[buff_last_idx])		// push buffered item to the next index
 			{
-				event_times[0] = event_times[idx];
-				event_weights[0] = event_weights[idx];
-				events_from[0] = events_from[idx];
+				event_times[0] = event_times[buff_last_idx];
+				event_weights[0] = event_weights[buff_last_idx];
+				events_from[0] = events_from[buff_last_idx];
+				idx = buff_last_idx;
 			}
 			else
 			{
-				event_times[idx+1] = event_times[idx];
-				event_weights[idx+1] = event_weights[idx];
-				events_from[idx+1] = events_from[idx];			
+				event_times[0] = scheduled_event_time;	// insert here & break;
+				event_weights[0] = weight;
+				events_from[0] = event_from;	
+				break;			
 			}
 		}
 		else
 		{
-			if (idx + 1 == event_buff_size)	// reached end of buffer	
-			{		
-				event_times[0] = scheduled_event_time;	// insert here & break;
-				event_weights[0] = weight;
-				events_from[0] = event_from;
-				break;
+			if (scheduled_event_time < event_times[idx-1])		// push buffered item to the next index
+			{
+				event_times[idx] = event_times[idx-1];
+				event_weights[idx] = event_weights[idx-1];
+				events_from[idx] = events_from[idx-1];
+				idx--;
 			}
 			else
 			{
-				event_times[idx+1] = scheduled_event_time;	// insert here & break;
-				event_weights[idx+1] = weight;
-				events_from[idx+1] = event_from;	
-				break;		
-			}
+				event_times[idx] = scheduled_event_time;	// insert here & break;
+				event_weights[idx] = weight;
+				events_from[idx] = event_from;	
+				break;			
+			}			
 		}
-		idx --;
-		if (idx == 0)
-			idx = event_buff_size -1;
-	} while (idx != end_idx);
+	} while (1);
 	
 	if ((*ptr_event_buffer_write_idx + 1) == event_buff_size)
 		*ptr_event_buffer_write_idx = 0;
 	else
 		(*ptr_event_buffer_write_idx)++;
 	pthread_mutex_unlock(&(neuron_event_buffer->mutex));
-	printf("%llu\n", neuron_event_buffer->time[0]);
-	printf("%llu\n", neuron_event_buffer->time[1]);
+	for (idx = 0; idx <event_buff_size; idx++ )
+		printf("%llu\n", neuron_event_buffer->time[idx]);
+	printf("---------------\n");
+//	printf("%u\n", neuron_event_buffer->write_idx);
 	return 1;
 }
 
-bool increment_neuron_event_buffer_size(Neuron *neuron)
+bool increase_neuron_event_buffer_size(Neuron *neuron, unsigned int amount)
 {
-	int layer = neuron->layer;
-	int neuron_group = neuron->neuron_group;
-	int neuron_num = neuron->neuron_num;
-
 	NeuronEventBuffer	*ptr_neuron_event_buffer;
 	TimeStamp		*time = NULL;		
 	Neuron 			**from = NULL;			
@@ -123,18 +122,10 @@ bool increment_neuron_event_buffer_size(Neuron *neuron)
 
 	ptr_neuron_event_buffer = neuron->event_buff;
 	
-	time = g_new0(TimeStamp, ptr_neuron_event_buffer->buff_size+1);
-	from = g_new0(Neuron*, ptr_neuron_event_buffer->buff_size+1);
-	weight = g_new0(SynapticWeight, ptr_neuron_event_buffer->buff_size+1);
-		
-	if ((time == NULL) || (from == NULL) || (weight == NULL))
-	{
-		printf("Event: ERROR: Couldn' t allocate event buffer for neuron (Layer: %d, Neuron Group: %d, Neuron Num: %d)\n", layer, neuron_group, neuron_num);
-		return FALSE;
-	}	
-	
-	ptr_neuron_event_buffer->write_idx = 0;
-	ptr_neuron_event_buffer->read_idx = 0;	// reset event buffer, clear all data it has had.
+	time = g_new0(TimeStamp, ptr_neuron_event_buffer->buff_size+amount);		// assume synaptic delay is 2 ms and neuron can fire every 1 ms.
+	from = g_new0(Neuron*, ptr_neuron_event_buffer->buff_size+amount);
+	weight = g_new0(SynapticWeight, ptr_neuron_event_buffer->buff_size+amount);
+	ptr_neuron_event_buffer->buff_size = ptr_neuron_event_buffer->buff_size+amount;
 	
 	g_free(ptr_neuron_event_buffer->time);
 	g_free(ptr_neuron_event_buffer->from);		
@@ -143,9 +134,10 @@ bool increment_neuron_event_buffer_size(Neuron *neuron)
 	ptr_neuron_event_buffer->time = time;	// point to new event buffer
 	ptr_neuron_event_buffer->from = from;		
 	ptr_neuron_event_buffer->weight = weight;	
-	
-	ptr_neuron_event_buffer->buff_size++;
-	
+
+	ptr_neuron_event_buffer->write_idx = 0;   // for spike time insetion sorting.
+	ptr_neuron_event_buffer->read_idx = 0;	// reset event buffer, clear all data it has had.	
+
 	return TRUE;
 }
 
@@ -161,7 +153,8 @@ void clear_neuron_event_buffer(Neuron *neuron)
 		ptr_neuron_event_buffer->from[i] = 0;
 		ptr_neuron_event_buffer->weight[i] = 0;
 	}
-
+	ptr_neuron_event_buffer->write_idx = 0;
+	ptr_neuron_event_buffer->read_idx = 0;
 }		
 
 void destroy_neuron_event_buffer(Neuron *neuron)

@@ -652,10 +652,21 @@ bool create_network_view_gui(void)
 
 /////////  GRAPHS  ////////////////////////////////
 
- 	hbox = gtk_hbox_new(TRUE, 0);
-	gtk_table_attach_defaults(GTK_TABLE(table), hbox, 2,7, 0, 3);
+	vbox = gtk_vbox_new(TRUE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 2,7, 0, 6);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
+//	add the other graph here
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 2,7, 3, 6);
+ 	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
 
 	g_signal_connect(G_OBJECT(combo_neuron_type), "changed", G_CALLBACK(combo_neuron_type_func), NULL);
     	g_signal_connect(G_OBJECT(btn_add_neurons_to_layer), "clicked", G_CALLBACK(add_neurons_to_layer_button_func), NULL);
@@ -673,7 +684,12 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
-
+	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
+	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
+	gtk_widget_set_sensitive(btn_submit_injection_current, FALSE);	
+	gtk_widget_set_sensitive(btn_simulate_with_no_reward, FALSE);	
+	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
+	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
 	return TRUE;
 }
 
@@ -808,10 +824,15 @@ static void submit_parker_sochacki_params_button_func(void)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
+	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, TRUE);	
+	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
+	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
 }
 
 static void connect_internal_layer_to_internal_layer_button_func(void)
 {
+	srand ( time(NULL) );
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	unsigned int this_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect)));
 	unsigned int target_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect_internal_layer_to)));
@@ -883,6 +904,7 @@ static void simulate_with_no_reward_button_func(void)
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	TimeStamp time_ns;
 	TimeStamp spike_time;
+	bool spike_generated;
 	TimeStamp simulation_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length)), &end_ptr, 10);
 	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
 	if (! change_length_of_neuron_dynamics_graph(neuron_dynamics_graph,simulation_length , TRUE))
@@ -902,8 +924,9 @@ static void simulate_with_no_reward_button_func(void)
 				for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 				{
 					neuron = get_neuron_address(bmi_data->int_network, i, j, k);
-					spike_time = evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-//					if (spike_time != MAX_TIME_STAMP)
+					if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+						return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! evaluate_neuron_dyn().");
+//					if (spike_generated)  {		}
 					if ((i != layer_num) || (j != nrn_grp_num) || (k != nrn_num))
 						continue;
 					switch (neuron_dynamics_type_idx)
