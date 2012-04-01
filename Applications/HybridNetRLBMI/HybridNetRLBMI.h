@@ -12,8 +12,8 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 struct __HybridNetRLBMIData		
 {
 	TrialsData					*trials_data;
-	Network						*int_network;
-	ExtNetwork					*ext_network;
+	Network						*in_silico_network;
+	Network						*blue_spike_network;
 	NeuronDynamicsBuffer			*neuron_dynamics_pattern_buffer;
 	SpikeData					*int_network_spike_data;
 	SpikeData					*ext_network_spike_data;

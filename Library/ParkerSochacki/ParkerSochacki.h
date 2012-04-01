@@ -5,7 +5,7 @@ typedef struct 	__ParkerSochackiPolynomialVals 	ParkerSochackiPolynomialVals;
 
 typedef unsigned int ParkerSochackiStepSize;
 
-#include "../IzNeuron/Neuron.h"
+#include "../Neuron/Neuron.h"
 #include "../Event/Event.h"
 #include "../Synapse/Synapse.h"
 #include "../../../BlueSpike/TimeStamp.h"

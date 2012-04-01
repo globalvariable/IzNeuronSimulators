@@ -51,7 +51,7 @@ bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDyna
 	unsigned int i, j, k;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	NeuronDynamics ***dynamics_samples =  neuron_dynamics_buffer->buffer[neuron_dynamics_buffer->buff_write_idx].network_neuron_dyn;
-	Neuron *neuron;
+	IzNeuronParams *iz_params;
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{	
@@ -61,11 +61,11 @@ bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDyna
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				neuron = get_neuron_address(network, i, j, k);
-				dynamics_samples[i][j][k].v = neuron->v;
-				dynamics_samples[i][j][k].u = neuron->u;
-				dynamics_samples[i][j][k].e = neuron->conductance_excitatory;
-				dynamics_samples[i][j][k].i = neuron->conductance_inhibitory;
+				iz_params = get_neuron_address(network, i, j, k)->iz_params;
+				dynamics_samples[i][j][k].v = iz_params->v;
+				dynamics_samples[i][j][k].u = iz_params->u;
+				dynamics_samples[i][j][k].e = iz_params->conductance_excitatory;
+				dynamics_samples[i][j][k].i = iz_params->conductance_inhibitory;
 			}
 		}
 	}

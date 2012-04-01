@@ -1,33 +1,55 @@
 #include "Neuron.h"
 
-bool initialize_neuron_params(Neuron *nrn, int layer, int neuron_group, int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory)
 {
 	if ((a<0) || ((inhibitory < 0) || (inhibitory > 1)) || (C<=0) ||  (k<0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
 		printf("Neuron: ERROR : Invalid parameter submission for neuron initialization\n");
 		printf("Neuron: ERROR : a = %f, inhibitory = %d, C = %f, k = %f, tau_excitatory = %f, tau_inhibitory = %f\n", a, inhibitory, C, k, tau_excitatory, tau_inhibitory);		
 		return FALSE;
-	}	
+	}
 	nrn->layer = layer;
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;
-	nrn->a = a;
-	nrn->b = b;
-	nrn->c = c - v_resting;	
-	nrn->d = d;
-	nrn->k = k;	
-	nrn->E = 1.0/C;
-	nrn->v_resting = v_resting;			
-	nrn->v_threshold = v_threshold - v_resting;
-	nrn->v_peak = v_peak - v_resting;	
+	if (nrn->iz_params != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->iz_params was allocated before. Re-use of initialize_neuron_params");	
+	nrn->iz_params = g_new0(IzNeuronParams,1);
+	nrn->iz_params->a = a;
+	nrn->iz_params->b = b;
+	nrn->iz_params->c = c - v_resting;	
+	nrn->iz_params->d = d;
+	nrn->iz_params->k = k;	
+	nrn->iz_params->E = 1.0/C;
+	nrn->iz_params->v_resting = v_resting;			
+	nrn->iz_params->v_threshold = v_threshold - v_resting;
+	nrn->iz_params->v_peak = v_peak - v_resting;	
+	nrn->iz_params->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
+	nrn->iz_params->E_inhibitory = E_inhibitory-v_resting;
+	nrn->iz_params->decay_rate_excitatory = -1.0/tau_excitatory;
+	nrn->iz_params->decay_rate_inhibitory = -1.0/tau_inhibitory;	
+	nrn->iz_params->conductance_excitatory = 0;
+	nrn->iz_params->conductance_inhibitory = 0;
+	nrn->iz_params->k_v_threshold = k * nrn->iz_params->v_threshold;
 	nrn->inhibitory = inhibitory;
-	nrn->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
-	nrn->E_inhibitory = E_inhibitory-v_resting;
-	nrn->decay_rate_excitatory = -1.0/tau_excitatory;
-	nrn->decay_rate_inhibitory = -1.0/tau_inhibitory;	
-	nrn->conductance_excitatory = 0;
-	nrn->conductance_inhibitory = 0;
-	nrn->k_v_threshold = k * nrn->v_threshold;
+	if (nrn->syn_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	if (nrn->event_buff != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
+	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
+	pthread_mutex_init(&(nrn->event_buff->mutex), NULL);
+	if (nrn->ps_vals != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
+	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
+	return TRUE;
+}
+
+bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory)	// to represent blue spike neurons to connect to in silico network
+{
+	nrn->layer = layer;
+	nrn->neuron_group = neuron_group;
+	nrn->neuron_num = neuron_num;
+	nrn->inhibitory = inhibitory;
 	if (nrn->syn_list != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->syn_list = g_new0(NeuronSynapseList,1);
@@ -44,6 +66,7 @@ bool initialize_neuron_params(Neuron *nrn, int layer, int neuron_group, int neur
 bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuron_num)
 {
 	Neuron		*ptr_neuron = NULL;
+	IzNeuronParams				*ptr_iz_params;
 	NeuronEventBuffer *ptr_neuron_event_buffer;
 	NeuronSynapseList	*ptr_neuron_syn_list;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
@@ -56,34 +79,40 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		printf("Neuron: ERROR: Neuron to interrogate was not found (Layer: %d Neuron_Group: %d Neuron: %d)\n", layer, neuron_group, neuron_num);
 		return FALSE;
 	}
+	ptr_iz_params = ptr_neuron->iz_params;
 	ptr_neuron_event_buffer = ptr_neuron->event_buff;		
 	ptr_neuron_syn_list = ptr_neuron->syn_list;
 	ptr_ps_vals = ptr_neuron->ps_vals;
+
 					
-	printf ("--------------Interrogating Neuron Dynamics ---------\n");		
-	printf ("address:%lu\n",  (NeuronAddress)ptr_neuron);	
-	printf ("layer:%d\n",  ptr_neuron->layer);
-	printf ("neuron group:%d\n",  ptr_neuron->neuron_group);	
-	printf ("neuron num:%d\n",  ptr_neuron->neuron_num);
-	printf ("v:\t%f\n",  ptr_neuron->v+ptr_neuron->v_resting);
-	printf ("u:\t%f\n",  ptr_neuron->u);	
-	printf ("a:\t%f\n",  ptr_neuron->a);
-	printf ("b:\t%f\n",  ptr_neuron->b);	
-	printf ("c:\t%f\n",  ptr_neuron->c+ptr_neuron->v_resting);
-	printf ("d:\t%f\n",  ptr_neuron->d);					
-	printf ("k:\t%f\n",  ptr_neuron->k);
-	printf ("E:\t%f\n",  ptr_neuron->E);	
-	printf ("v_resting:\t%f\n",  ptr_neuron->v_resting);
-	printf ("v_threshold:\t%f\n",  ptr_neuron->v_threshold+ptr_neuron->v_resting);					
-	printf ("v_peak:\t\t%f\n",  ptr_neuron->v_peak+ptr_neuron->v_resting );
-	printf ("I_inject:\t%f\n",  ptr_neuron->I_inject);
+
+	printf ("address:%llu\n",  (NeuronAddress)ptr_neuron);	
+	printf ("layer:%u\n",  ptr_neuron->layer);
+	printf ("neuron group:%u\n",  ptr_neuron->neuron_group);	
+	printf ("neuron num:%u\n",  ptr_neuron->neuron_num);
 	printf ("inhibitory:\t%d\n",  ptr_neuron->inhibitory);
-	printf ("E_excitatory:\t%f\n",  ptr_neuron->E_excitatory+ptr_neuron->v_resting);
-	printf ("E_inhibitory:\t%f\n",  ptr_neuron->E_inhibitory+ptr_neuron->v_resting);	
-	printf ("decay_rate_excitatory:\t%f\n",  ptr_neuron->decay_rate_excitatory);
-	printf ("decay_rate_inhibitory:\t%f\n",  ptr_neuron->decay_rate_inhibitory);					
-	printf ("conductance_excitatory:\t%f\n",  ptr_neuron->conductance_excitatory);
-	printf ("conductance_inhibitory:\t%f\n",  ptr_neuron->conductance_inhibitory);
+	printf ("--------------Interrogating Izhikevich Neuron Dynamics ---------\n");		
+	if (ptr_iz_params != NULL)
+	{
+		printf ("v:\t%f\n",  ptr_iz_params->v+ptr_iz_params->v_resting);
+		printf ("u:\t%f\n",  ptr_iz_params->u);	
+		printf ("a:\t%f\n",  ptr_iz_params->a);
+		printf ("b:\t%f\n",  ptr_iz_params->b);	
+		printf ("c:\t%f\n",  ptr_iz_params->c+ptr_iz_params->v_resting);
+		printf ("d:\t%f\n",  ptr_iz_params->d);					
+		printf ("k:\t%f\n",  ptr_iz_params->k);
+		printf ("E:\t%f\n",  ptr_iz_params->E);	
+		printf ("v_resting:\t%f\n",  ptr_iz_params->v_resting);
+		printf ("v_threshold:\t%f\n",  ptr_iz_params->v_threshold+ptr_iz_params->v_resting);					
+		printf ("v_peak:\t\t%f\n",  ptr_iz_params->v_peak+ptr_iz_params->v_resting );
+		printf ("I_inject:\t%f\n",  ptr_iz_params->I_inject);
+		printf ("E_excitatory:\t%f\n",  ptr_iz_params->E_excitatory+ptr_iz_params->v_resting);
+		printf ("E_inhibitory:\t%f\n",  ptr_iz_params->E_inhibitory+ptr_iz_params->v_resting);	
+		printf ("decay_rate_excitatory:\t%f\n",  ptr_iz_params->decay_rate_excitatory);
+		printf ("decay_rate_inhibitory:\t%f\n",  ptr_iz_params->decay_rate_inhibitory);					
+		printf ("conductance_excitatory:\t%f\n",  ptr_iz_params->conductance_excitatory);
+		printf ("conductance_inhibitory:\t%f\n",  ptr_iz_params->conductance_inhibitory);
+	}
 	printf ("--------------Interrogating Neuron Dynamics...Complete---------\n");
 	
 	printf ("--------------Interrogating Event Buffer ---------\n");		
@@ -96,7 +125,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
 		{
 			printf ("%llu\t\t", ptr_neuron_event_buffer->time[i]);
-			printf ("%lu\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
+			printf ("%llu\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
 			printf ("%.5f\n", ptr_neuron_event_buffer->weight[i]);				
 		}
 	}
@@ -113,7 +142,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
 		for (i = 0; i < ptr_neuron_syn_list->num_of_synapses; i++)
 		{
-			printf ("%lu\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
+			printf ("%llu\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
 			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		
 			printf ("%.5f\n", ptr_neuron_syn_list->weight[i]);				
 		}
@@ -153,34 +182,36 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 				
 }
 
-bool submit_new_neuron_params(Network *network, Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
+	IzNeuronParams	*ptr_iz_params;
+	ptr_iz_params = nrn->iz_params;
 	if ((a<0) || ((inhibitory < 0) || (inhibitory > 1)) || (C<=0) ||  (k<0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
 		printf("Neuron: ERROR : Invalid parameter submission for neuron initialization\n");
 		printf("Neuron: ERROR : a = %f, inhibitory = %d, C = %f, k = %f, tau_excitatory = %f, tau_inhibitory = %f\n", a, inhibitory, C, k, tau_excitatory, tau_inhibitory);		
 		return FALSE;
 	}	
-	nrn->v = v - v_resting; 
-	nrn->u = b * nrn->v;		
-	nrn->a = a;
-	nrn->b = b;
-	nrn->c = c - v_resting;	
-	nrn->d = d;
-	nrn->k = k;	
-	nrn->E = 1.0/C;
-	nrn->v_resting = v_resting;			
-	nrn->v_threshold = v_threshold - v_resting;
-	nrn->v_peak = v_peak - v_resting;	
-	nrn->I_inject = I_inject;
 	nrn->inhibitory = inhibitory;
-	nrn->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
-	nrn->E_inhibitory = E_inhibitory-v_resting;
-	nrn->decay_rate_excitatory = -1.0/tau_excitatory;
-	nrn->decay_rate_inhibitory = -1.0/tau_inhibitory;	
-	nrn->conductance_excitatory = 0;
-	nrn->conductance_inhibitory = 0;
-	nrn->k_v_threshold = k * nrn->v_threshold;
+	ptr_iz_params->v = v - v_resting; 
+	ptr_iz_params->u = b * ptr_iz_params->v;		
+	ptr_iz_params->a = a;
+	ptr_iz_params->b = b;
+	ptr_iz_params->c = c - v_resting;	
+	ptr_iz_params->d = d;
+	ptr_iz_params->k = k;	
+	ptr_iz_params->E = 1.0/C;
+	ptr_iz_params->v_resting = v_resting;			
+	ptr_iz_params->v_threshold = v_threshold - v_resting;
+	ptr_iz_params->v_peak = v_peak - v_resting;	
+	ptr_iz_params->I_inject = I_inject;
+	ptr_iz_params->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
+	ptr_iz_params->E_inhibitory = E_inhibitory-v_resting;
+	ptr_iz_params->decay_rate_excitatory = -1.0/tau_excitatory;
+	ptr_iz_params->decay_rate_inhibitory = -1.0/tau_inhibitory;	
+	ptr_iz_params->conductance_excitatory = 0;
+	ptr_iz_params->conductance_inhibitory = 0;
+	ptr_iz_params->k_v_threshold = k * ptr_iz_params->v_threshold;
 	if (!parker_sochacki_set_order_tolerance(network, get_maximum_parker_sochacki_order(), get_maximum_parker_sochacki_error_tolerance()))
 		return FALSE;
 	return TRUE;
@@ -190,6 +221,6 @@ bool inject_current_to_neuron(Neuron *nrn, double I_inject)
 {
 	if (nrn == NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "inject_current_to_neuron", "neuron was not allocated.");
-	nrn->I_inject = I_inject;
+	nrn->iz_params->I_inject = I_inject;
 	return TRUE;
 }

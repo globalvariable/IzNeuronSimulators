@@ -45,7 +45,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
         rt_task_make_periodic(handler, rt_get_time() + period, period);
 	prev_time = rt_get_cpu_time_ns();	
 	integration_start_time = ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
-	reset_all_network_neuron_dynamics (network);
+	reset_all_network_iz_neuron_dynamics (network);
 	if (!get_num_of_layers_in_network(network, &num_of_layers))
 		return (void *)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "Couldn' t retrieve number of layers.");	
         mlockall(MCL_CURRENT | MCL_FUTURE);

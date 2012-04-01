@@ -4,7 +4,7 @@
 typedef struct 	__NeuronEventBuffer		NeuronEventBuffer;
 
 #include "../../../BlueSpike/TimeStamp.h"
-#include "../IzNeuron/Neuron.h"
+#include "../Neuron/Neuron.h"
 #include "../Network/Network.h"
 #include "../Synapse/Synapse.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
@@ -28,5 +28,5 @@ bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, doubl
 bool increase_neuron_event_buffer_size(Neuron *neuron, unsigned int amount);
 void clear_neuron_event_buffer(Neuron *neuron);
 void destroy_neuron_event_buffer(Neuron *neuron);
-void destroy_ext_neuron_event_buffer(ExtNeuron *neuron);
+
 #endif

@@ -2,7 +2,8 @@
 #define NEURON_H
 
 typedef struct __Neuron Neuron;
-typedef unsigned long int NeuronAddress;
+typedef struct __IzNeuronParams IzNeuronParams;
+typedef unsigned long long int NeuronAddress;
 
 #include <stdbool.h>
 #include <gtk/gtk.h>
@@ -10,6 +11,7 @@ typedef unsigned long int NeuronAddress;
 #include "../Synapse/Synapse.h"
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
+#include "../../../BlueSpike/Library/Misc/Misc.h"
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
@@ -26,11 +28,8 @@ typedef unsigned long int NeuronAddress;
 #define DYNAMICS_TYPE_I	3	// inhibitory
 
 
-struct __Neuron
+struct __IzNeuronParams
 {
-	int 			layer;
-	int			neuron_group;
-	int			neuron_num;	
 	double 		v;
 	double		u;
 	double		a;
@@ -43,7 +42,6 @@ struct __Neuron
 	double		v_threshold;
 	double		v_peak;	// maximum membrane voltage
 	double		I_inject;	
-	bool		inhibitory;	
 	double		E_excitatory;
 	double		E_inhibitory;	
 	double		decay_rate_excitatory;
@@ -51,12 +49,22 @@ struct __Neuron
 	double		conductance_excitatory;
 	double		conductance_inhibitory;
 	double		k_v_threshold;	
-	NeuronSynapseList	*syn_list;
-	NeuronEventBuffer	*event_buff;
+};
+
+struct __Neuron
+{
+	unsigned int					layer;
+	unsigned int					neuron_group;
+	unsigned int					neuron_num;	
+	bool						inhibitory;	
+	IzNeuronParams				*iz_params;
+	NeuronSynapseList			*syn_list;
+	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
 };
 
-bool initialize_neuron_params(Neuron *nrn, int layer, int neuron_group, int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) ;
+bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
+bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory);    // to represent blue spike neurons to connect to in silico network
 bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuron_num);
 bool submit_new_neuron_params(Network *network, Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory);
 bool inject_current_to_neuron(Neuron *nrn, double I_inject);

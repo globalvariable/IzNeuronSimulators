@@ -12,8 +12,8 @@ GTK_FLAGS = $(shell pkg-config --cflags --libs gtk+-2.0 gtkdatabox)
 
 all: HybridNetRLBMI
 
-HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/IzNeuron/NeuronTypes.o ../../Library/IzNeuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/ExtNetwork/ExtNetwork.o ../../Library/ExtNeuron/ExtNeuron.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o
-	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/IzNeuron/NeuronTypes.o ../../Library/IzNeuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/ExtNetwork/ExtNetwork.o ../../Library/ExtNeuron/ExtNeuron.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ### HybridNetRLBMI
+HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o
+	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ### HybridNetRLBMI
 
 HybridNetRLBMIRtTask.o: HybridNetRLBMIRtTask.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### Gui
@@ -24,20 +24,14 @@ Gui.o: Gui.c
 NetworkView.o: NetworkView.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### NetworkView
 
-../../Library/IzNeuron/NeuronTypes.o: ../../Library/IzNeuron/NeuronTypes.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/IzNeuron/NeuronTypes
+../../Library/Neuron/NeuronTypes.o: ../../Library/Neuron/NeuronTypes.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Neuron/NeuronTypes
 
-../../Library/IzNeuron/Neuron.o: ../../Library/IzNeuron/Neuron.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/IzNeuron/Neuron
+../../Library/Neuron/Neuron.o: ../../Library/Neuron/Neuron.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Neuron/Neuron
 
 ../../Library/Network/Network.o: ../../Library/Network/Network.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Network/Network
-
-../../Library/ExtNetwork/ExtNetwork.o: ../../Library/ExtNetwork/ExtNetwork.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/ExtNetwork/ExtNetwork
-
-../../Library/ExtNeuron/ExtNeuron.o: ../../Library/ExtNeuron/ExtNeuron.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/ExtNeuron/ExtNeuron
 
 ../../Library/Combos/LayerNrnGrpNeuronCombo.o: ../../Library/Combos/LayerNrnGrpNeuronCombo.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Combos/LayerNrnGrpNeuronCombo
@@ -61,10 +55,10 @@ NetworkView.o: NetworkView.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### ../../Library/Combos/NeuronDynamicsCombo
 
 ../../Library/Graphs/NeuronDynamicsGraph.o: ../../Library/Graphs/NeuronDynamicsGraph.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/IzNeuronDynamicsGraph
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/NeuronDynamicsGraph
 
 clean:
-	rm -f HybridNetRLBMI *.o ../../../BlueSpike/Library/Misc/*.o ../../Library/IzNeuron/*.o  ../../Library/ParkerSochacki/*.o ../../Library/Event/*.o ../../Library/Synapse/*.o ../../Library/Network/*.o ../../Library/ExtNetwork/*.o ../../Library/ExtNeuron/*.o ../../Library/Combos/*.o ../../Library/Graphs/*.o ../../../BlueSpike/Library/RtTaskStats/*.o
+	rm -f HybridNetRLBMI *.o ../../../BlueSpike/Library/Misc/*.o ../../Library/Neuron/*.o  ../../Library/ParkerSochacki/*.o ../../Library/Event/*.o ../../Library/Synapse/*.o ../../Library/Network/*.o ../../Library/Combos/*.o ../../Library/Graphs/*.o ../../../BlueSpike/Library/RtTaskStats/*.o
 
 .PHONY: clean
 

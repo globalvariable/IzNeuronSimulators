@@ -171,15 +171,3 @@ void destroy_neuron_event_buffer(Neuron *neuron)
 	return;
 }
 
-void destroy_ext_neuron_event_buffer(ExtNeuron *neuron)
-{
-	NeuronEventBuffer *ptr_neuron_event_buffer;
-	
-	ptr_neuron_event_buffer = neuron->event_buff;
-
-	g_free(ptr_neuron_event_buffer->time);
-	g_free(ptr_neuron_event_buffer->from);	
- 	g_free(ptr_neuron_event_buffer->weight);
-
-	g_free(ptr_neuron_event_buffer);
-}

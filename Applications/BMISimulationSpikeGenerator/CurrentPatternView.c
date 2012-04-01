@@ -813,7 +813,7 @@ static void add_neurons_to_layer_button_func(void)
 	if ((data = get_bmi_simulation_spike_generator_spike_gen_data()) == NULL)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_neurons_to_layer_button_func", "spike_gen_data == NULL.");
 							
-	if (!add_neurons_to_layer(data->network, num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(data->network, num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return;
 	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, data->network))
 		return;
@@ -1079,7 +1079,7 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
-	neuron->v = 0; neuron->u = 0; neuron->conductance_excitatory = 0; neuron->conductance_inhibitory = 0; 
+	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
 	if (! clear_current_pattern_graph(current_pattern_graph))
@@ -1092,23 +1092,23 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
 	{
 		y[i] = current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
-		neuron->I_inject = y[i];
+		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
 			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
-				y_dynamics[i] = neuron->v;
+				y_dynamics[i] = neuron->iz_params->v;
 				break; 
 			case DYNAMICS_TYPE_U:
-				y_dynamics[i] = neuron->u;
+				y_dynamics[i] = neuron->iz_params->u;
 				break; 
 			case DYNAMICS_TYPE_E:
-				y_dynamics[i] = neuron->conductance_excitatory;
+				y_dynamics[i] = neuron->iz_params->conductance_excitatory;
 				break; 
 			case DYNAMICS_TYPE_I:
-				y_dynamics[i] = neuron->conductance_inhibitory;
+				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
 				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
@@ -1140,7 +1140,7 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
-	neuron->v = 0; neuron->u = 0; neuron->conductance_excitatory = 0; neuron->conductance_inhibitory = 0; 
+	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	if (! clear_current_pattern_graph(current_pattern_graph))
@@ -1153,23 +1153,23 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_template_samples; i++)
 	{
 		y[i] = current_templates->trial_start_available_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
-		neuron->I_inject = y[i];
+		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
 			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
-				y_dynamics[i] = neuron->v;
+				y_dynamics[i] = neuron->iz_params->v;
 				break; 
 			case DYNAMICS_TYPE_U:
-				y_dynamics[i] = neuron->u;
+				y_dynamics[i] = neuron->iz_params->u;
 				break; 
 			case DYNAMICS_TYPE_E:
-				y_dynamics[i] = neuron->conductance_excitatory;
+				y_dynamics[i] = neuron->iz_params->conductance_excitatory;
 				break; 
 			case DYNAMICS_TYPE_I:
-				y_dynamics[i] = neuron->conductance_inhibitory;
+				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
 				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
@@ -1201,7 +1201,7 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
-	neuron->v = 0; neuron->u = 0; neuron->conductance_excitatory = 0; neuron->conductance_inhibitory = 0; 
+	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_in_refractory_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
 	if (! clear_current_pattern_graph(current_pattern_graph))
@@ -1214,23 +1214,23 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_template_samples; i++)
 	{
 		y[i] = current_templates->in_refractory_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
-		neuron->I_inject = y[i];
+		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
 			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_refractory_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
-				y_dynamics[i] = neuron->v;
+				y_dynamics[i] = neuron->iz_params->v;
 				break; 
 			case DYNAMICS_TYPE_U:
-				y_dynamics[i] = neuron->u;
+				y_dynamics[i] = neuron->iz_params->u;
 				break; 
 			case DYNAMICS_TYPE_E:
-				y_dynamics[i] = neuron->conductance_excitatory;
+				y_dynamics[i] = neuron->iz_params->conductance_excitatory;
 				break; 
 			case DYNAMICS_TYPE_I:
-				y_dynamics[i] = neuron->conductance_inhibitory;
+				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
 				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "Invalid neuron_dynamics_type_idx.");

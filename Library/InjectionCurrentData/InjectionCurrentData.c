@@ -362,7 +362,7 @@ bool load_current_template_sample_to_neurons_with_noise(Network *network, Curren
 				neuron_noise_params = &(pattern_template->noise_params[i][j][k]);
 				if ((now - neuron_noise_params->prev_noise_addition_time) >=  (neuron_noise_params->noise_addition_interval))
 				{
-					get_neuron_address(network, i, j, k)->I_inject = current_samples[i][j][k] + randn_notrig(0, neuron_noise_params->noise_variance);
+					get_neuron_address(network, i, j, k)->iz_params->I_inject = current_samples[i][j][k] + randn_notrig(0, neuron_noise_params->noise_variance);
 					neuron_noise_params->prev_noise_addition_time = now;
 				}
 			}
@@ -385,7 +385,7 @@ bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPat
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
-				current_samples[i][j][k] = get_neuron_address(network, i, j, k)->I_inject;
+				current_samples[i][j][k] = get_neuron_address(network, i, j, k)->iz_params->I_inject;
 			}
 		}
 	}
