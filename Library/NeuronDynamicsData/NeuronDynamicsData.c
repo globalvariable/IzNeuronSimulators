@@ -46,7 +46,7 @@ NeuronDynamicsBuffer* deallocate_neuron_dynamics_buffer(Network *network, Neuron
 	return NULL;
 }
 
-bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer)
+bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer, TimeStamp current_time)
 {
 	unsigned int i, j, k;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -73,5 +73,6 @@ bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDyna
 		neuron_dynamics_buffer->buff_write_idx = 0;
 	else
 		neuron_dynamics_buffer->buff_write_idx++;
+	neuron_dynamics_buffer->last_sample_time = current_time;
 	return TRUE;
 }

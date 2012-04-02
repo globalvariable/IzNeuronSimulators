@@ -145,7 +145,8 @@ void clear_neuron_event_buffer(Neuron *neuron)
 	int i;
 	NeuronEventBuffer	*ptr_neuron_event_buffer;
 	ptr_neuron_event_buffer = neuron->event_buff;
-	
+
+	pthread_mutex_lock(&(ptr_neuron_event_buffer->mutex));	
 	for (i=0; i< ptr_neuron_event_buffer->buff_size; i++)
 	{
 		ptr_neuron_event_buffer->time[i] = 0;
@@ -154,6 +155,7 @@ void clear_neuron_event_buffer(Neuron *neuron)
 	}
 	ptr_neuron_event_buffer->write_idx = 0;
 	ptr_neuron_event_buffer->read_idx = 0;
+	pthread_mutex_unlock(&(ptr_neuron_event_buffer->mutex));
 }		
 
 void destroy_neuron_event_buffer(Neuron *neuron)

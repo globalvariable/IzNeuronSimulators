@@ -10,6 +10,8 @@ typedef struct __CurrentTemplate CurrentTemplate;
 typedef struct __NeuronCurrentSample NeuronCurrentSample;
 typedef struct __CurrentPatternBuffer CurrentPatternBuffer;
 typedef struct __CurrentStartTimes CurrentStartTimes;
+typedef struct __ConstantCurrent ConstantCurrent;
+
 #include <stdbool.h>
 #include <gtk/gtk.h>
 #include "../../../BlueSpike/Library/Misc/Misc.h"
@@ -54,8 +56,17 @@ struct __CurrentPatternBuffer
 	unsigned int				buffer_size;
 };
 
+struct __ConstantCurrent
+{
+	InjectionCurrent		***current;
+};
+
 CurrentTemplate* allocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents);
 CurrentTemplate* deallocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data);
+
+ConstantCurrent* allocate_constant_current(Network * network, ConstantCurrent* constant_current);
+ConstantCurrent* deallocate_constant_current(Network * network, ConstantCurrent* constant_current);
+
 bool submit_current_length_trial_start_available_status(Network *network, CurrentTemplate* current_data, unsigned int trial_start_available_current_num, TimeStamp current_length, bool *has_unallocated_current_template);
 bool submit_current_length_in_refractory_status(Network *network, CurrentTemplate* current_data, unsigned int in_refractory_current_num, TimeStamp current_length, bool *has_unallocated_current_template);
 

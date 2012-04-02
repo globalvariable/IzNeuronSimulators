@@ -11,6 +11,8 @@ typedef struct 	__Network 		Network;
 
 struct __Network
 {
+	Neuron			**all_neurons;
+	unsigned int 		num_of_neurons;
 	Layer			**layers;
 	unsigned int 		layer_count;
 };

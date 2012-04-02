@@ -6,11 +6,16 @@
 #include "Gui.h"
 #include "HybridNetRLBMI.h"
 #include "HybridNetRLBMIRtTask.h"
+#include "BufferViewHandler.h"
 #include "../../Library/Neuron/Neuron.h"
 #include "../../Library/Neuron/NeuronTypes.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
+#include "../../Library/InjectionCurrentData/InjectionCurrentData.h"
+
+
+
 bool create_network_view_gui(void);
 
 

@@ -46,8 +46,8 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 	prev_time = rt_get_cpu_time_ns();	
 	integration_start_time = ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_iz_neuron_dynamics (network);
-	if (!get_num_of_layers_in_network(network, &num_of_layers))
-		return (void *)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "Couldn' t retrieve number of layers.");	
+	if (!get_num_of_layers_in_network(network, &num_of_layers)) {
+		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "Couldn' t retrieve number of layers."); exit(1); }
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
         while (bmi_simulation_spike_generator_rt_task_stay_alive) 
@@ -58,8 +58,8 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 		prev_time = curr_time;
 		// routines
 		integration_end_time =  ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
-		if(! bmi_simulation_spike_generator_integration_handler(trials_data, network, current_templates, current_pattern_buffer, neuron_dynamics_pattern_buffer, integration_start_time, integration_end_time, num_of_layers, message))
-			return (void *)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! bmi_simulation_spike_generator_integration_handler().");
+		if(! bmi_simulation_spike_generator_integration_handler(trials_data, network, current_templates, current_pattern_buffer, neuron_dynamics_pattern_buffer, integration_start_time, integration_end_time, num_of_layers, message)) {
+			print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! bmi_simulation_spike_generator_integration_handler()."); exit(1); }
 		integration_start_time = integration_end_time;
 		// routines	
 		evaluate_and_save_period_run_time(SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, curr_time, rt_get_cpu_time_ns());		
@@ -116,7 +116,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -149,7 +149,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -195,7 +195,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -235,7 +235,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -277,7 +277,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -305,7 +305,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 							if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 								current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 							push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+							push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 							for (i = 0; i < num_of_layers; i++)
 							{	
 								get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -346,7 +346,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
@@ -381,7 +381,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TrialsData *trial
 					if (current_template_read_idx == current_template_in_use->num_of_template_samples)
 						current_template_read_idx--; 	// read last idx again and again until trial_status_changes. it might appear since trialcontroller period is larger than this task	
 					push_neuron_currents_to_current_pattern_buffer(network, current_pattern_buffer);
-					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer);
+					push_neuron_dynamics_to_neuron_dynamics_buffer(network, neuron_dynamics_buffer, time_ns);
 					for (i = 0; i < num_of_layers; i++)
 					{	
 						get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);

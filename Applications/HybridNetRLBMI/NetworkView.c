@@ -91,6 +91,8 @@ static void simulate_with_no_reward_button_func(void);
 
 static void start_hybrid_network_button_func(void);
 
+static ConstantCurrent *constant_current = NULL;
+
 bool create_network_view_gui(void)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
@@ -707,6 +709,7 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
+
 	return TRUE;
 }
 
@@ -838,7 +841,9 @@ static void submit_parker_sochacki_params_button_func(void)
 {	
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	if (! parker_sochacki_set_order_tolerance(bmi_data->in_silico_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");
+	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
+	bmi_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(bmi_data->in_silico_network, bmi_data->neuron_dynamics_pattern_buffer, 6000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 6 second buffer
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, TRUE);	
@@ -895,18 +900,15 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 	if (bmi_data == NULL)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_neuron_func", "bmi_data == NULL.");
 	if(!update_texts_of_combos_when_change(combos_select_neuron, bmi_data->in_silico_network, changed_combo))
-		return;
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_neuron_func", "!update_texts_of_combos_when_change().");
 }
 
 static void submit_injection_current_button_func(void)
 {
-	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	unsigned int layer_num, nrn_grp_num, nrn_num;
-	Neuron *neuron;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_injection_current_button_func", "! layer_neuron_group_neuron_get_selected().");
-	neuron = get_neuron_address(bmi_data->in_silico_network, layer_num, nrn_grp_num, nrn_num);
-	neuron->iz_params->I_inject =  atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
+	constant_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
 }
 
 
@@ -925,6 +927,8 @@ static void simulate_with_no_reward_button_func(void)
 	bool spike_generated;
 	TimeStamp simulation_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length)), &end_ptr, 10);
 	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
+	if (bmi_data->simulation_in_progress)		// injection of current will affect simulation.
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "bmi_data->simulation_in_progress.");			
 	if (! change_length_of_neuron_dynamics_graph(neuron_dynamics_graph,simulation_length , TRUE))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! change_length_of_neuron_dynamics_graph().");	
 	reset_all_network_iz_neuron_dynamics (bmi_data->in_silico_network);
@@ -942,6 +946,7 @@ static void simulate_with_no_reward_button_func(void)
 				for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 				{
 					neuron = get_neuron_address(bmi_data->in_silico_network, i, j, k);
+					neuron->iz_params->I_inject = constant_current->current[i][j][k];
 					if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
 						return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! evaluate_neuron_dyn().");
 //					if (spike_generated)  {		}
@@ -975,10 +980,8 @@ static void simulate_with_no_reward_button_func(void)
 
 static void start_hybrid_network_button_func(void)
 {
-/*	if (!create_buffers_view_gui())
+	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
-	if (!create_spike_pattern_view_gui())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_spike_pattern_view_gui().");	*/
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
 	hybrid_net_rl_bmi_create_rt_threads();		
 }

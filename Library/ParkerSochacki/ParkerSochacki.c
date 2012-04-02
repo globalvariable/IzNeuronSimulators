@@ -118,7 +118,7 @@ bool evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, 
 	ptr_event_buffer_read_idx = &(neuron_event_buffer->read_idx);
 			
 	integration_start_ns = start_time;   // required to know it to schedule events for outputs  (parker_sochacki_step_start_time+ dt_part)
-	
+
 	idx = *ptr_event_buffer_read_idx;
 	end_idx = *ptr_event_buffer_write_idx;
 	// spikes times were already sorted during scheduling.

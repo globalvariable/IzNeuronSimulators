@@ -17,6 +17,7 @@ struct __HybridNetRLBMIData
 	NeuronDynamicsBuffer			*neuron_dynamics_pattern_buffer;
 	SpikeData					*int_network_spike_data;
 	SpikeData					*ext_network_spike_data;
+	bool						simulation_in_progress;
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

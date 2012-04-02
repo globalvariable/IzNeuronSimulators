@@ -3,11 +3,11 @@
 
 
 
-static GtkWidget *hybrid_bmi_gui_tabs;
+static GtkWidget *hybrid_net_rl_bmi_gui_tabs;
 
 GtkWidget *get_gui_tabs(void)
 {
-	return hybrid_bmi_gui_tabs;
+	return hybrid_net_rl_bmi_gui_tabs;
 }
 
 
@@ -25,9 +25,9 @@ void create_gui(void)
   	vbox = gtk_vbox_new(TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 
-	hybrid_bmi_gui_tabs = gtk_notebook_new ();
-	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hybrid_bmi_gui_tabs), GTK_POS_TOP);
-        gtk_box_pack_start(GTK_BOX(vbox),hybrid_bmi_gui_tabs, TRUE, TRUE, 0);
+	hybrid_net_rl_bmi_gui_tabs = gtk_notebook_new ();
+	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (hybrid_net_rl_bmi_gui_tabs), GTK_POS_TOP);
+        gtk_box_pack_start(GTK_BOX(vbox),hybrid_net_rl_bmi_gui_tabs, TRUE, TRUE, 0);
 
  	if (! create_network_view_gui())
 		return;     

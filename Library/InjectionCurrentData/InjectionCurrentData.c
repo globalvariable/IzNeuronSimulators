@@ -395,3 +395,55 @@ bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPat
 		current_pattern_buffer->buff_write_idx++;
 	return TRUE;
 }
+
+ConstantCurrent* allocate_constant_current(Network * network, ConstantCurrent* constant_current)
+{
+	unsigned int i, j;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	if (network == NULL)
+		return (ConstantCurrent*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_constant_current", "network == NULL.");
+	if (constant_current != NULL)
+	{
+		constant_current = deallocate_constant_current(network, constant_current);
+		constant_current = allocate_constant_current(network, constant_current);
+		return constant_current;
+	}
+	constant_current = g_new0(ConstantCurrent, 1);
+	get_num_of_layers_in_network(network, &num_of_layers);
+	constant_current->current = g_new0(InjectionCurrent**, num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		constant_current->current[i] = g_new0(InjectionCurrent*, num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			constant_current->current[i][j] = g_new0(InjectionCurrent, num_of_neurons_in_neuron_group);
+		}
+	}
+	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_constant_current", "Created constant_current.");	
+	return constant_current;
+}
+ConstantCurrent* deallocate_constant_current(Network * network, ConstantCurrent* constant_current)
+{
+	unsigned int i, j;
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer;
+	if (network == NULL)
+		return (ConstantCurrent*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_constant_current", "network == NULL.");
+	if (constant_current == NULL)
+		return (ConstantCurrent*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_constant_current", "constant_current == NULL.");
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{	
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{
+			g_free(constant_current->current[i][j]);
+		}
+		g_free(constant_current->current[i]);
+	}
+	g_free(constant_current->current);		
+	g_free(constant_current);
+	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_constant_current", "Destroyed constant_current.");
+	return NULL;	
+}
