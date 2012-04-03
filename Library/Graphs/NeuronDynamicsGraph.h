@@ -58,8 +58,10 @@ bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
 bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStamp new_length, bool log_request);
 
 NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox, NeuronDynamicsGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency);
-bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScroll *graph, NeuronDynamicsBuffer *neuron_dynamics_buffer);
+bool determine_neuron_dynamics_graph_scroll_start_indexes(NeuronDynamicsGraphScroll *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int neuron_dynamics_buffer_write_idx, unsigned int neuron_dynamics_buffer_size);
+bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScroll *graph, NeuronDynamicsBuffer *neuron_dynamics_buffer, TimeStamp current_system_time);
 bool scroll_neuron_dynamics_graph(NeuronDynamicsGraphScroll *graph);
 bool submit_neuron_dynamics_graph_neuron_and_dynamics_type(NeuronDynamicsGraphScroll *graph, unsigned int layer, unsigned int neuron_grp, unsigned int neuron_num, int dynamics_type);
-bool update_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph);
+bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph);
+
 #endif

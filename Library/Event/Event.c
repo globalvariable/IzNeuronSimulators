@@ -42,6 +42,7 @@ bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, doubl
 	event_weights = neuron_event_buffer->weight;	
 	events_from = neuron_event_buffer->from;
 	printf("new_event %llu\n", scheduled_event_time);
+
 	pthread_mutex_lock(&(neuron_event_buffer->mutex));
 	
 	ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);
@@ -104,7 +105,9 @@ bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, doubl
 		*ptr_event_buffer_write_idx = 0;
 	else
 		(*ptr_event_buffer_write_idx)++;
+
 	pthread_mutex_unlock(&(neuron_event_buffer->mutex));
+
 	for (idx = 0; idx <event_buff_size; idx++ )
 		printf("%llu\n", neuron_event_buffer->time[idx]);
 	printf("---------------\n");

@@ -22,6 +22,7 @@ struct __NetworkNeuronDynamics
 
 struct __NeuronDynamicsBuffer
 {
+	pthread_mutex_t 			mutex;
 	NetworkNeuronDynamics 	*buffer;
 	unsigned int 				buff_write_idx;
 	unsigned int 				buffer_size;
@@ -31,5 +32,6 @@ struct __NeuronDynamicsBuffer
 
 NeuronDynamicsBuffer* allocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer, unsigned int buffer_size);
 NeuronDynamicsBuffer* deallocate_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* buffer);
-bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer, TimeStamp current_time);
+bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer, TimeStamp sampling_time) ;
+bool get_neuron_dynamics_last_sample_time_and_write_idx(NeuronDynamicsBuffer *buffer, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include "HybridNetRLBMI.h"
+#include "BufferViewHandler.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
 
 

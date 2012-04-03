@@ -33,7 +33,7 @@ bool create_neuron_dynamics_view_gui(void)
 	combo_neuron_dynamics_arr= g_new0(NeuronDynamicsCombo*, NUM_OF_GRAPHS);
 	neuron_dynamics_graph_arr = g_new0(NeuronDynamicsGraphScroll*, NUM_OF_GRAPHS);
 
-	btn_global_pause = gtk_button_new_with_label("Pause");
+	btn_global_pause = gtk_button_new_with_label("Paused");
 	gtk_box_pack_start (GTK_BOX (vbox), btn_global_pause, FALSE, FALSE, 0);
 
 	for (i = 0; i < NUM_OF_GRAPHS; i++)
@@ -111,10 +111,8 @@ static void pause_button_func (GtkWidget *btn_pause)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NeuronDynamicsView", "pause_button_func", "i == NUM_OF_GRAPHS.");	
 	if (neuron_dynamics_graph_arr[i]->paused)
 	{
-		neuron_dynamics_graph_arr[i]->scroll_request = FALSE;
-		neuron_dynamics_graph_arr[i]->paused = FALSE;
-		gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"R");
-	
+		send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(i);   // should resume all graphs at the same time to provide sync
+		gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"R");  
 	}
 	else
 	{
@@ -149,7 +147,16 @@ static void select_button_func (GtkWidget *btn_select)
 
 static void global_pause_button_func (void)
 {
-	send_pause_request_to_buffer_view_handler();
+	if (is_buffer_view_handler_paused())
+	{
+		send_global_resume_request_to_buffer_view_handler();
+		gtk_button_set_label (GTK_BUTTON(btn_global_pause),"Resumed");
+	}
+	else
+	{		
+		send_global_pause_request_to_buffer_view_handler();
+		gtk_button_set_label (GTK_BUTTON(btn_global_pause),"Paused");
+	}
 }
 
 unsigned int get_num_neuron_dynamics_graphs_w_scroll(void)

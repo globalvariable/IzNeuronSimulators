@@ -10,6 +10,10 @@
 
 
 bool buffer_view_handler(void);
-void send_pause_request_to_buffer_view_handler(void);
+void send_global_resume_request_to_buffer_view_handler(void);
+void send_global_pause_request_to_buffer_view_handler(void);
+void send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
+bool is_buffer_view_handler_paused(void);
+
 
 #endif

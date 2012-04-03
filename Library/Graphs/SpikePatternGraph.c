@@ -95,10 +95,10 @@ bool scroll_network_spike_pattern_graph(Network* network, NetworkSpikePatternGra
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
 				for (m = scroll; m < end_idx; m++)
-					graph->neuron_graphs[i][j][k].y[m-scroll] = graph->neuron_graphs[i][j][k].y[m];
+					graph->neuron_graphs[i][j][k].y[m-scroll] = graph->neuron_graphs[i][j][k].y[m];	// instead of sliding in a straigthforward manner, think of making a list which holds the data points having spikes. the size of the list would be num_of_data_points and num_of_spikes would determine the used part of the list by spikes.
 				for (m = clear_start_idx ; m < end_idx; m++)
 				{
-					graph->neuron_graphs[i][j][k].y[m] = 0;
+					graph->neuron_graphs[i][j][k].y[m] = 0;		
 				}				
 			}
 		}

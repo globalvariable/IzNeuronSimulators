@@ -203,7 +203,7 @@ bool parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, 
 		dt_part = newton_raphson_peak_detection(iz_params->v_peak, v_pol_vals, p, dt);
 		*spike_generated = TRUE;
 		*spike_time = integration_start_time+((TimeStamp)((dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+0.5)); // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
-		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
+//		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
 		if (!schedule_event(nrn, *spike_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 

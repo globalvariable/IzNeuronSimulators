@@ -16,6 +16,7 @@ NeuronDynamicsBuffer* allocate_neuron_dynamics_buffer(Network *network, NeuronDy
 		return buffer;
 	}
 	buffer = g_new0(NeuronDynamicsBuffer,1);
+	pthread_mutex_init(&(buffer->mutex), NULL);
 	buffer->buffer = g_new0(NetworkNeuronDynamics, buffer_size);
 
 	for (k = 0; k <  buffer_size; k++)
@@ -46,7 +47,7 @@ NeuronDynamicsBuffer* deallocate_neuron_dynamics_buffer(Network *network, Neuron
 	return NULL;
 }
 
-bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer, TimeStamp current_time)
+bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDynamicsBuffer* neuron_dynamics_buffer, TimeStamp sampling_time) 
 {
 	unsigned int i, j, k;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -62,17 +63,28 @@ bool push_neuron_dynamics_to_neuron_dynamics_buffer(Network *network, NeuronDyna
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
 				iz_params = get_neuron_address(network, i, j, k)->iz_params;
-				dynamics_samples[i][j][k].v = iz_params->v;
-				dynamics_samples[i][j][k].u = iz_params->u;
-				dynamics_samples[i][j][k].e = iz_params->conductance_excitatory;
-				dynamics_samples[i][j][k].i = iz_params->conductance_inhibitory;
+				dynamics_samples[i][j][k].dyn[DYNAMICS_TYPE_V] = iz_params->v;
+				dynamics_samples[i][j][k].dyn[DYNAMICS_TYPE_U] = iz_params->u;
+				dynamics_samples[i][j][k].dyn[DYNAMICS_TYPE_E] = iz_params->conductance_excitatory;
+				dynamics_samples[i][j][k].dyn[DYNAMICS_TYPE_I] = iz_params->conductance_inhibitory;
 			}
 		}
 	}
+	pthread_mutex_lock(&(neuron_dynamics_buffer->mutex));
 	if ((neuron_dynamics_buffer->buff_write_idx + 1) == neuron_dynamics_buffer->buffer_size)
 		neuron_dynamics_buffer->buff_write_idx = 0;
 	else
 		neuron_dynamics_buffer->buff_write_idx++;
-	neuron_dynamics_buffer->last_sample_time = current_time;
+	neuron_dynamics_buffer->last_sample_time = sampling_time;
+	pthread_mutex_unlock(&(neuron_dynamics_buffer->mutex));
+	return TRUE;
+}
+
+bool get_neuron_dynamics_last_sample_time_and_write_idx(NeuronDynamicsBuffer *buffer, TimeStamp *last_sample_time, unsigned int *write_idx)
+{
+	pthread_mutex_lock(&(buffer->mutex));
+	*write_idx = buffer->buff_write_idx;
+	*last_sample_time = buffer->last_sample_time;
+	pthread_mutex_unlock(&(buffer->mutex));
 	return TRUE;
 }

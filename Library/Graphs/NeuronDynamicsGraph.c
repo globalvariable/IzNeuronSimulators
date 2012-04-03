@@ -165,7 +165,7 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 		graph->x[i] = i*(sampling_interval/1000000.0);
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100, (graph->graph_len/1000000)+ 100, 200, -200);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, (graph->graph_len/1000000), 200, -200);	
 
 	graph->num_of_data_points_to_scroll = num_of_data_points_to_scroll;
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
@@ -175,12 +175,31 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	return graph;				
 }
 
-bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScroll *graph, NeuronDynamicsBuffer *neuron_dynamics_buffer)
+bool determine_neuron_dynamics_graph_scroll_start_indexes(NeuronDynamicsGraphScroll *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int neuron_dynamics_buffer_write_idx, unsigned int neuron_dynamics_buffer_size)
 {
-	TimeStamp current_time;
+	unsigned int last_sample_times_idx;
+	unsigned int current_system_times_idx;
+	if (neuron_dynamics_buffer_write_idx == 0)
+		last_sample_times_idx = neuron_dynamics_buffer_size - 1;
+	else
+		last_sample_times_idx = neuron_dynamics_buffer_write_idx -1;
+
+	if ((current_system_time-last_sample_time) < 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "determine_neuron_dynamics_graph_scroll_start_indexes", "(current_system_time-last_sample_time) < 0");
+	if ((((current_system_time-last_sample_time)/graph->sampling_interval) + last_sample_times_idx) > neuron_dynamics_buffer_size)
+		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx - 	neuron_dynamics_buffer_size;
+	else
+		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
+	graph->new_part_start_time = current_system_time;
+	graph->new_part_start_idx = current_system_times_idx;
+	return TRUE;
+}
+
+bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScroll *graph, NeuronDynamicsBuffer *neuron_dynamics_buffer, TimeStamp current_system_time)
+{
 	TimeStamp new_part_start_time;
 	TimeStamp new_part_end_time;
-	unsigned int new_part_start_idx, end_idx; 
+	unsigned int idx, end_idx, graph_old_part_end_idx, graph_sample_idx = 0; 
 	unsigned int layer, neuron_grp, neuron_num;
 	int dynamics_type;	
 	unsigned int buffer_size;
@@ -188,47 +207,56 @@ bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScro
 	if (!graph->paused)
 	{
 		if (graph->scroll_request)   // it is necessary otherwise set_total_limits cannot display slided and clear graph part. 
-		{
 			scroll_neuron_dynamics_graph(graph);
-			graph->scroll_request = FALSE;
-		}	
-		current_time = neuron_dynamics_buffer->last_sample_time;
 		new_part_start_time = graph->new_part_start_time;
 		new_part_end_time = new_part_start_time + graph->graph_len_to_scroll;
 		buffer_size = neuron_dynamics_buffer->buffer_size;
 
-		if (current_time > (new_part_end_time + graph->buffer_followup_latency) )
+		if (current_system_time > (new_part_end_time + graph->buffer_followup_latency) )
 		{
 			pthread_mutex_lock(&(graph->mutex));
 			layer = graph->active_layer;
 			neuron_grp = graph->active_neuron_group;
 			neuron_num = graph->active_neuron;
-			dynamics_type = graph->dynamics_type;
+			dynamics_type = graph->active_dynamics_type;
 			pthread_mutex_unlock(&(graph->mutex));
-			new_part_start_idx =  graph->new_part_start_idx;
-			(current_time - new_part_start_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE
-			if ((new_part_start_idx + graph->num_of_data_points_to_scroll) > buffer_size)
-				new_part_start_idx = new_part_start_idx + graph->num_of_data_points_to_scroll - buffer_size;
+			idx =  graph->new_part_start_idx;
+			if ((idx + graph->num_of_data_points_to_scroll) > buffer_size)
+				end_idx = idx + graph->num_of_data_points_to_scroll - buffer_size;
 			else
-				new_part_start_idx = new_part_start_idx + graph->num_of_data_points_to_scroll;
+				end_idx = idx + graph->num_of_data_points_to_scroll;
+			graph_old_part_end_idx = graph->num_of_data_points - graph->num_of_data_points_to_scroll;
 			while (idx != end_idx)
 			{
-				graph->y[idx] = neuron_dynamics_buffer->buffer[idx].network_neuron_dyn[layer][neuron_grp][neuron_num].dyn[dynamics_type];
-				if ((new_part_start_idx + 1) == buffer_size)
-					new_part_start_idx = 0;
+				graph->y[graph_old_part_end_idx + graph_sample_idx] = neuron_dynamics_buffer->buffer[idx].network_neuron_dyn[layer][neuron_grp][neuron_num].dyn[dynamics_type];
+				graph_sample_idx++;
+				if ((idx + 1) == buffer_size)
+					idx = 0;
 				else
-					new_part_start_idx++;
+					idx++;
 			}
+			set_total_limits_neuron_dynamics_graph_scroll(graph);
+			graph->scroll_request = TRUE;
+			graph->new_part_start_time = new_part_end_time; // prepare for next acquisition
+			graph->new_part_start_idx = end_idx; // prepare for next acquisition
 		}
-		update_neuron_dynamics_graph_scroll(graph);
-		graph->scroll_request = TRUE;
-		graph->new_part_start_time = new_part_end_time; // prepare for next acquisition
+
 	}
 	return TRUE;	
 }
 
 bool scroll_neuron_dynamics_graph(NeuronDynamicsGraphScroll *graph)
 {
+	unsigned int i;
+
+	unsigned int scroll = graph->num_of_data_points_to_scroll; 
+	unsigned int end_idx = graph->num_of_data_points;
+
+	for (i = scroll; i < end_idx; i++)
+		graph->y[i-scroll] = graph->y[i];
+//	for (i = clear_start_idx ; i < end_idx; i++)	// no need to do this. new_part_handler will write here.
+//		graph->y[i] = 0;
+	graph->scroll_request = FALSE;
 	return TRUE;
 }
 
@@ -243,7 +271,7 @@ bool submit_neuron_dynamics_graph_neuron_and_dynamics_type(NeuronDynamicsGraphSc
 	return TRUE;
 }
 
-bool update_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph)
+bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph)
 {
 	float max_y = 0, min_y = 0;
 	float *y = graph->y;
@@ -279,7 +307,7 @@ bool update_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph)
 	else
 		min_y = min_y-100;
 
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100 , (graph->graph_len/1000000) + 100, max_y, min_y);
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0 , (graph->graph_len/1000000) , max_y, min_y);
 
 	return TRUE;	
 }
