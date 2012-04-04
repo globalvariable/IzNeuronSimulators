@@ -1,5 +1,5 @@
-#ifndef CURRENT_PATTERN_VIEW_H
-#define CURRENT_PATTERN_VIEW_H
+#ifndef CURRENT_PATTERN_DESIGN_VIEW_H
+#define CURRENT_PATTERN_DESIGN_VIEW_H
 
 
 #include <gtk/gtk.h>
@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "BMISimulationSpikeGenerator.h"
-#include "BuffersView.h"
-#include "SpikePatternView.h"
+#include "BufferViewHandler.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/Neuron/Neuron.h"
 #include "../../Library/Neuron/NeuronTypes.h"

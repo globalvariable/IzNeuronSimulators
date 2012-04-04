@@ -985,5 +985,6 @@ static void simulate_with_no_reward_button_func(void)
 static void start_hybrid_network_button_func(void)
 {
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
-	hybrid_net_rl_bmi_create_rt_threads();		
+	hybrid_net_rl_bmi_create_rt_threads();	
+	send_global_pause_button_sensitive_request();	 // enable pause/resume button to resume buffer visualization. resume adjusts buffer read indexes and start times. 
 }

@@ -35,6 +35,7 @@ bool create_neuron_dynamics_view_gui(void)
 
 	btn_global_pause = gtk_button_new_with_label("Paused");
 	gtk_box_pack_start (GTK_BOX (vbox), btn_global_pause, FALSE, FALSE, 0);
+	gtk_widget_set_sensitive(btn_global_pause, FALSE);			
 
 	for (i = 0; i < NUM_OF_GRAPHS; i++)
 	{
@@ -167,4 +168,9 @@ unsigned int get_num_neuron_dynamics_graphs_w_scroll(void)
 NeuronDynamicsGraphScroll ** get_neuron_dynamics_graphs_w_scroll_ptr(void)
 {
 	return neuron_dynamics_graph_arr;
+}
+
+void send_global_pause_button_sensitive_request(void)
+{
+	gtk_widget_set_sensitive(btn_global_pause, TRUE);			
 }

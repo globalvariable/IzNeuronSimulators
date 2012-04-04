@@ -371,7 +371,7 @@ bool load_current_template_sample_to_neurons_with_noise(Network *network, Curren
 	return TRUE;
 }
 
-bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer)
+bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer, TimeStamp sampling_time)
 {
 	unsigned int i, j, k;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -389,10 +389,22 @@ bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPat
 			}
 		}
 	}
+	pthread_mutex_lock(&(current_pattern_buffer->mutex));
 	if ((current_pattern_buffer->buff_write_idx + 1) == current_pattern_buffer->buffer_size)
 		current_pattern_buffer->buff_write_idx = 0;
 	else
 		current_pattern_buffer->buff_write_idx++;
+	current_pattern_buffer->last_sample_time = sampling_time;
+	pthread_mutex_unlock(&(current_pattern_buffer->mutex));
+	return TRUE;
+}
+
+bool get_current_pattern_buffer_last_sample_time_and_write_idx(CurrentPatternBuffer *buffer, TimeStamp *last_sample_time, unsigned int *write_idx)
+{
+	pthread_mutex_lock(&(buffer->mutex));
+	*write_idx = buffer->buff_write_idx;
+	*last_sample_time = buffer->last_sample_time;
+	pthread_mutex_unlock(&(buffer->mutex));
 	return TRUE;
 }
 
@@ -447,3 +459,4 @@ ConstantCurrent* deallocate_constant_current(Network * network, ConstantCurrent*
 	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_constant_current", "Destroyed constant_current.");
 	return NULL;	
 }
+

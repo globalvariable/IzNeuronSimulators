@@ -51,9 +51,11 @@ struct __CurrentTemplate
 };
 struct __CurrentPatternBuffer
 {
+	pthread_mutex_t 			mutex;
 	NeuronCurrentSample		*current_buffer;
 	unsigned int				buff_write_idx;
 	unsigned int				buffer_size;
+	TimeStamp				last_sample_time;
 };
 
 struct __ConstantCurrent
@@ -83,6 +85,6 @@ bool get_in_refractory_current_pattern_template(CurrentTemplate* current_templat
 
 void reset_prev_noise_addition_times_for_current_template(Network *network, CurrentPatternTemplate* pattern_template);	
 bool load_current_template_sample_to_neurons_with_noise(Network *network, CurrentPatternTemplate* pattern_template, unsigned int current_template_read_idx, TimeStamp now);
-bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer);
-
+bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer, TimeStamp sampling_time);
+bool get_current_pattern_buffer_last_sample_time_and_write_idx(CurrentPatternBuffer *buffer, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

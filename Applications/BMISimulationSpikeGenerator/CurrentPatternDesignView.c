@@ -1,4 +1,4 @@
-#include "CurrentPatternView.h"
+#include "CurrentPatternDesignView.h"
 
 
 
@@ -127,7 +127,7 @@ bool create_current_pattern_view_gui(void)
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
 
         frame = gtk_frame_new ("");
-        frame_label = gtk_label_new ("     Network & Currents     ");      
+        frame_label = gtk_label_new ("     Design Current Pattern    ");      
    
         gtk_notebook_append_page (GTK_NOTEBOOK (get_gui_tabs()), frame, frame_label);  
 
@@ -874,7 +874,6 @@ static void submit_current_lengths_button_func(void)
 static void generate_current_injection_graphs_button_func(void)
 {
 	TimeStamp max_num_of_samples = 0;
-	unsigned int num_of_all_neurons_in_network;
 	unsigned int i, j;
 	TrialsData *trials_data = get_bmi_simulation_spike_generator_trials_data();
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
@@ -900,8 +899,11 @@ static void generate_current_injection_graphs_button_func(void)
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
 	spike_gen_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(spike_gen_data->network, spike_gen_data->neuron_dynamics_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer for 1 second graph refresh rate. 
-	get_num_of_neurons_in_network(spike_gen_data->network, &num_of_all_neurons_in_network);
-	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, num_of_all_neurons_in_network*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+
+	if (! buffer_view_handler())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	
+
 	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
 	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, FALSE);
 	gtk_widget_set_sensitive(btn_draw_template, TRUE);
@@ -921,12 +923,9 @@ static void generate_current_injection_graphs_button_func(void)
 
 static void start_spike_generation_button_func(void)
 {	
-	if (!create_buffers_view_gui())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_buffers_view_gui().");		
-	if (!create_spike_pattern_view_gui())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "! create_spike_pattern_view_gui().");	
 	gtk_widget_set_sensitive(btn_start_spike_generation, FALSE);	
-	bmi_simulation_spike_generator_create_rt_thread();		
+	bmi_simulation_spike_generator_create_rt_thread();	
+	send_global_pause_button_sensitive_request();
 }
 
 
