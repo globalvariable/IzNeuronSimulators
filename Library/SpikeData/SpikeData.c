@@ -11,7 +11,7 @@ SpikeData* allocate_spike_data(SpikeData *spike_data, unsigned int buffer_size)
 	}
 	spike_data = g_new0(SpikeData,1);
 	spike_data->buff = g_new0(SpikeTimeStampItem, buffer_size);
-
+	spike_data->buffer_size = buffer_size;
 	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeData", "allocate_spike_data", "Created spike_data.");
 	return spike_data;
 }

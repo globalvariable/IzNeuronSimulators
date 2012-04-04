@@ -51,7 +51,7 @@ bool determine_spike_pattern_graph_scroll_start_time_and_read_indexes(NetworkSpi
 bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphScroll *graph, Network *network, TimeStamp current_system_time);
 bool scroll_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraphScroll *graph);
 bool set_total_limits_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraphScroll *graph);
-
+bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePatternGraphScroll *graph);
 
 
 

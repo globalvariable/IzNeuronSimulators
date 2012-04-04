@@ -153,10 +153,10 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	color_line.green = 0;
 	color_line.blue = 0;
 
-	gtk_databox_create_box_with_scrollbars_and_rulers (&(graph->box), &(graph->databox),TRUE, TRUE, TRUE, TRUE);
-  	gtk_widget_modify_bg (graph->box, GTK_STATE_NORMAL, &color_bg);
- 	gtk_databox_graph_add (GTK_DATABOX (graph->box), gtk_databox_grid_new (9, 9, &color_grid, 0)); 	
+	graph->databox = gtk_databox_new ();	
 	gtk_box_pack_start (GTK_BOX (hbox), graph->databox, TRUE, TRUE, 0);
+  	gtk_widget_modify_bg (graph->databox, GTK_STATE_NORMAL, &color_bg);
+ 	gtk_databox_graph_add (GTK_DATABOX (graph->databox), gtk_databox_grid_new (9, 9, &color_grid, 0)); 	
 
 	graph->x = g_new0(float, num_of_data_points);  
 	graph->y = g_new0(float, num_of_data_points);
@@ -164,8 +164,8 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	for (i = 0; i < num_of_data_points; i++)
 		graph->x[i] = i*(sampling_interval/1000000.0);
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
-	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, (graph->graph_len/1000000), 200, -200);	
+	gtk_databox_graph_add (GTK_DATABOX (graph->databox), graph->graph);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->databox), 0, (graph->graph_len/1000000), 200, -200);	
 
 	graph->num_of_data_points_to_scroll = num_of_data_points_to_scroll;
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
@@ -307,7 +307,19 @@ bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *gr
 	else
 		min_y = min_y-100;
 
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0 , (graph->graph_len/1000000) , max_y, min_y);
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->databox), 0 , (graph->graph_len/1000000) , max_y, min_y);
 
 	return TRUE;	
 }
+
+bool clear_neuron_dynamics_graph_w_scroll(NeuronDynamicsGraphScroll *graph)
+{
+	unsigned int i;
+	unsigned int num_of_data_points = graph->num_of_data_points;
+	float *y = graph->y;
+	for (i = 0; i < num_of_data_points; i++)
+		y[i] = 0;
+	set_total_limits_neuron_dynamics_graph_scroll(graph);
+	return TRUE;
+}
+

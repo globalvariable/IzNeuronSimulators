@@ -69,7 +69,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			for (i = 0; i < num_of_all_neurons; i++)
 			{
 				nrn = all_neurons[i];
-				nrn->iz_params->I_inject = 21.0;
+				nrn->iz_params->I_inject = 20.0;
 				if (!evaluate_neuron_dyn(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)

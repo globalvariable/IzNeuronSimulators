@@ -31,7 +31,6 @@ struct  __NeuronDynamicsGraph
 struct  __NeuronDynamicsGraphScroll
 {
 	pthread_mutex_t 	mutex;
-	GtkWidget		*box;
 	GtkWidget		*databox;
 	GtkDataboxGraph	*graph;
 	float			*x;
@@ -63,5 +62,5 @@ bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScro
 bool scroll_neuron_dynamics_graph(NeuronDynamicsGraphScroll *graph);
 bool submit_neuron_dynamics_graph_neuron_and_dynamics_type(NeuronDynamicsGraphScroll *graph, unsigned int layer, unsigned int neuron_grp, unsigned int neuron_num, int dynamics_type);
 bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph);
-
+bool clear_neuron_dynamics_graph_w_scroll(NeuronDynamicsGraphScroll *graph);
 #endif

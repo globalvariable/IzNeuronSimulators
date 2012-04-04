@@ -30,7 +30,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
 	graph->spike_buffer_followup_latency = spike_buffer_followup_latency;
 	graph->source_spike_data_to_plot = source_spike_data_to_plot;
-	graph->spike_handling_buffer = allocate_spike_data(graph->spike_handling_buffer, (unsigned int)(get_num_of_neurons_in_network(network)*(spike_buffer_followup_latency/1000000000.0)*500) ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	graph->spike_handling_buffer = allocate_spike_data(graph->spike_handling_buffer, (unsigned int)(get_num_of_neurons_in_network(network)*(spike_buffer_followup_latency/1000000000.0)*500) ); // to buffer spikes appear during spike_buffer_followup_latency, assuming neuron firing rate cannot be more than 500 Hz 
 
 	color_bg.red = 0;
 	color_bg.green = 0;
@@ -252,6 +252,31 @@ bool set_total_limits_network_spike_pattern_graph(Network* network, NetworkSpike
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
+				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0.0, graph_len_ms, 1.0, 0.9);	
+			}
+		}
+	}
+	return TRUE;
+}
+
+bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePatternGraphScroll *graph)
+{
+	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
+	unsigned int i, j, k, m;
+	unsigned int end_idx = graph->num_of_data_points;
+	unsigned int 	graph_len_ms = graph->graph_len_ms;
+	NeuronSpikePatternGraphScroll	***neuron_graphs = graph->neuron_graphs;
+	get_num_of_layers_in_network(network, &num_of_layers);
+	for (i = 0; i < num_of_layers; i++)
+	{
+		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
+		for (j=0; j<num_of_neuron_groups_in_layer; j++)
+		{		
+			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
+			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
+			{
+				for (m = 0; m < end_idx; m++)
+					neuron_graphs[i][j][k].y[m] = 0;	// instead of sliding in a straigthforward manner, think of making a list which holds the data points having spikes. the size of the list would be num_of_data_points and num_of_spikes would determine the used part of the list by spikes.
 				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0.0, graph_len_ms, 1.0, 0.9);	
 			}
 		}
