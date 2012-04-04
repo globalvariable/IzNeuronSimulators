@@ -13,6 +13,7 @@
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
 #include "../../Library/InjectionCurrentData/InjectionCurrentData.h"
+#include "../../Library/SpikeData/SpikeData.h"
 
 
 

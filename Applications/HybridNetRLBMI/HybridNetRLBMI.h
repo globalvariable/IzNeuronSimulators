@@ -15,8 +15,8 @@ struct __HybridNetRLBMIData
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
 	NeuronDynamicsBuffer			*neuron_dynamics_pattern_buffer;
-	SpikeData					*int_network_spike_data;
-	SpikeData					*ext_network_spike_data;
+	SpikeData					*blue_spike_spike_data;
+	SpikeData					*in_silico_spike_data;
 	bool						simulation_in_progress;
 };
 

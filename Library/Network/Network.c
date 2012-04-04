@@ -155,16 +155,11 @@ static bool add_iz_neuron_group_to_layer(Network *network, unsigned int layer, u
 	ptr_neuron_group = ptr_layer->neuron_groups[ptr_layer->neuron_group_count-1];
 
 	ptr_neuron_group->neurons = g_new0(Neuron, num_of_neuron);
-	if (ptr_neuron_group->neurons == NULL)
-	{
-		printf("Network: ERROR: Couldn' t create %d neurons\n", num_of_neuron);
-		return FALSE;
-	}
 	ptr_neuron_group->neuron_count = num_of_neuron;
 
 	for (i=0; i<num_of_neuron; i++)
 	{
-		if( !initialize_iz_neuron_params(&(ptr_neuron_group->neurons[i]), layer, 0, i, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
+		if( !initialize_iz_neuron_params(&(ptr_neuron_group->neurons[i]), layer, ptr_layer->neuron_group_count-1, i, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 			return FALSE;
 	}
 	
@@ -193,15 +188,10 @@ static bool add_neuron_node_group_to_layer(Network *network, unsigned int layer,
 	ptr_neuron_group = ptr_layer->neuron_groups[ptr_layer->neuron_group_count-1];
 
 	ptr_neuron_group->neurons = g_new0(Neuron, num_of_neuron);
-	if (ptr_neuron_group->neurons == NULL)
-	{
-		printf("Network: ERROR: Couldn' t create %d neurons\n", num_of_neuron);
-		return FALSE;
-	}
 	ptr_neuron_group->neuron_count = num_of_neuron;
 	for (i=0; i<num_of_neuron; i++)
 	{
-		if( !initialize_neuron_node(&(ptr_neuron_group->neurons[i]), layer, 0, i, inhibitory))
+		if( !initialize_neuron_node(&(ptr_neuron_group->neurons[i]), layer, ptr_layer->neuron_group_count-1, i, inhibitory))
 			return FALSE;
 	}
 	all_neurons = g_new0(Neuron*, network->num_of_neurons + num_of_neuron);
@@ -494,22 +484,9 @@ bool get_num_of_neurons_in_neuron_group(Network *network, unsigned int layer, un
 	return TRUE;
 }
 
-bool get_num_of_neurons_in_network(Network *network, unsigned int *num_of_neurons)
+unsigned int get_num_of_neurons_in_network(Network *network)
 {
-	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
-	unsigned int i, j;
-	*num_of_neurons = 0;
-	get_num_of_layers_in_network(network, &num_of_layers);
-	for (i = 0; i < num_of_layers; i++)
-	{	
-		get_num_of_neuron_groups_in_layer(network, i, &num_of_neuron_groups_in_layer);
-		for (j=0; j<num_of_neuron_groups_in_layer; j++)
-		{
-			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
-			*num_of_neurons = *num_of_neurons + num_of_neurons_in_neuron_group;
-		}
-	}
-	return TRUE;	
+	return network->num_of_neurons;
 }
 
 bool get_num_of_neuron_groups_in_network(Network *network, unsigned int *num_of_neuron_groups)

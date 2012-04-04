@@ -39,7 +39,9 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	Network		*in_silico_network =  bmi_data->in_silico_network;
 	Neuron		**all_neurons = in_silico_network->all_neurons;
+	Neuron 		*nrn;
 	NeuronDynamicsBuffer *neuron_dynamics_buffer = bmi_data->neuron_dynamics_pattern_buffer;
+	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	unsigned int i, num_of_all_neurons = in_silico_network->num_of_neurons;
 	if (! check_rt_task_specs_to_init(IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, IZ_PS_NETWORK_SIM_PERIOD))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
@@ -66,13 +68,12 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 		{
 			for (i = 0; i < num_of_all_neurons; i++)
 			{
-				all_neurons[i]->iz_params->I_inject = 21.0;
-				if (!evaluate_neuron_dyn(all_neurons[i], time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
+				nrn = all_neurons[i];
+				nrn->iz_params->I_inject = 21.0;
+				if (!evaluate_neuron_dyn(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)
-				{
-					// do something
-				}
+					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer(in_silico_network, neuron_dynamics_buffer, time_ns);
 		}
@@ -99,6 +100,9 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 	unsigned int blue_spike_buff_read_idx, end_idx;
 	unsigned int *blue_spike_buff_write_idx = &(shared_memory->spike_time_stamp.buff_idx_write);
 	unsigned int blue_spike_buff_size = SPIKE_TIME_STAMP_BUFF_SIZE;
+	unsigned int mwa_or_layer, channel_or_neuron_group, unit_or_neuron;
+	TimeStamp spike_time;
+	SpikeData *blue_spike_spike_data = bmi_data->blue_spike_spike_data;
 	if (! check_rt_task_specs_to_init(BLUE_SPIKE_BUFF_HANDLER_CPU_ID, BLUE_SPIKE_BUFF_HANDLER_CPU_THREAD_ID, BLUE_SPIKE_BUFF_HANDLER_PERIOD))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
         if (! (handler = rt_task_init_schmod(BLUE_SPIKE_BUFF_HANDLER_TASK_NAME, BLUE_SPIKE_BUFF_HANDLER_PRIORITY, BLUE_SPIKE_BUFF_HANDLER_STACK_SIZE, BLUE_SPIKE_BUFF_HANDLER_MSG_SIZE, BLUE_SPIKE_BUFF_HANDLER_POLICY, 1 << ((BLUE_SPIKE_BUFF_HANDLER_CPU_ID*MAX_NUM_OF_THREADS_PER_CPU)+BLUE_SPIKE_BUFF_HANDLER_CPU_THREAD_ID)))) {
@@ -123,9 +127,14 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 		while (blue_spike_buff_read_idx != end_idx)
 		{
 			spike_time_stamp_item = &(spike_time_stamp_buff[blue_spike_buff_read_idx]);
-			blue_spike_neuron = get_neuron_address(blue_spike_network, spike_time_stamp_item->mwa_or_layer, spike_time_stamp_item->channel_or_neuron_group, spike_time_stamp_item->unit_or_neuron);
-			if (!schedule_event(blue_spike_neuron, spike_time_stamp_item->peak_time)) {
-				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! schedule_event()."); exit(1); }	
+			mwa_or_layer = spike_time_stamp_item->mwa_or_layer;
+			channel_or_neuron_group = spike_time_stamp_item->channel_or_neuron_group;
+			unit_or_neuron = spike_time_stamp_item->unit_or_neuron;
+			spike_time = spike_time_stamp_item->peak_time;
+			blue_spike_neuron = get_neuron_address(blue_spike_network, mwa_or_layer, channel_or_neuron_group, unit_or_neuron);
+			if (!schedule_event(blue_spike_neuron, spike_time)) {
+				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! schedule_event()."); exit(1); }
+			write_to_spike_data(blue_spike_spike_data, mwa_or_layer, channel_or_neuron_group, unit_or_neuron, spike_time);	
 			if ((blue_spike_buff_read_idx+1) == blue_spike_buff_size)
 				blue_spike_buff_read_idx = 0;
 			else
