@@ -4,10 +4,10 @@
 #include <stdbool.h>
 
 // Neuron Types
-#define 	NRN_TYPE_VIRTUAL 				0
+#define 	NRN_TYPE_VIRTUAL					0				// 21.628 pA almost provides precise 11 Hz firing rate
 #define 	NRN_TYPE_REGULAR_SPIKING 		1
 #define 	NRN_TYPE_INTRINSICALLY_BURSTING	2
-#define 	NRN_TYPE_CHATTERING			3
+#define 	NRN_TYPE_CHATTERING				3
 #define 	NRN_TYPE_LOW_THRESHOLD		4
 #define 	NRN_TYPE_FAST_SPIKING			5
 

@@ -35,7 +35,7 @@ bool buffer_view_handler(void)
 	neuron_dynamics_graph = get_neuron_dynamics_graph_w_scroll_ptr();
 	spike_pattern_graph = get_generated_spike_pattern_graph_ptr();
 
-	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than sliding length/2
+	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
 
 	return TRUE;
 }
@@ -46,7 +46,7 @@ static gboolean timeout_callback(gpointer user_data)
 	unsigned int buffer_write_idx;
 	TimeStamp last_sample_time;
 
-	current_system_time = shared_memory->rt_tasks_data.current_system_time;
+	current_system_time = (shared_memory->rt_tasks_data.current_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	if (buffer_visualization_global_pause_request)
 	{
 		buffer_view_handler_paused_global = TRUE;

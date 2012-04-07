@@ -1271,7 +1271,7 @@ static void add_noise_trial_available_button_func(void)
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_in_refractory_button_func(void)
 {
@@ -1287,7 +1287,7 @@ static void add_noise_in_refractory_button_func(void)
 	if (current_num >= current_templates->num_of_in_refractory_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 
 void interrogate_network_button_func(void)
