@@ -13,6 +13,7 @@ typedef struct 	__CurrentPatternGraphScroll CurrentPatternGraphScroll;
 #include "../../../BlueSpike/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../InjectionCurrentData/InjectionCurrentData.h"
+#include "StatusMarker.h"
 
 
 struct  __CurrentPatternGraph
@@ -47,13 +48,16 @@ struct  __CurrentPatternGraphScroll
 	unsigned int		active_layer;
 	unsigned int		active_neuron_group;
 	unsigned int		active_neuron;
+	StatusMarkers	*status_markers;
+	TrialsData		*trials_data;
+	unsigned int		trial_status_event_buffer_read_idx;
 };
 
 CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatternGraph *graph, unsigned int num_of_data_points, TimeStamp sampling_interval);
 bool update_current_pattern_graph(CurrentPatternGraph *graph);
 bool clear_current_pattern_graph(CurrentPatternGraph *graph);
 
-CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox, CurrentPatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency);
+CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox, CurrentPatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data);
 bool determine_current_pattern_graph_scroll_start_indexes(CurrentPatternGraphScroll *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int current_pattern_buffer_write_idx, unsigned int current_pattern_buffer_size);
 bool handle_current_pattern_graph_scrolling_and_plotting(CurrentPatternGraphScroll *graph, CurrentPatternBuffer *current_pattern_buffer, TimeStamp current_system_time);
 bool scroll_current_pattern_graph(CurrentPatternGraphScroll *graph);

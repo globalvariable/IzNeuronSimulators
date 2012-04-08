@@ -17,7 +17,7 @@ typedef unsigned int ParkerSochackiStepSize;
 #define PARKER_SOCHACKI_INTEGRATION_STEP_SIZE 250000   // 250000 nanoseconds 	// DO NOT MAKE IT DOUBLE (floating point).
 
 #define NEWTON_RAPHSON_MAX_ITERATION 100
-#define NEWTON_RAPHSON_ERROR_TOLERANCE 1e-20  // 1 milliseconds
+#define NEWTON_RAPHSON_ERROR_TOLERANCE 1e-10  // 1 milliseconds
 
 struct __ParkerSochackiPolynomialVals
 {
