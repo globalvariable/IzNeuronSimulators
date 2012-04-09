@@ -104,7 +104,7 @@ bool create_neuron_dynamics_and_current_buffer_view_gui(void)
 
   	hbox = gtk_hbox_new(TRUE, 0);
     	gtk_box_pack_start(GTK_BOX(vbox1),hbox, TRUE,TRUE,0);
-	neuron_dynamics_graph = allocate_neuron_dynamics_graph_scroll(hbox, neuron_dynamics_graph, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, 1000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, 100000000);  // 100 ms latency
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph_scroll(hbox, neuron_dynamics_graph, GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, get_bmi_simulation_spike_generator_trials_data());  // 100 ms latency
 
 	g_signal_connect(G_OBJECT(btn_pause_neuron_dynamics_graph), "clicked", G_CALLBACK(pause_neuron_dynamics_graph_func), NULL);
 	g_signal_connect(G_OBJECT(btn_select_neuron_dynamics_graph), "clicked", G_CALLBACK(select_neuron_dynamics_graph_func), NULL);

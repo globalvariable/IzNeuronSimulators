@@ -47,7 +47,7 @@ bool buffer_view_handler(void)
 	blue_spike_spike_graph = get_blue_spike_spike_pattern_graph_ptr();
 	in_silico_spike_graph = get_in_silico_spike_pattern_graph_ptr();
 
-	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
+	g_timeout_add(50, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
 
 	return TRUE;
 }

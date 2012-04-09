@@ -56,6 +56,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	reset_all_network_iz_neuron_dynamics (in_silico_network);
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
+	for (i = 0; i < num_of_all_neurons; i++)  // blue spike buffer handler might schedule events earlier.
+		clear_neuron_event_buffer(all_neurons[i]);
         while (hybrid_net_rl_bmi_rt_tasks_stay_alive) 
 	{
         	rt_task_wait_period();

@@ -35,7 +35,7 @@ bool buffer_view_handler(void)
 	neuron_dynamics_graph = get_neuron_dynamics_graph_w_scroll_ptr();
 	spike_pattern_graph = get_generated_spike_pattern_graph_ptr();
 
-	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
+	g_timeout_add(50, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
 
 	return TRUE;
 }
@@ -76,6 +76,7 @@ static gboolean timeout_callback(gpointer user_data)
 			neuron_dynamics_graph->paused = FALSE;
 			neuron_dynamics_graph_visualization_resume_request = FALSE;
 		}
+
 		if (! determine_spike_pattern_graph_scroll_start_time_and_read_indexes(spike_pattern_graph, current_system_time))
 			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! determine_spike_pattern_graph_scroll_start_time().");	
 		clear_network_spike_pattern_graph_w_scroll(network, spike_pattern_graph);

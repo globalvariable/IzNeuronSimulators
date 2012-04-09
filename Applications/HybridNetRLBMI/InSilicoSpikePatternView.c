@@ -29,7 +29,7 @@ bool create_in_silico_spike_pattern_view_gui(void)
 
 	btn_pause = gtk_button_new_with_label("P");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_pause, FALSE, FALSE, 0);
-	in_silico_spike_pattern_graph = allocate_network_spike_pattern_graph_scroll(bmi_data->in_silico_network, hbox, in_silico_spike_pattern_graph, 3000, 1000000, 900, 1000, 100000000, bmi_data->in_silico_spike_data);    // 3 seconds, 1000 samples/sec, 100 ms latency
+	in_silico_spike_pattern_graph = allocate_network_spike_pattern_graph_scroll(bmi_data->in_silico_network, hbox, in_silico_spike_pattern_graph, 3000, 1000000, 900, 1000, 100000000, bmi_data->in_silico_spike_data,  NUM_OF_STATUS_MARKERS, bmi_data->trials_data);    // 3 seconds, 1000 samples/sec, 100 ms latency
 
 	g_signal_connect(G_OBJECT(btn_pause), "clicked", G_CALLBACK(pause_button_func), NULL);
 

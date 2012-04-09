@@ -142,7 +142,7 @@ bool evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, 
 			nrn->iz_params->conductance_inhibitory -= event_weights[idx];	
 		else
 			printf ("BUG: evaluate_neuron_dyn - Simulate.c  -----> Weight cannot be zero\n");	
-		printf ("%llu %f\n", event_time, event_weights[idx]);
+//		printf ("%llu %f\n", event_time, event_weights[idx]);
 		integration_start_ns = event_time;
 		idx++;
 		if (idx == event_buff_size)

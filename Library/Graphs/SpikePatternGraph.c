@@ -2,10 +2,11 @@
 
 
 
-NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot)
+NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialsData *trials_data)
 {
 	GdkColor color_bg;
 	GdkColor color_line;
+	GdkColor color_status_marker;
 	GtkWidget *vbox, *vbox1;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	unsigned int i, j, k, m;
@@ -44,6 +45,15 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	vbox = gtk_vbox_new(FALSE, 0);
      	gtk_box_pack_start(GTK_BOX(hbox),vbox, TRUE,TRUE,0);
 
+	graph->status_markers = g_new0(StatusMarkers,1);
+	graph->status_markers->markers = g_new0(StatusMarker, num_of_markers);
+	graph->status_markers->num_of_markers = num_of_markers;
+	for (i = 0; i < num_of_markers; i++)
+	{
+		graph->status_markers->markers[i].y[0] = 0;
+		graph->status_markers->markers[i].y[1] = 1;
+	}
+
 	num_of_all_neurons_in_network = get_num_of_neurons_in_network(network);
 	get_num_of_layers_in_network(network, &num_of_layers);
 	graph->neuron_graphs = g_new0(NeuronSpikePatternGraphScroll **,num_of_layers);	
@@ -71,10 +81,16 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 					graph->neuron_graphs[i][j][k].x[m] = (m*sampling_interval)/1000000;
 				graph->neuron_graphs[i][j][k].graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->neuron_graphs[i][j][k].x, graph->neuron_graphs[i][j][k].y, &color_line, 0));
 				gtk_databox_graph_add (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), graph->neuron_graphs[i][j][k].graph);	
-				gtk_databox_set_total_limits (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), 0.0, (graph->graph_len_ms), 1.0, 0.9);	
+				for (m = 0; m < num_of_markers; m++)
+				{
+					if (! get_status_marker_color(&color_status_marker, m))
+						return (NetworkSpikePatternGraphScroll*)print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "allocate_network_spike_pattern_graph_scroll", "! get_status_marker_color().");
+			 		gtk_databox_graph_add (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), gtk_databox_lines_new (2, graph->status_markers->markers[m].x, graph->status_markers->markers[m].y, &color_status_marker, 1)); 			
+				}
 			}
 		}
 	}
+	graph->trials_data = trials_data;
 	gtk_widget_show_all(hbox);	
 
 	return graph;						
@@ -85,6 +101,7 @@ bool determine_spike_pattern_graph_scroll_start_time_and_read_indexes(NetworkSpi
 	graph->new_part_start_time = current_system_time;
 	graph->source_spike_data_buffer_read_idx = graph->source_spike_data_to_plot->buff_idx_write;
 	graph->spike_handling_buffer_read_idx = graph->spike_handling_buffer->buff_idx_write;
+	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
 	return TRUE;
 }
 
@@ -94,6 +111,8 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 	TimeStamp 				new_part_end_time;
 	TimeStamp 				spike_time;
 	TimeStamp				sampling_interval;
+	TimeStamp				graph_len_to_scroll;
+	TimeStamp				graph_len;
 	unsigned int				idx, end_idx;
 	unsigned int				data_point_placement_start_idx;
 	SpikeData				*source_spike_data_to_plot;
@@ -104,6 +123,9 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 	unsigned int				source_spike_data_buffer_size;
 	SpikeTimeStampItem		*spike_item;
 	NeuronSpikePatternGraphScroll	***neuron_graphs;
+	StatusMarker 				*markers;
+	TrialStatusEventItem		*status_event_item;
+	float					status_marker_x;
 	if (!graph->paused)
 	{
 		new_part_start_time = graph->new_part_start_time;
@@ -157,6 +179,37 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 					idx = 0;			
 			}
 			graph->source_spike_data_buffer_read_idx = end_idx;	
+
+			while (graph->trial_status_event_buffer_read_idx != graph->trials_data->trials_status_event_buffer.buff_write_idx)
+			{
+				status_event_item = &(graph->trials_data->trials_status_event_buffer.buff[graph->trial_status_event_buffer_read_idx]);
+				graph_len_to_scroll = graph->graph_len_to_scroll;
+				graph_len = graph->graph_len;
+				status_marker_x = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+				markers = graph->status_markers->markers;
+				switch (status_event_item->status_type)
+				{
+					case TRIAL_STATUS_TRIALS_DISABLED:    // Do nothing
+						break;  		
+					case TRIAL_STATUS_IN_TRIAL:
+						markers[STATUS_MARKER_GREEN].x[0] = status_marker_x;   
+						markers[STATUS_MARKER_GREEN].x[1] = status_marker_x;
+						break;
+					case TRIAL_STATUS_IN_REFRACTORY:	
+						markers[STATUS_MARKER_RED].x[0] = status_marker_x;   
+						markers[STATUS_MARKER_RED].x[1] = status_marker_x;
+						break;
+					case TRIAL_STATUS_START_TRIAL_AVAILABLE:  
+						markers[STATUS_MARKER_YELLOW].x[0] = status_marker_x;   
+						markers[STATUS_MARKER_YELLOW].x[1] = status_marker_x;
+						break;
+					default:
+						return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "Unknown trial_status.");
+				}
+				graph->trial_status_event_buffer_read_idx++;
+				if (graph->trial_status_event_buffer_read_idx == TRIAL_STATUS_EVENT_BUFFER_SIZE)
+					graph->trial_status_event_buffer_read_idx = 0;
+			}
 			// plot and send scroll request to get prepared for next plotting.
 			set_total_limits_network_spike_pattern_graph(network, graph);
 			graph->scroll_request = TRUE;
@@ -214,7 +267,10 @@ bool scroll_network_spike_pattern_graph(Network* network, NetworkSpikePatternGra
 	unsigned int scroll = graph->num_of_data_points_to_scroll; 
 	unsigned int end_idx = graph->num_of_data_points;
 	unsigned int clear_start_idx = graph->data_point_placement_start_idx;
-
+	float *y;
+	StatusMarker *markers = graph->status_markers->markers;
+	unsigned int num_of_markers = graph->status_markers->num_of_markers;
+	float graph_len_to_scroll = graph->graph_len_to_scroll / 1000000.0;
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{
@@ -224,15 +280,22 @@ bool scroll_network_spike_pattern_graph(Network* network, NetworkSpikePatternGra
 			get_num_of_neurons_in_neuron_group(network, i, j, &num_of_neurons_in_neuron_group);
 			for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 			{
+				y = graph->neuron_graphs[i][j][k].y;
 				for (m = scroll; m < end_idx; m++)
-					graph->neuron_graphs[i][j][k].y[m-scroll] = graph->neuron_graphs[i][j][k].y[m];	// instead of sliding in a straigthforward manner, think of making a list which holds the data points having spikes. the size of the list would be num_of_data_points and num_of_spikes would determine the used part of the list by spikes.
+					y[m-scroll] = y[m];	// instead of sliding in a straigthforward manner, think of making a list which holds the data points having spikes. the size of the list would be num_of_data_points and num_of_spikes would determine the used part of the list by spikes.
 				for (m = clear_start_idx ; m < end_idx; m++)
-				{
-					graph->neuron_graphs[i][j][k].y[m] = 0;		
-				}				
+					y[m] = 0;		
 			}
 		}
 	}
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		if (markers[i].x[0] >= -100) // to ensure push to out of graph
+		{
+			markers[i].x[0] = markers[i].x[0] - graph_len_to_scroll;
+			markers[i].x[1] = markers[i].x[0];
+		}
+	}	
 	graph->scroll_request = FALSE;
 	return TRUE;
 }
@@ -266,6 +329,8 @@ bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePa
 	unsigned int end_idx = graph->num_of_data_points;
 	unsigned int 	graph_len_ms = graph->graph_len_ms;
 	NeuronSpikePatternGraphScroll	***neuron_graphs = graph->neuron_graphs;
+	StatusMarker *markers = graph->status_markers->markers;
+	unsigned int num_of_markers = graph->status_markers->num_of_markers;
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{
@@ -280,6 +345,11 @@ bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePa
 				gtk_databox_set_total_limits (GTK_DATABOX (neuron_graphs[i][j][k].databox), 0.0, graph_len_ms, 1.0, 0.9);	
 			}
 		}
+	}
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		markers[i].x[0] = -100; // to ensure push to out of graph
+		markers[i].x[1] = -100;
 	}
 	return TRUE;
 }

@@ -182,9 +182,8 @@ bool determine_current_pattern_graph_scroll_start_indexes(CurrentPatternGraphScr
 		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
 	graph->new_part_start_time = current_system_time;
 	graph->new_part_start_idx = current_system_times_idx;
+	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
 	return TRUE;
-
-
 }
 
 bool handle_current_pattern_graph_scrolling_and_plotting(CurrentPatternGraphScroll *graph, CurrentPatternBuffer *current_pattern_buffer, TimeStamp current_system_time)
@@ -269,7 +268,6 @@ bool handle_current_pattern_graph_scrolling_and_plotting(CurrentPatternGraphScro
 bool scroll_current_pattern_graph(CurrentPatternGraphScroll *graph)
 {
 	unsigned int i;
-
 	unsigned int scroll = graph->num_of_data_points_to_scroll; 
 	unsigned int end_idx = graph->num_of_data_points;
 	StatusMarker *markers = graph->status_markers->markers;
@@ -281,7 +279,7 @@ bool scroll_current_pattern_graph(CurrentPatternGraphScroll *graph)
 
 	for (i = 0; i < num_of_markers; i ++)
 	{
-		if (markers[i].x[0] >= 0)
+		if (markers[i].x[0] >= -100) // to ensure push to out of graph
 		{
 			markers[i].x[0] = markers[i].x[0] - graph_len_to_scroll;
 			markers[i].x[1] = markers[i].x[0];
@@ -353,12 +351,9 @@ bool clear_current_pattern_graph_w_scroll(CurrentPatternGraphScroll *graph)
 		y[i] = 0;
 	for (i = 0; i < num_of_markers; i ++)
 	{
-		markers[i].x[0] = 0;
-		markers[i].x[1] = 0;
-		markers[i].y[0] = 0;
-		markers[i].y[1] = 0;
+		markers[i].x[0] = -100; // to ensure push to out of graph
+		markers[i].x[1] = -100;
 	}
-	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
 	set_total_limits_current_pattern_graph_scroll(graph);
 	return TRUE;
 }

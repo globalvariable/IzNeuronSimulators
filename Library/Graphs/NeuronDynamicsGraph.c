@@ -122,7 +122,7 @@ bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStam
 	return TRUE;
 }
 
-NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox, NeuronDynamicsGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency)
+NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox, NeuronDynamicsGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data)
 {
 	unsigned int i;
 	if (graph != NULL)
@@ -140,18 +140,19 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	GdkColor color_bg;
 	GdkColor color_line;
 	GdkColor color_grid;
+	GdkColor color_status_marker;
 
-	color_bg.red = 65535;
-	color_bg.green = 65535;
-	color_bg.blue = 65535;
+	color_bg.red = 0;
+	color_bg.green = 0;
+	color_bg.blue = 0;
 	
-	color_grid.red = 50000;
-	color_grid.green = 50000;
-	color_grid.blue = 50000;
+	color_grid.red = 25000;
+	color_grid.green = 25000;
+	color_grid.blue = 25000;
 	
-	color_line.red = 0;
-	color_line.green = 0;
-	color_line.blue = 0;
+	color_line.red = 65535;
+	color_line.green = 65535;
+	color_line.blue = 65535;
 
 	graph->databox = gtk_databox_new ();	
 	gtk_box_pack_start (GTK_BOX (hbox), graph->databox, TRUE, TRUE, 0);
@@ -170,6 +171,18 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	graph->num_of_data_points_to_scroll = num_of_data_points_to_scroll;
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
 	graph->buffer_followup_latency = buffer_followup_latency;
+
+	graph->status_markers = g_new0(StatusMarkers,1);
+	graph->status_markers->markers = g_new0(StatusMarker, num_of_markers);
+	graph->status_markers->num_of_markers = num_of_markers;
+
+	for (i = 0; i < num_of_markers; i++)
+	{
+		if (! get_status_marker_color(&color_status_marker, i))
+			return (NeuronDynamicsGraphScroll*)print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "allocate_neuron_dynamics_graph_scroll", "! get_status_marker_color().");
+ 		gtk_databox_graph_add (GTK_DATABOX (graph->databox), gtk_databox_lines_new (2, graph->status_markers->markers[i].x, graph->status_markers->markers[i].y, &color_status_marker, 1)); 			
+	}
+	graph->trials_data = trials_data;
 	gtk_widget_show_all(hbox);	
 
 	return graph;				
@@ -192,6 +205,7 @@ bool determine_neuron_dynamics_graph_scroll_start_indexes(NeuronDynamicsGraphScr
 		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
 	graph->new_part_start_time = current_system_time;
 	graph->new_part_start_idx = current_system_times_idx;
+	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
 	return TRUE;
 }
 
@@ -199,11 +213,14 @@ bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScro
 {
 	TimeStamp new_part_start_time;
 	TimeStamp new_part_end_time;
+	TimeStamp graph_len_to_scroll;
+	TimeStamp graph_len;
 	unsigned int idx, end_idx, graph_old_part_end_idx, graph_sample_idx = 0; 
 	unsigned int layer, neuron_grp, neuron_num;
 	int dynamics_type;	
 	unsigned int buffer_size;
-	
+	StatusMarker *markers;
+	TrialStatusEventItem *status_event_item;	
 	if (!graph->paused)
 	{
 		if (graph->scroll_request)   // it is necessary otherwise set_total_limits cannot display slided and clear graph part. 
@@ -235,6 +252,35 @@ bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScro
 				else
 					idx++;
 			}
+			while (graph->trial_status_event_buffer_read_idx != graph->trials_data->trials_status_event_buffer.buff_write_idx)
+			{
+				markers = graph->status_markers->markers;
+				status_event_item = &(graph->trials_data->trials_status_event_buffer.buff[graph->trial_status_event_buffer_read_idx]);
+				graph_len_to_scroll = graph->graph_len_to_scroll;
+				graph_len = graph->graph_len;
+				switch (status_event_item->status_type)
+				{
+					case TRIAL_STATUS_TRIALS_DISABLED:    // Do nothing
+						break;  		
+					case TRIAL_STATUS_IN_TRIAL:	
+						markers[STATUS_MARKER_GREEN].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_GREEN].x[1] = markers[STATUS_MARKER_GREEN].x[0];
+						break;
+					case TRIAL_STATUS_IN_REFRACTORY:	
+						markers[STATUS_MARKER_RED].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_RED].x[1] = markers[STATUS_MARKER_RED].x[0];
+						break;
+					case TRIAL_STATUS_START_TRIAL_AVAILABLE:  
+						markers[STATUS_MARKER_YELLOW].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_YELLOW].x[1] = markers[STATUS_MARKER_YELLOW].x[0];
+						break;		
+					default:
+						return print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "handle_current_pattern_graph_scrolling_and_plotting", "Unknown trial_status.");
+				}
+				graph->trial_status_event_buffer_read_idx++;
+				if (graph->trial_status_event_buffer_read_idx == TRIAL_STATUS_EVENT_BUFFER_SIZE)
+					graph->trial_status_event_buffer_read_idx = 0;
+			}
 			set_total_limits_neuron_dynamics_graph_scroll(graph);
 			graph->scroll_request = TRUE;
 			graph->new_part_start_time = new_part_end_time; // prepare for next acquisition
@@ -248,14 +294,23 @@ bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScro
 bool scroll_neuron_dynamics_graph(NeuronDynamicsGraphScroll *graph)
 {
 	unsigned int i;
-
 	unsigned int scroll = graph->num_of_data_points_to_scroll; 
 	unsigned int end_idx = graph->num_of_data_points;
+	StatusMarker *markers = graph->status_markers->markers;
+	unsigned int num_of_markers = graph->status_markers->num_of_markers;
+	float graph_len_to_scroll = graph->graph_len_to_scroll / 1000000.0;
 
 	for (i = scroll; i < end_idx; i++)
 		graph->y[i-scroll] = graph->y[i];
-//	for (i = clear_start_idx ; i < end_idx; i++)	// no need to do this. new_part_handler will write here.
-//		graph->y[i] = 0;
+
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		if (markers[i].x[0] >= -100) // to ensure push to out of graph
+		{
+			markers[i].x[0] = markers[i].x[0] - graph_len_to_scroll;
+			markers[i].x[1] = markers[i].x[0];
+		}
+	}	
 	graph->scroll_request = FALSE;
 	return TRUE;
 }
@@ -277,6 +332,8 @@ bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *gr
 	float *y = graph->y;
 	unsigned int i;
 	unsigned int num_of_data_points = graph->num_of_data_points;
+	StatusMarker *markers = graph->status_markers->markers;
+	unsigned int num_of_markers = graph->status_markers->num_of_markers;
 
 	for (i = 0; i < num_of_data_points; i++)
 	{
@@ -307,6 +364,12 @@ bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *gr
 	else
 		min_y = min_y-100;
 
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		markers[i].y[0] = min_y;
+		markers[i].y[1] = max_y;
+	}
+
 	gtk_databox_set_total_limits (GTK_DATABOX (graph->databox), 0 , (graph->graph_len/1000000) , max_y, min_y);
 
 	return TRUE;	
@@ -316,9 +379,17 @@ bool clear_neuron_dynamics_graph_w_scroll(NeuronDynamicsGraphScroll *graph)
 {
 	unsigned int i;
 	unsigned int num_of_data_points = graph->num_of_data_points;
+	StatusMarker *markers = graph->status_markers->markers;
+	unsigned int num_of_markers = graph->status_markers->num_of_markers;
+
 	float *y = graph->y;
 	for (i = 0; i < num_of_data_points; i++)
 		y[i] = 0;
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		markers[i].x[0] = -100;   // to ensure push to out of graph
+		markers[i].x[1] = -100;
+	}
 	set_total_limits_neuron_dynamics_graph_scroll(graph);
 	return TRUE;
 }

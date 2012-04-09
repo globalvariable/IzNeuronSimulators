@@ -66,8 +66,7 @@ bool create_neuron_dynamics_view_gui(void)
 		gtk_box_pack_start (GTK_BOX (hbox), btn_select_arr[i], FALSE, FALSE, 0);
   		hbox = gtk_hbox_new(TRUE, 0);
     		gtk_box_pack_start(GTK_BOX(vbox1),hbox, TRUE,TRUE,0);
-		neuron_dynamics_graph_arr[i] = allocate_neuron_dynamics_graph_scroll(hbox, neuron_dynamics_graph_arr[i], 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, 1000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, 100000000);  // 100 ms latency
- 
+		neuron_dynamics_graph_arr[i] = allocate_neuron_dynamics_graph_scroll(hbox, neuron_dynamics_graph_arr[i], GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, bmi_data->trials_data);  // 100 ms latency
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_layer);
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_neuron_group);	
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_neuron);
