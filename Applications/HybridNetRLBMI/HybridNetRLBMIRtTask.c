@@ -40,7 +40,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	Network		*in_silico_network =  bmi_data->in_silico_network;
 	Neuron		**all_neurons = in_silico_network->all_neurons;
 	Neuron 		*nrn;
-	NeuronDynamicsBuffer *neuron_dynamics_buffer = bmi_data->neuron_dynamics_pattern_buffer;
+	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	unsigned int i, num_of_all_neurons = in_silico_network->num_of_neurons;
 	if (! check_rt_task_specs_to_init(IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, IZ_PS_NETWORK_SIM_PERIOD))  {
@@ -76,7 +76,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				if (spike_generated)
 					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);	
 			}
-			push_neuron_dynamics_to_neuron_dynamics_buffer(in_silico_network, neuron_dynamics_buffer, time_ns);
+			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns);
 		}
 		integration_start_time = integration_end_time;
 		// routines	

@@ -5,9 +5,9 @@ static Network *in_silico_network;
 static SpikeData *blue_spike_spike_data;
 static SpikeData *in_silico_spike_data;
 
-static NeuronDynamicsBuffer *neuron_dynamics_buffer;
+static NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited;
 static unsigned int num_of_neuron_dynamics_graphs;
-static NeuronDynamicsGraphScroll **neuron_dynamics_graph_arr;
+static NeuronDynamicsGraphScrollLimited **neuron_dynamics_graph_arr;
 
 static NetworkSpikePatternGraphScroll *blue_spike_spike_graph;
 static NetworkSpikePatternGraphScroll *in_silico_spike_graph;
@@ -39,7 +39,7 @@ bool buffer_view_handler(void)
 	if (!create_in_silico_spike_pattern_view_gui())
 		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_in_silico_spike_pattern_view_gui().");
 
-	neuron_dynamics_buffer = bmi_data->neuron_dynamics_pattern_buffer;
+	neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	num_of_neuron_dynamics_graphs = get_num_neuron_dynamics_graphs_w_scroll();
 	neuron_dynamics_graph_arr = get_neuron_dynamics_graphs_w_scroll_ptr();
 	neuron_dynamics_graph_visualization_resume_request = g_new0(bool, num_of_neuron_dynamics_graphs);
@@ -47,7 +47,7 @@ bool buffer_view_handler(void)
 	blue_spike_spike_graph = get_blue_spike_spike_pattern_graph_ptr();
 	in_silico_spike_graph = get_in_silico_spike_pattern_graph_ptr();
 
-	g_timeout_add(50, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
+	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
 
 	return TRUE;
 }
@@ -70,12 +70,12 @@ static gboolean timeout_callback(gpointer user_data)
 	{
 		buffer_view_handler_paused_global = FALSE;
 		buffer_visualization_global_resume_request = FALSE;
-		get_neuron_dynamics_last_sample_time_and_write_idx(neuron_dynamics_buffer, &last_sample_time, &neuron_dynamics_buffer_write_idx);   // lock/unlocks mutexes
+		get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer_limited, &last_sample_time, &neuron_dynamics_buffer_write_idx);   // lock/unlocks mutexes
 		for (i=0; i < num_of_neuron_dynamics_graphs; i++)
 		{
-			if (! determine_neuron_dynamics_graph_scroll_start_indexes(neuron_dynamics_graph_arr[i] , current_system_time, last_sample_time, neuron_dynamics_buffer_write_idx, neuron_dynamics_buffer->buffer_size))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_neuron_dynamics_graph_scroll_start_indexes().");	
-			clear_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);
+			if (! determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph_arr[i] , current_system_time, last_sample_time, neuron_dynamics_buffer_write_idx, neuron_dynamics_buffer_limited->buffer_size))
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_neuron_dynamics_graph_scroll_limited_start_indexes().");	
+			clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);
 			if (neuron_dynamics_graph_visualization_resume_request[i])
 			{
 				neuron_dynamics_graph_arr[i]->paused = FALSE;
@@ -105,8 +105,8 @@ static gboolean timeout_callback(gpointer user_data)
 	{
 		for (i=0; i < num_of_neuron_dynamics_graphs; i++)
 		{
-			if (!handle_neuron_dynamics_graph_scrolling_and_plotting(neuron_dynamics_graph_arr[i], neuron_dynamics_buffer, current_system_time))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! handle_neuron_dynamics_graph_scrolling_and_plotting().");
+			if (!handle_limited_neuron_dynamics_graph_scrolling_and_plotting(neuron_dynamics_graph_arr[i], current_system_time))
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! handle_limited_neuron_dynamics_graph_scrolling_and_plotting().");
 		}
 		if (! handle_spike_pattern_graph_scrolling_and_plotting(blue_spike_spike_graph, blue_spike_network, current_system_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! handle_spike_pattern_graph_scrolling_and_plotting().");		
@@ -134,8 +134,7 @@ bool send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(unsigned i
 		buffer_visualization_global_resume_request = TRUE;
 		return TRUE;
 	}
-	else
-		return FALSE;
+	return FALSE;
 }
 
 bool send_blue_spike_spike_graph_resume_request_to_buffer_view_handler(void)
@@ -146,8 +145,7 @@ bool send_blue_spike_spike_graph_resume_request_to_buffer_view_handler(void)
 		buffer_visualization_global_resume_request = TRUE;
 		return TRUE;
 	}
-	else
-		return FALSE;
+	return FALSE;
 }
 
 bool send_in_silico_spike_graph_resume_request_to_buffer_view_handler(void)
@@ -158,8 +156,7 @@ bool send_in_silico_spike_graph_resume_request_to_buffer_view_handler(void)
 		buffer_visualization_global_resume_request = TRUE;
 		return TRUE;
 	}
-	else
-		return FALSE;
+	return FALSE;
 }
 
 bool is_buffer_view_handler_paused(void)

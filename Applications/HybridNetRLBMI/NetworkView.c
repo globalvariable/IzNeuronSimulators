@@ -843,7 +843,7 @@ static void submit_parker_sochacki_params_button_func(void)
 	if (! parker_sochacki_set_order_tolerance(bmi_data->in_silico_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");
 	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
-	bmi_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(bmi_data->in_silico_network, bmi_data->neuron_dynamics_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);  // 2 second buffer for 1 second graph refresh rate. 
+	bmi_data->neuron_dynamics_limited_buffer = allocate_neuron_dynamics_buffer_limited(bmi_data->in_silico_network, bmi_data->neuron_dynamics_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	if (!buffer_view_handler())
