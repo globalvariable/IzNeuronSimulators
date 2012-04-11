@@ -11,7 +11,7 @@ static LayerNrnGrpNeuronCombo *combos_select_neuron_for_neuron_dynamics;
 static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
 
 static CurrentPatternGraphScroll *current_pattern_graph = NULL;
-static NeuronDynamicsGraphScroll *neuron_dynamics_graph = NULL;
+static NeuronDynamicsGraphScrollLimited *neuron_dynamics_graph = NULL;
 
 static void global_pause_button_func (void);
 static void pause_current_pattern_graph_func(void);
@@ -104,7 +104,7 @@ bool create_neuron_dynamics_and_current_buffer_view_gui(void)
 
   	hbox = gtk_hbox_new(TRUE, 0);
     	gtk_box_pack_start(GTK_BOX(vbox1),hbox, TRUE,TRUE,0);
-	neuron_dynamics_graph = allocate_neuron_dynamics_graph_scroll(hbox, neuron_dynamics_graph, GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, get_bmi_simulation_spike_generator_trials_data());  // 100 ms latency
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph_scroll_limited(hbox, neuron_dynamics_graph, GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, get_bmi_simulation_spike_generator_trials_data(), spike_gen_data->limited_neuron_dynamics_buffer, 0);  // 100 ms latency
 
 	g_signal_connect(G_OBJECT(btn_pause_neuron_dynamics_graph), "clicked", G_CALLBACK(pause_neuron_dynamics_graph_func), NULL);
 	g_signal_connect(G_OBJECT(btn_select_neuron_dynamics_graph), "clicked", G_CALLBACK(select_neuron_dynamics_graph_func), NULL);
@@ -138,7 +138,7 @@ CurrentPatternGraphScroll* get_current_pattern_graph_w_scroll_ptr(void)
 	return current_pattern_graph;
 }
 
-NeuronDynamicsGraphScroll* get_neuron_dynamics_graph_w_scroll_ptr(void)
+NeuronDynamicsGraphScrollLimited* get_neuron_dynamics_graph_w_scroll_ptr(void)
 {
 	return neuron_dynamics_graph;
 }
@@ -169,14 +169,14 @@ static void select_current_pattern_graph_func(void)
 
 static void pause_neuron_dynamics_graph_func(void)
 {
-	if (neuron_dynamics_graph->paused)
+	if (neuron_dynamics_graph->locally_paused)
 	{
 		if (send_neuron_dynamics_graph_resume_request_to_buffer_view_handler())   // should resume all graphs at the same time to provide sync
 			gtk_button_set_label (GTK_BUTTON(btn_pause_neuron_dynamics_graph),"R");  
 	}
 	else
 	{
-		neuron_dynamics_graph->paused = TRUE;
+		neuron_dynamics_graph->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_neuron_dynamics_graph),"P");		
 	}
 }
@@ -185,13 +185,13 @@ static void select_neuron_dynamics_graph_func(void)
 {
 	unsigned int layer_num, nrn_grp_num, nrn_num;
 	int dynamics_type;
-
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();	
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron_for_neuron_dynamics, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! layer_neuron_group_neuron_get_selected().");	
 	if (!neuron_dynamics_combo_get_selected(combo_neuron_dynamics, &dynamics_type))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! neuron_dynamics_combo_get_selected().");	
-	if (!submit_neuron_dynamics_graph_neuron_and_dynamics_type(neuron_dynamics_graph, layer_num, nrn_grp_num, nrn_num, dynamics_type))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! submit_neuron_dynamics_graph_neuron_and_dynamics_type().");
+	if (!submit_selected_neuron_to_neuron_dynamics_buffer_limited(spike_gen_data->network, spike_gen_data->limited_neuron_dynamics_buffer, layer_num, nrn_grp_num, nrn_num, dynamics_type, 0))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! submit_selected_neuron_to_neuron_dynamics_buffer_limited().");
 }
 
 void send_global_pause_button_sensitive_request(void)

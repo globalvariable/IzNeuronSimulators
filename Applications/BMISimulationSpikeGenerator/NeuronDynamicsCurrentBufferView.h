@@ -1,6 +1,7 @@
 #ifndef BUFFERS_VIEW_H
 #define BUFFERS_VIEW_H
 
+#define NUM_OF_NEURON_DYNAMICS_GRAPHS	1
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
@@ -11,7 +12,7 @@
 
 bool create_neuron_dynamics_and_current_buffer_view_gui(void);
 CurrentPatternGraphScroll* get_current_pattern_graph_w_scroll_ptr(void);
-NeuronDynamicsGraphScroll* get_neuron_dynamics_graph_w_scroll_ptr(void);
+NeuronDynamicsGraphScrollLimited* get_neuron_dynamics_graph_w_scroll_ptr(void);
 void send_global_pause_button_sensitive_request(void);
 
 

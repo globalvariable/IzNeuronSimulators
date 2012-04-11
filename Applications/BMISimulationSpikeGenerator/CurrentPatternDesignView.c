@@ -897,9 +897,9 @@ static void generate_current_injection_graphs_button_func(void)
 	}
 	current_pattern_graph = allocate_current_pattern_graph(current_pattern_graph_hbox, current_pattern_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer
-	spike_gen_data->neuron_dynamics_pattern_buffer = allocate_neuron_dynamics_buffer(spike_gen_data->network, spike_gen_data->neuron_dynamics_pattern_buffer, 2000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 2 second buffer for 1 second graph refresh rate. 
-	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*2*500 ); // 2 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	spike_gen_data->current_pattern_buffer = allocate_current_pattern_buffer(spike_gen_data->network, spike_gen_data->current_pattern_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE); // 3 second buffer
+	spike_gen_data->limited_neuron_dynamics_buffer = allocate_neuron_dynamics_buffer_limited(spike_gen_data->network, spike_gen_data->limited_neuron_dynamics_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS); // 3 second buffer for 1 second graph refresh rate. 
+	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 
 	if (! buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	
