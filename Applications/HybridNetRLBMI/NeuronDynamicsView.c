@@ -108,14 +108,14 @@ static void pause_button_func (GtkWidget *btn_pause)
 	}
 	if (i == NUM_OF_NEURON_DYNAMICS_GRAPHS)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NeuronDynamicsView", "pause_button_func", "i == NUM_OF_GRAPHS.");	
-	if (neuron_dynamics_graph_arr[i]->paused)
+	if (neuron_dynamics_graph_arr[i]->locally_paused)
 	{
 		if (send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(i))   // should resume all graphs at the same time to provide sync
 			gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"R");  
 	}
 	else
 	{
-		neuron_dynamics_graph_arr[i]->paused = TRUE;
+		neuron_dynamics_graph_arr[i]->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"P");		
 	}
 	return;

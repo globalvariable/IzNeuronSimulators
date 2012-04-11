@@ -72,7 +72,10 @@ struct  __NeuronDynamicsGraphScrollLimited
 	unsigned int		num_of_data_points_to_scroll;
 	TimeStamp		graph_len_to_scroll;
 	TimeStamp		buffer_followup_latency;    // it is to provide sync' d plotting with spike pattern graph with scrolling
-	bool			paused;
+	bool			globally_paused;
+	bool			locally_paused;
+	bool			global_pause_request;
+	bool			local_pause_request;
 	bool			scroll_request;	// scrolling just after set_total_limits prevents plotting of new data part. then, rise a request and handle scrolling in the next timeout_callback.
 	unsigned int		limited_dynamics_buffer_list_idx;  // to get selected neuron and dynamics type' s value from neuron dynamics buffer limited
 	NeuronDynamicsBufferLimited* limited_dynamics_buffer;

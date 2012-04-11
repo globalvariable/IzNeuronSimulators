@@ -405,7 +405,7 @@ NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(
 	}
 	
 	graph = g_new0(NeuronDynamicsGraphScrollLimited,1);
-	graph->paused = TRUE;
+	graph->locally_paused = TRUE;
 	graph->num_of_data_points = num_of_data_points;
 	graph->sampling_interval = sampling_interval;
 	graph->graph_len = sampling_interval*num_of_data_points;
@@ -495,7 +495,17 @@ bool handle_limited_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsG
 	StatusMarker *markers;
 	TrialStatusEventItem *status_event_item;	
 	NeuronDynamicsBufferLimited* limited_dynamics_buffer = graph->limited_dynamics_buffer;
-	if (!graph->paused)
+	if ((graph->global_pause_request) && (graph->scroll_request))
+	{
+		graph->global_pause_request = FALSE;
+		graph->globally_paused = TRUE;
+	}
+	if ((graph->local_pause_request) && (graph->scroll_request))
+	{
+		graph->local_pause_request = FALSE;
+		graph->locally_paused = TRUE;
+	}
+	if ((!graph->locally_paused) && (!graph->globally_paused))
 	{
 		if (graph->scroll_request)   // it is necessary otherwise set_total_limits cannot display slided and clear graph part. 
 			scroll_limited_neuron_dynamics_graph(graph);

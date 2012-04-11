@@ -37,14 +37,14 @@ bool create_spike_pattern_buffer_view_gui(void)
 
 static void pause_button_func(void)
 {
-	if (spike_pattern_graph->paused)
+	if (spike_pattern_graph->locally_paused)
 	{
 		if (send_spike_pattern_graph_resume_request_to_buffer_view_handler())   // should resume all graphs at the same time to provide sync
 			gtk_button_set_label (GTK_BUTTON(btn_pause),"R");  
 	}
 	else
 	{
-		spike_pattern_graph->paused = TRUE;
+		spike_pattern_graph->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause),"P");		
 	}
 }

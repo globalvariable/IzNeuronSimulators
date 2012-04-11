@@ -39,7 +39,10 @@ struct  __NetworkSpikePatternGraphScroll		// when one needs real time scrolling 
 	TimeStamp				spike_buffer_followup_latency;    // spike times larger than (buffering_start_time + graph_len) and smaller than current_time might be missed. this handling latency avoids it. 
 	SpikeData				*source_spike_data_to_plot;
 	SpikeData				*spike_handling_buffer;
-	bool					paused;
+	bool					globally_paused;
+	bool					locally_paused;
+	bool					global_pause_request;
+	bool					local_pause_request;
 	bool					scroll_request;	// scrolling just after set_total_limits prevents plotting of new data part. then, rise a request and handle scrolling in the next timeout_callback.
 	unsigned int				source_spike_data_buffer_read_idx;
 	unsigned int				spike_handling_buffer_read_idx;

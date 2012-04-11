@@ -21,7 +21,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	if (source_spike_data_to_plot == NULL)
 		return (NetworkSpikePatternGraphScroll*)print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "allocate_network_spike_pattern_graph", "source_spike_data_to_plot == NULL.");	
 	graph = g_new0(NetworkSpikePatternGraphScroll,1);	
-	graph->paused = TRUE;
+	graph->locally_paused = TRUE;
 	graph->num_of_data_points = num_of_data_points;
  	graph->sampling_interval = sampling_interval;
 	graph->graph_len = sampling_interval*num_of_data_points;
@@ -126,7 +126,17 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 	StatusMarker 				*markers;
 	TrialStatusEventItem		*status_event_item;
 	float					status_marker_x;
-	if (!graph->paused)
+	if ((graph->global_pause_request) && (graph->scroll_request))
+	{
+		graph->global_pause_request = FALSE;
+		graph->globally_paused = TRUE;
+	}
+	if ((graph->local_pause_request) && (graph->scroll_request))
+	{
+		graph->local_pause_request = FALSE;
+		graph->locally_paused = TRUE;
+	}
+	if ((!graph->locally_paused) && (!graph->globally_paused))
 	{
 		new_part_start_time = graph->new_part_start_time;
 		new_part_end_time = new_part_start_time + graph->graph_len_to_scroll;

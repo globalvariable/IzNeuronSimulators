@@ -51,6 +51,7 @@ static gboolean timeout_callback(gpointer user_data)
 	{
 		buffer_view_handler_paused_global = TRUE;
 		buffer_visualization_global_pause_request = FALSE;
+		spike_pattern_graph->global_pause_request = TRUE;
 	}
 	if  (buffer_visualization_global_resume_request)	// shoud determine start_idx for neuron dynamics graphs and spike pattern graphs for every request to sync them all. 
 	{
@@ -80,9 +81,11 @@ static gboolean timeout_callback(gpointer user_data)
 		if (! determine_spike_pattern_graph_scroll_start_time_and_read_indexes(spike_pattern_graph, current_system_time))
 			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! determine_spike_pattern_graph_scroll_start_time().");	
 		clear_network_spike_pattern_graph_w_scroll(network, spike_pattern_graph);
+		spike_pattern_graph->globally_paused = FALSE;
+		spike_pattern_graph->global_pause_request = FALSE;
 		if (spike_pattern_graph_visualization_resume_request)
 		{
-			spike_pattern_graph->paused = FALSE;
+			spike_pattern_graph->locally_paused = FALSE;
 			spike_pattern_graph_visualization_resume_request = FALSE;
 		}
 	}
@@ -91,10 +94,11 @@ static gboolean timeout_callback(gpointer user_data)
 		if (!handle_current_pattern_graph_scrolling_and_plotting(current_pattern_graph, current_pattern_buffer, current_system_time))
 			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! handle_current_pattern_graph_scrolling_and_plotting().");
 		if (! handle_neuron_dynamics_graph_scrolling_and_plotting(neuron_dynamics_graph, neuron_dynamics_buffer, current_system_time))
-			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! handle_neuron_dynamics_graph_scrolling_and_plotting().");		
-		if (! handle_spike_pattern_graph_scrolling_and_plotting(spike_pattern_graph, network, current_system_time))
-			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! handle_spike_pattern_graph_scrolling_and_plotting().");	
-	}
+			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! handle_neuron_dynamics_graph_scrolling_and_plotting().");	
+	}	
+	if (! handle_spike_pattern_graph_scrolling_and_plotting(spike_pattern_graph, network, current_system_time))
+		return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! handle_spike_pattern_graph_scrolling_and_plotting().");	
+
 	
 	return TRUE;
 }
