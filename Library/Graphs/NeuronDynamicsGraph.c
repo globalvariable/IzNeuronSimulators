@@ -438,7 +438,6 @@ NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(
 		graph->x[i] = i*(sampling_interval/1000000.0);
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->databox), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->databox), 0, (graph->graph_len/1000000), 200, -200);	
 
 	graph->num_of_data_points_to_scroll = num_of_data_points_to_scroll;
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
@@ -458,7 +457,7 @@ NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(
 	graph->limited_dynamics_buffer = limited_dynamics_buffer;
 	graph->limited_dynamics_buffer_list_idx = limited_dynamics_buffer_list_idx;
 	gtk_widget_show_all(hbox);	
-
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->databox), 0, (graph->graph_len/1000000), 200, -200);	
 	return graph;				
 }
 

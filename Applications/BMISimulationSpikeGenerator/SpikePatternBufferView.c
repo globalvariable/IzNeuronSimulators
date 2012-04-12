@@ -44,7 +44,10 @@ static void pause_button_func(void)
 	}
 	else
 	{
-		spike_pattern_graph->local_pause_request = TRUE;
+		if (is_buffer_view_handler_paused())
+			spike_pattern_graph->locally_paused = TRUE;
+		else
+			spike_pattern_graph->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause),"P");		
 	}
 }

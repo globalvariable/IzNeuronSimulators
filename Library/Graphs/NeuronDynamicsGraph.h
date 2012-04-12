@@ -58,7 +58,7 @@ struct  __NeuronDynamicsGraphScroll
 	unsigned int		trial_status_event_buffer_read_idx;
 };
 
-struct  __NeuronDynamicsGraphScrollLimited
+struct  __NeuronDynamicsGraphScrollLimited		// To be faster when buffering. The most robust current graph due to bug fixes. 
 {
 	GtkWidget		*databox;
 	GtkDataboxGraph	*graph;

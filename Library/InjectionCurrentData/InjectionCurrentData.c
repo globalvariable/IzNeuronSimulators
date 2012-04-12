@@ -460,3 +460,69 @@ ConstantCurrent* deallocate_constant_current(Network * network, ConstantCurrent*
 	return NULL;	
 }
 
+CurrentPatternBufferLimited* allocate_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, unsigned int buffer_size, unsigned int num_of_selected_neurons)
+{
+	unsigned int i;
+	if (network == NULL)
+		return (CurrentPatternBufferLimited*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer_limited", "network == NULL.");
+	if (buffer != NULL)
+	{
+		buffer = deallocate_current_pattern_buffer_limited(network, buffer);
+		buffer = allocate_current_pattern_buffer_limited(network, buffer, buffer_size, num_of_selected_neurons);
+		return buffer;
+	}
+	buffer = g_new0(CurrentPatternBufferLimited,1);
+	pthread_mutex_init(&(buffer->mutex), NULL);
+	buffer->buffer = g_new0(SelectedNeuronCurrents, buffer_size);
+	for (i = 0; i <  buffer_size; i++)
+		buffer->buffer[i].neuron_current = g_new0(double, num_of_selected_neurons);
+	buffer->selected_currs = g_new0(SelectedNeuronCurrList, num_of_selected_neurons);
+	buffer->num_of_selected_neurons = num_of_selected_neurons;
+	buffer->buffer_size = buffer_size;
+	print_message(INFO_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_pattern_buffer_limited", "Created current_pattern_buffer_limited.");
+	return buffer;
+}
+CurrentPatternBufferLimited* deallocate_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer)
+{
+	print_message(BUG_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_pattern_buffer_limited", "Not implemented.");	
+	return NULL;
+}
+bool submit_selected_neuron_to_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num,  unsigned int list_idx)
+{
+	if (!is_neuron(network, layer, neuron_group, neuron_num))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_selected_neuron_to_current_pattern_buffer_limited", "! is_neuron().");
+	if (list_idx >= buffer->num_of_selected_neurons)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "submit_selected_neuron_to_current_pattern_buffer_limited", "list_idx >= buffer->num_of_selected_neurons.");	
+	pthread_mutex_lock(&(buffer->mutex));	
+	buffer->selected_currs[list_idx].layer = layer;
+	buffer->selected_currs[list_idx].neuron_group = neuron_group;
+	buffer->selected_currs[list_idx].neuron_num = neuron_num;
+	pthread_mutex_unlock(&(buffer->mutex));	
+	return TRUE;
+}
+bool push_neuron_currents_to_neuron_current_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, TimeStamp sampling_time)
+{
+	unsigned int i;
+	SelectedNeuronCurrList	*selected_currs = buffer->selected_currs;
+	unsigned int num_of_selected_neurons = buffer->num_of_selected_neurons;
+	double *neuron_current = buffer->buffer[buffer->buff_write_idx].neuron_current;
+
+	pthread_mutex_lock(&(buffer->mutex));
+	for (i = 0; i < num_of_selected_neurons; i++)
+		neuron_current[i] = network->layers[selected_currs[i].layer]->neuron_groups[selected_currs[i].neuron_group]->neurons[selected_currs[i].neuron_num].iz_params->I_inject;
+	if ((buffer->buff_write_idx + 1) == buffer->buffer_size)
+		buffer->buff_write_idx = 0;
+	else
+		buffer->buff_write_idx++;
+	buffer->last_sample_time = sampling_time;
+	pthread_mutex_unlock(&(buffer->mutex));
+	return TRUE;
+}
+bool get_current_pattern_buffer_limited_last_sample_time_and_write_idx(CurrentPatternBufferLimited *buffer, TimeStamp *last_sample_time, unsigned int *write_idx)
+{
+	pthread_mutex_lock(&(buffer->mutex));
+	*write_idx = buffer->buff_write_idx;
+	*last_sample_time = buffer->last_sample_time;
+	pthread_mutex_unlock(&(buffer->mutex));
+	return TRUE;
+}

@@ -115,7 +115,10 @@ static void pause_button_func (GtkWidget *btn_pause)
 	}
 	else
 	{
-		neuron_dynamics_graph_arr[i]->local_pause_request = TRUE;
+		if (is_buffer_view_handler_paused())
+			neuron_dynamics_graph_arr[i]->locally_paused = TRUE;
+		else
+			neuron_dynamics_graph_arr[i]->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"P");		
 	}
 	return;

@@ -76,41 +76,49 @@ static gboolean timeout_callback(gpointer user_data)
 	{
 		buffer_view_handler_paused_global = FALSE;
 		buffer_visualization_global_resume_request = FALSE;
+
 		get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer_limited, &last_sample_time, &neuron_dynamics_buffer_write_idx);   // lock/unlocks mutexes
 		for (i=0; i < num_of_neuron_dynamics_graphs; i++)
 		{
 			if (! determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph_arr[i] , current_system_time, last_sample_time, neuron_dynamics_buffer_write_idx, neuron_dynamics_buffer_limited->buffer_size))
 				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_neuron_dynamics_graph_scroll_limited_start_indexes().");	
-			clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);
+			if (!neuron_dynamics_graph_arr[i]->locally_paused)
+				clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);
+
 			neuron_dynamics_graph_arr[i]->globally_paused = FALSE;
 			neuron_dynamics_graph_arr[i]->global_pause_request = FALSE;
 			if (neuron_dynamics_graph_visualization_resume_request[i])
 			{
 				neuron_dynamics_graph_arr[i]->locally_paused = FALSE;
 				neuron_dynamics_graph_visualization_resume_request[i] = FALSE;
+				clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);
 			}
 		}
 
 		if (! determine_spike_pattern_graph_scroll_start_time_and_read_indexes(blue_spike_spike_graph, current_system_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_spike_pattern_graph_scroll_start_time().");	
-		clear_network_spike_pattern_graph_w_scroll(blue_spike_network, blue_spike_spike_graph);
+		if (!blue_spike_spike_graph->locally_paused)
+			clear_network_spike_pattern_graph_w_scroll(blue_spike_network, blue_spike_spike_graph);
 		blue_spike_spike_graph->globally_paused = FALSE;
 		blue_spike_spike_graph->global_pause_request = FALSE;
 		if (blue_spike_spike_graph_visualization_resume_request)
 		{
 			blue_spike_spike_graph->locally_paused = FALSE;
 			blue_spike_spike_graph_visualization_resume_request = FALSE;
+			clear_network_spike_pattern_graph_w_scroll(blue_spike_network, blue_spike_spike_graph);
 		}	
 	
 		if (! determine_spike_pattern_graph_scroll_start_time_and_read_indexes(in_silico_spike_graph, current_system_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_spike_pattern_graph_scroll_start_time().");	
-		clear_network_spike_pattern_graph_w_scroll(in_silico_network, in_silico_spike_graph);
+		if (!in_silico_spike_graph->locally_paused)
+			clear_network_spike_pattern_graph_w_scroll(in_silico_network, in_silico_spike_graph);
 		in_silico_spike_graph->globally_paused = FALSE;
 		in_silico_spike_graph->global_pause_request = FALSE;
 		if (in_silico_spike_graph_visualization_resume_request)
 		{
 			in_silico_spike_graph->locally_paused = FALSE;
 			in_silico_spike_graph_visualization_resume_request = FALSE;
+			clear_network_spike_pattern_graph_w_scroll(in_silico_network, in_silico_spike_graph);
 		}
 	}
 	for (i=0; i < num_of_neuron_dynamics_graphs; i++)

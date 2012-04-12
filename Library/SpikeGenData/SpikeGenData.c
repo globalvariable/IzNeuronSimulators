@@ -23,7 +23,7 @@ SpikeGenData* deallocate_spike_generator_data(SpikeGenData *data, TrialsData *tr
 		return (SpikeGenData*)print_message(BUG_MSG ,"IzNeuronSimulators", "SpikeGenData", "deallocate_spike_generator_data", "spike_generator_data == NULL.");	
 	data->network = deallocate_network(data->network);
 	data->current_templates = deallocate_current_templates(data->network, trials_data, data->current_templates);
-	data->current_pattern_buffer = deallocate_current_pattern_buffer(data->network, data->current_pattern_buffer);
+	data->limited_current_pattern_buffer = deallocate_current_pattern_buffer_limited(data->network, data->limited_current_pattern_buffer);
 	data->limited_neuron_dynamics_buffer = deallocate_neuron_dynamics_buffer_limited(data->network, data->limited_neuron_dynamics_buffer);
 	data->spike_data = deallocate_spike_data(data->spike_data);
 	g_free(data);

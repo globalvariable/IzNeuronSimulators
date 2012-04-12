@@ -10,6 +10,9 @@ typedef struct __CurrentTemplate CurrentTemplate;
 typedef struct __NeuronCurrentSample NeuronCurrentSample;
 typedef struct __CurrentPatternBuffer CurrentPatternBuffer;
 typedef struct __CurrentStartTimes CurrentStartTimes;
+typedef struct __SelectedNeuronCurrents SelectedNeuronCurrents;
+typedef struct __SelectedNeuronCurrList SelectedNeuronCurrList;
+typedef struct __CurrentPatternBufferLimited CurrentPatternBufferLimited;
 typedef struct __ConstantCurrent ConstantCurrent;
 
 #include <stdbool.h>
@@ -49,6 +52,19 @@ struct __CurrentTemplate
 	CurrentPatternTemplate	*in_refractory_currents;
 	CurrentPatternTemplate	**in_trial_currents;    // [trials_data->trial_types_data->num_of_types][num_of_in_trial_currents]
 };
+
+struct __SelectedNeuronCurrents
+{
+	double	*neuron_current;	// num_of_selected_neurons
+};
+
+struct __SelectedNeuronCurrList
+{	
+	unsigned int	layer;
+	unsigned int	neuron_group;
+	unsigned int	neuron_num;
+};
+
 struct __CurrentPatternBuffer
 {
 	pthread_mutex_t 			mutex;
@@ -56,6 +72,17 @@ struct __CurrentPatternBuffer
 	unsigned int				buff_write_idx;
 	unsigned int				buffer_size;
 	TimeStamp				last_sample_time;
+};
+
+struct __CurrentPatternBufferLimited		// For faster handling of current buffer.
+{
+	pthread_mutex_t 			mutex;
+	SelectedNeuronCurrents	*buffer;
+	unsigned int 				buff_write_idx;
+	unsigned int 				buffer_size;
+	TimeStamp				last_sample_time;
+	SelectedNeuronCurrList		*selected_currs;
+	unsigned int 				num_of_selected_neurons;
 };
 
 struct __ConstantCurrent
@@ -87,4 +114,10 @@ void reset_prev_noise_addition_times_for_current_template(Network *network, Curr
 bool load_current_template_sample_to_neurons_with_noise(Network *network, CurrentPatternTemplate* pattern_template, unsigned int current_template_read_idx, TimeStamp now);
 bool push_neuron_currents_to_current_pattern_buffer(Network *network, CurrentPatternBuffer* current_pattern_buffer, TimeStamp sampling_time);
 bool get_current_pattern_buffer_last_sample_time_and_write_idx(CurrentPatternBuffer *buffer, TimeStamp *last_sample_time, unsigned int *write_idx);
+
+CurrentPatternBufferLimited* allocate_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, unsigned int buffer_size, unsigned int num_of_selected_neurons);
+CurrentPatternBufferLimited* deallocate_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer);
+bool submit_selected_neuron_to_current_pattern_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num,  unsigned int list_idx);
+bool push_neuron_currents_to_neuron_current_buffer_limited(Network *network, CurrentPatternBufferLimited* buffer, TimeStamp sampling_time);
+bool get_current_pattern_buffer_limited_last_sample_time_and_write_idx(CurrentPatternBufferLimited *buffer, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

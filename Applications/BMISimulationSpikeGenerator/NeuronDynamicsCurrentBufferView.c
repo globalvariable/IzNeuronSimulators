@@ -10,7 +10,7 @@ static LayerNrnGrpNeuronCombo *combos_select_neuron_for_neuron_dynamics;
 
 static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
 
-static CurrentPatternGraphScroll *current_pattern_graph = NULL;
+static CurrentPatternGraphScrollLimited *current_pattern_graph = NULL;
 static NeuronDynamicsGraphScrollLimited *neuron_dynamics_graph = NULL;
 
 static void global_pause_button_func (void);
@@ -65,7 +65,7 @@ bool create_neuron_dynamics_and_current_buffer_view_gui(void)
 
   	hbox = gtk_hbox_new(TRUE, 0);
     	gtk_box_pack_start(GTK_BOX(vbox1),hbox, TRUE,TRUE,0);
-	current_pattern_graph = allocate_current_pattern_graph_scroll(hbox, current_pattern_graph, GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, get_bmi_simulation_spike_generator_trials_data()); // 100 ms latency
+	current_pattern_graph = allocate_current_pattern_graph_scroll_limited(hbox, current_pattern_graph, GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, get_bmi_simulation_spike_generator_trials_data(), spike_gen_data->limited_current_pattern_buffer, 0); // 100 ms latency
 
 
 	g_signal_connect(G_OBJECT(btn_pause_current_pattern_graph), "clicked", G_CALLBACK(pause_current_pattern_graph_func), NULL);
@@ -133,7 +133,7 @@ static void combos_select_neuron_for_neuron_dynamics_func(GtkWidget *changed_com
 		return;
 }
 
-CurrentPatternGraphScroll* get_current_pattern_graph_w_scroll_ptr(void)
+CurrentPatternGraphScrollLimited* get_current_pattern_graph_w_scroll_ptr(void)
 {
 	return current_pattern_graph;
 }
@@ -145,24 +145,27 @@ NeuronDynamicsGraphScrollLimited* get_neuron_dynamics_graph_w_scroll_ptr(void)
 
 static void pause_current_pattern_graph_func(void)
 {
-	if (current_pattern_graph->paused)
+	if (current_pattern_graph->locally_paused)
 	{
 		if (send_current_pattern_graph_resume_request_to_buffer_view_handler())   // should resume all graphs at the same time to provide sync
 			gtk_button_set_label (GTK_BUTTON(btn_pause_current_pattern_graph),"R");  
 	}
 	else
 	{
-		current_pattern_graph->paused = TRUE;
+		if (is_buffer_view_handler_paused())
+			current_pattern_graph->locally_paused = TRUE;
+		else
+			current_pattern_graph->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_current_pattern_graph),"P");		
 	}
 }
 static void select_current_pattern_graph_func(void)
 {
 	unsigned int layer_num, nrn_grp_num, nrn_num;
-
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();	
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron_for_current_pattern, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! layer_neuron_group_neuron_get_selected().");	
-	if (!submit_current_pattern_graph_neuron(current_pattern_graph, layer_num, nrn_grp_num, nrn_num))
+	if (!submit_selected_neuron_to_current_pattern_buffer_limited(spike_gen_data->network, spike_gen_data->limited_current_pattern_buffer, layer_num, nrn_grp_num, nrn_num, 0))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "NeuronDynamicsCurrentBufferView", "select_neuron_dynamics_graph_func", "! submit_current_pattern_graph_neuron().");
 }
 
@@ -176,7 +179,10 @@ static void pause_neuron_dynamics_graph_func(void)
 	}
 	else
 	{
-		neuron_dynamics_graph->local_pause_request = TRUE;
+		if (is_buffer_view_handler_paused())
+			neuron_dynamics_graph->locally_paused = TRUE;
+		else
+			neuron_dynamics_graph->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_neuron_dynamics_graph),"P");		
 	}
 }

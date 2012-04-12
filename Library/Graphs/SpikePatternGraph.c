@@ -52,6 +52,8 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	{
 		graph->status_markers->markers[i].y[0] = 0;
 		graph->status_markers->markers[i].y[1] = 1;
+		graph->status_markers->markers[i].x[0] = -100;
+		graph->status_markers->markers[i].x[1] = -100;
 	}
 
 	num_of_all_neurons_in_network = get_num_of_neurons_in_network(network);
@@ -92,7 +94,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	}
 	graph->trials_data = trials_data;
 	gtk_widget_show_all(hbox);	
-
+	set_total_limits_network_spike_pattern_graph(network, graph);
 	return graph;						
 }
 
@@ -341,6 +343,11 @@ bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePa
 	NeuronSpikePatternGraphScroll	***neuron_graphs = graph->neuron_graphs;
 	StatusMarker *markers = graph->status_markers->markers;
 	unsigned int num_of_markers = graph->status_markers->num_of_markers;
+	for (i = 0; i < num_of_markers; i ++)
+	{
+		markers[i].x[0] = -100; // to ensure push to out of graph
+		markers[i].x[1] = -100;
+	}
 	get_num_of_layers_in_network(network, &num_of_layers);
 	for (i = 0; i < num_of_layers; i++)
 	{
@@ -356,10 +363,6 @@ bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePa
 			}
 		}
 	}
-	for (i = 0; i < num_of_markers; i ++)
-	{
-		markers[i].x[0] = -100; // to ensure push to out of graph
-		markers[i].x[1] = -100;
-	}
+
 	return TRUE;
 }
