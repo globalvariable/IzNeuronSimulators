@@ -117,10 +117,15 @@ static void add_noise_in_trial_button_func(void);
 static void add_noise_trial_available_button_func(void);
 static void add_noise_in_refractory_button_func(void);
 
+static void create_directory_button_func(void);
+static void save_button_func(void);
+static void load_button_func(void);
+
 static void quit_button_func(void);
 
 static void set_neuron_param_entries(int neuron_type);
-
+static void fill_notes_text_view(void);
+static void set_directory_btn_select_directory(void);
 
 bool create_current_pattern_view_gui(void)
 {
@@ -710,37 +715,11 @@ bool create_current_pattern_view_gui(void)
 	g_signal_connect(G_OBJECT(btn_add_noise_in_refractory), "clicked", G_CALLBACK(add_noise_in_refractory_button_func), NULL);
 
 	g_signal_connect(G_OBJECT(btn_quit), "clicked", G_CALLBACK(quit_button_func), NULL);	
-/*     	g_signal_connect(G_OBJECT(btn_refresh_screen), "clicked", G_CALLBACK(refresh_screen_button_func), NULL);
-     	g_signal_connect(G_OBJECT(btn_submit_initial_current_params), "clicked", G_CALLBACK(submit_initial_current_params_button_func), NULL);	     		  	
-     	g_signal_connect(G_OBJECT(btn_create_firing_rate_view), "clicked", G_CALLBACK(create_firing_rate_view_button_func), NULL);	     		  	
-
-
-      	g_signal_connect(G_OBJECT(btn_add_trial_type), "clicked", G_CALLBACK(add_trial_type_button_func ), NULL);       	
-	g_signal_connect(G_OBJECT(btn_draw_template), "clicked", G_CALLBACK(draw_template_button_func), NULL);
-	g_signal_connect(G_OBJECT(btn_clear_template), "clicked", G_CALLBACK(clear_template_button_func), NULL);	
-	g_signal_connect(G_OBJECT(btn_copy_drawn_to_raw_stimuli), "clicked", G_CALLBACK(copy_drawn_to_raw_stimuli_button_func), NULL);
-	g_signal_connect(G_OBJECT(btn_add_noise), "clicked", G_CALLBACK(add_noise_button_func), NULL);
-	g_signal_connect(G_OBJECT(btn_display_current_template), "clicked", G_CALLBACK(display_current_template_button_func), NULL);	
-	g_signal_connect(G_OBJECT(btn_display_patterns_current), "clicked", G_CALLBACK(display_patterns_current_button_func), NULL);
-	g_signal_connect(G_OBJECT(btn_simulate), "clicked", G_CALLBACK(simulate_button_func), NULL);
-	g_signal_connect(G_OBJECT(btn_display_neuron_dynamics), "clicked", G_CALLBACK(display_neuron_dynamics_button_func), NULL);		
+	
 	g_signal_connect(G_OBJECT(btn_create_directory), "clicked", G_CALLBACK(create_directory_button_func), NULL);
 	g_signal_connect(G_OBJECT(btn_save), "clicked", G_CALLBACK(save_button_func), NULL);		
 	g_signal_connect(G_OBJECT(btn_load), "clicked", G_CALLBACK(load_button_func), NULL);	
 	
-	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
-	gtk_widget_set_sensitive(btn_add_trial_type, FALSE);
-	gtk_widget_set_sensitive(btn_display_raw_stimuli, FALSE);
-	gtk_widget_set_sensitive(btn_display_noisy_stimuli, FALSE);
-	gtk_widget_set_sensitive(btn_draw_stimuli, FALSE);
-	gtk_widget_set_sensitive(btn_simulate, FALSE);
-	gtk_widget_set_sensitive(btn_add_noise, FALSE);
-	gtk_widget_set_sensitive(btn_submit_initial_neuron_voltage, FALSE);
-	gtk_widget_set_sensitive(btn_create_directory, FALSE);	
-	gtk_widget_set_sensitive(btn_save, FALSE);		
-*/
-// 	initialize_graphs(table);
-
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);		
 	gtk_widget_set_sensitive(btn_submit_current_lengths, FALSE);	
 	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, FALSE);	
@@ -811,7 +790,7 @@ static void add_neurons_to_layer_button_func(void)
 	randomize_params = 0;
 
 	if ((data = get_bmi_simulation_spike_generator_spike_gen_data()) == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_neurons_to_layer_button_func", "spike_gen_data == NULL.");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_neurons_to_layer_button_func", "spike_gen_data == NULL.");
 							
 	if (!add_iz_neurons_to_layer(data->network, num_of_neuron, layer, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return;
@@ -825,7 +804,7 @@ static void submit_parker_sochacki_params_button_func(void)
 {	
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	if (! parker_sochacki_set_order_tolerance(spike_gen_data->network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");	
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, TRUE);					
@@ -840,9 +819,9 @@ static void submit_num_of_currents_button_func(void)
 	unsigned int num_of_in_refractory_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_refractory_currents)), &end_ptr, 10);
 	unsigned int num_of_in_trial_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_trial_currents)), &end_ptr, 10);
 	if (trials_data == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "trials_data == NULL.");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_num_of_currents_button_func", "trials_data == NULL.");
 	if (spike_gen_data == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
 
 	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, trials_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
 
@@ -861,9 +840,9 @@ static void submit_current_lengths_button_func(void)
 	TimeStamp trial_start_available_current_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_trial_start_available_current_length)), &end_ptr, 10);
 	TimeStamp in_refractory_current_length = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_in_refractory_current_length)), &end_ptr, 10);
 	if (! submit_current_length_trial_start_available_status(spike_gen_data->network, spike_gen_data->current_templates , trial_start_available_current_num, trial_start_available_current_length, &trial_start_available_currents_has_unsubmitted_current_len))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_current_lengths_button_func", "! submit_current_length_trial_start_available_status().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_current_lengths_button_func", "! submit_current_length_trial_start_available_status().");
 	if (! submit_current_length_in_refractory_status(spike_gen_data->network, spike_gen_data->current_templates, in_refractory_current_num, in_refractory_current_length, &in_refractory_currents_has_unsubmitted_current_len))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_current_lengths_button_func", "! submit_current_length_in_refractory_status().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_current_lengths_button_func", "! submit_current_length_in_refractory_status().");
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
 	if ((!trial_start_available_currents_has_unsubmitted_current_len) && (!in_refractory_currents_has_unsubmitted_current_len))
 	{
@@ -942,13 +921,13 @@ static void draw_template_button_func(void)
 	TimeStamp end_time = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_end_time)), &end_ptr, 10);
 	TimeStamp sampling_interval = current_pattern_graph->sampling_interval;
 	if (start_time > end_time)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "start_time > end_time");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "start_time > end_time");	
 	if (start_time > (current_pattern_graph->num_of_data_points* current_pattern_graph->sampling_interval))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "start_time > max_template_length.");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "start_time > max_template_length.");	
 	if (end_time > (current_pattern_graph->num_of_data_points* current_pattern_graph->sampling_interval))
 	{
-		print_message(WARNING_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "end_time > max_template_length.");	
-		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "end_time = max_template_length - sampling_interval.");	
+		print_message(WARNING_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "end_time > max_template_length.");	
+		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "end_time = max_template_length - sampling_interval.");	
 		end_time = current_pattern_graph->num_of_data_points* current_pattern_graph->sampling_interval;
 	}
 	if ((start_time/current_pattern_graph->sampling_interval) == 0)
@@ -980,7 +959,7 @@ static void draw_template_button_func(void)
 		}
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "!update_current_pattern_graph().");			
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "!update_current_pattern_graph().");			
 	return; 
 }
 
@@ -991,14 +970,14 @@ void clear_template_button_func(void)
 	for (i = 0; i < current_pattern_graph->num_of_data_points; i++)
 		current_pattern_graph->y[i] = 0;
 	if (!update_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "draw_template_button_func", "!update_current_pattern_graph().");		
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "draw_template_button_func", "!update_current_pattern_graph().");		
 }
 
 static void combos_select_neuron_func(GtkWidget *changed_combo)
 {
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	if (spike_gen_data == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "combos_select_neuron_func", "spike_gen_data == NULL.");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "combos_select_neuron_func", "spike_gen_data == NULL.");
 	if(!update_texts_of_combos_when_change(combos_select_neuron, spike_gen_data->network, changed_combo))
 		return;
 }
@@ -1016,9 +995,9 @@ static void copy_drawn_to_template_in_trial_button_func(void)
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
 	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
 		current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
@@ -1033,9 +1012,9 @@ static void copy_drawn_to_template_trial_available_button_func(void)
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	 
 	for (i = 0; i < current_templates->trial_start_available_currents[current_num].num_of_template_samples; i++)
 		current_templates->trial_start_available_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
@@ -1050,9 +1029,9 @@ static void copy_drawn_to_template_in_refractory_button_func(void)
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_refractory_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "copy_drawn_to_template_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
 	for (i = 0; i < current_templates->in_refractory_currents[current_num].num_of_template_samples; i++)
 		current_templates->in_refractory_currents[current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
@@ -1076,15 +1055,15 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 	float *y_dynamics;
 	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
 	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_in_trial_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
 	if (! clear_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "!clear_current_pattern_graph().");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "!clear_current_pattern_graph().");	 
 	if (! clear_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "!clear_neuron_dynamics_graph().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "!clear_neuron_dynamics_graph().");
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
@@ -1094,7 +1073,7 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
-			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "! evaluate_neuron_dyn().");
+			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
@@ -1110,13 +1089,13 @@ static void display_currents_and_dynamics_in_trial_button_func(void)
 				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
-				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
+				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
 		}		
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "!update_current_pattern_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "!update_current_pattern_graph().");	
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "!update_neuron_dynamics_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "!update_neuron_dynamics_graph().");	
 }
 static void display_currents_and_dynamics_trial_available_button_func(void)
 {
@@ -1137,15 +1116,15 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 	float *y_dynamics;
 	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
 	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	if (! clear_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "!clear_current_pattern_graph().");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "!clear_current_pattern_graph().");	 
 	if (! clear_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "!clear_neuron_dynamics_graph().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "!clear_neuron_dynamics_graph().");
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
@@ -1155,7 +1134,7 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
-			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "! evaluate_neuron_dyn().");
+			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
@@ -1171,13 +1150,13 @@ static void display_currents_and_dynamics_trial_available_button_func(void)
 				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
-				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
+				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_trial_button_func", "Invalid neuron_dynamics_type_idx.");
 		}		
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "!update_current_pattern_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "!update_current_pattern_graph().");	
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_trial_available_button_func", "!update_neuron_dynamics_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_trial_available_button_func", "!update_neuron_dynamics_graph().");	
 }
 static void display_currents_and_dynamics_in_refractory_button_func(void)
 {
@@ -1198,15 +1177,15 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 	float *y_dynamics;
 	int neuron_dynamics_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_neuron_dynamics->combo));
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	neuron = get_neuron_address(spike_gen_data->network, layer_num, nrn_grp_num, nrn_num);
 	neuron->iz_params->v = 0; neuron->iz_params->u = 0; neuron->iz_params->conductance_excitatory = 0; neuron->iz_params->conductance_inhibitory = 0; 
 	if (current_num >= current_templates->num_of_in_refractory_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "current_num >= num_of_in_refractory_currents.");	 
 	if (! clear_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "!clear_current_pattern_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "!clear_current_pattern_graph().");	
 	if (! clear_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "!clear_neuron_dynamics_graph().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "!clear_neuron_dynamics_graph().");
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
@@ -1216,7 +1195,7 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
-			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "display_currents_and_dynamics_in_refractory_button_func", "! evaluate_neuron_dyn().");
+			return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "! evaluate_neuron_dyn().");
 		switch (neuron_dynamics_type_idx)
 		{
 			case DYNAMICS_TYPE_V:
@@ -1232,13 +1211,13 @@ static void display_currents_and_dynamics_in_refractory_button_func(void)
 				y_dynamics[i] = neuron->iz_params->conductance_inhibitory;
 				break; 
 			default:
-				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "Invalid neuron_dynamics_type_idx.");
+				return (void)print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "Invalid neuron_dynamics_type_idx.");
 		}		
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "!update_current_pattern_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "!update_current_pattern_graph().");	
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "display_currents_and_dynamics_in_refractory_button_func", "!update_neuron_dynamics_graph().");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_and_dynamics_in_refractory_button_func", "!update_neuron_dynamics_graph().");	
 }
 static void add_noise_in_trial_button_func(void)
 {
@@ -1251,9 +1230,9 @@ static void add_noise_in_trial_button_func(void)
 	unsigned int trial_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_trial_type->combo));
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
 	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
 	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
@@ -1267,9 +1246,9 @@ static void add_noise_trial_available_button_func(void)
 	unsigned int nrn_num;
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_trial_available_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_trial_start_available_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_trial_available_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
 	current_templates->trial_start_available_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
@@ -1283,9 +1262,9 @@ static void add_noise_in_refractory_button_func(void)
 	unsigned int nrn_num;
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_refractory_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_refractory_currents)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "add_noise_in_refractory_button_func", "current_num >= num_of_trial_start_available_currents.");	
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_refractory_button_func", "current_num >= num_of_trial_start_available_currents.");	
 	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
 	current_templates->in_refractory_currents[current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
@@ -1304,14 +1283,13 @@ void interrogate_neuron_button_func(void)
 
 void create_directory_button_func(void)
 {
-/*	char *path_temp = NULL, *path = NULL;
+	char *path_temp = NULL, *path = NULL;
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
 	path = &path_temp[7];   // since     uri returns file:///home/....	
-	if ((*create_spike_pattern_generator_data_directory[SPIKEPATTERNGENERATOR_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_pattern_generator_get_network()))		// record in last format version
-		printf("SpikePatternGenerator: INFO: SpikePatternGenerator Data directory creation is successful\n");
-	else
-		printf("SpikePatternGenerator: ERROR: SpikePatternGenerator Data directory creation FAILED\n");	
-	return;*/
+	if (!(*create_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data->network))		// record in last format version
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "create_directory_button_func", "! (*create_spike_gen_data_directory)().");
+	return;
 }
 
 void save_button_func(void)
@@ -1335,37 +1313,22 @@ void save_button_func(void)
 
 void load_button_func(void)
 {
-/*	char *path_temp = NULL, *path = NULL;
+	char *path_temp = NULL, *path = NULL;
 	int version;
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
 	path = &path_temp[7];   // since     uri returns file:///home/....
-		
-	if (get_spike_pattern_generator_data_format_version(&version, path))
-	{	
-		if ((*load_spike_pattern_generator_data_directory[version])(3, path, spike_pattern_generator_get_network(), txv_notes))
-		{
-			allocate_graphs(all_stimulus_patterns_info.max_pattern_length);
-			gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);
-			gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);			
-			gtk_widget_set_sensitive(btn_draw_template, TRUE);
-			gtk_widget_set_sensitive(btn_simulate, TRUE);
-			gtk_widget_set_sensitive(btn_add_noise, TRUE);
-			gtk_widget_set_sensitive(btn_submit_initial_neuron_voltage, TRUE);	
-			gtk_widget_set_sensitive(btn_create_directory, TRUE);	
-			gtk_widget_set_sensitive(btn_save, TRUE);			
-			printf("SpikePatternGenerator: INFO: SpikePatternGenerator Data load is successful\n");
-		}
-		else
-		{
-			printf("SpikePatternGenerator: ERROR: SpikePatternGenerator Data load FAILED\n");
-		}					
-	}
-	return;*/
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();	
+	
+	if (!get_spike_gen_data_format_version(&version, path))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "load_button_func", "! get_spike_pattern_generator_data_format_version().");
+	if (!(*load_spike_gen_data_directory[version])(3, path, spike_gen_data->network, txv_notes))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "load_button_func", "! (*load_spike_pattern_generator_data_directory)().");
+	return;
 }
 
 void set_directory_btn_select_directory(void)
 {
-/*	char line[600];
+	char line[600];
 	FILE *fp = NULL;
        	if ((fp = fopen("./path_initial_directory", "r")) == NULL)  
        	{ 
@@ -1386,12 +1349,12 @@ void set_directory_btn_select_directory(void)
 			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory),line);
 		}
 		fclose(fp); 		
-	}  	 */
+	}  	 
 }
 
 void fill_notes_text_view(void)
 {
-/*	char line[1000];
+	char line[1000];
 	FILE *fp = NULL;
 	int i = 0;
 	GtkTextIter start, end;
@@ -1421,7 +1384,7 @@ void fill_notes_text_view(void)
 			}
 		}
 		fclose(fp);       		
-       	}*/
+       	}
 }
 
 

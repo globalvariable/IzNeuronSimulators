@@ -18,6 +18,7 @@
 #include "../../Library/SpikeGenData/SpikeGenData.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
+#include "../../Library/SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.h"
 
 #define LINE 0
 #define SIN 1
@@ -28,16 +29,8 @@ bool create_current_pattern_view_gui(void);
 
 
 
-void add_noise_button_func(void);
-void copy_drawn_to_raw_stimuli_button_func(void);
-void simulate_button_func(void);
-void display_neuron_dynamics_button_func(void);
-void display_neuron_dynamics(void);
-void create_directory_button_func(void);
-void save_button_func(void);
-void load_button_func(void);
-void fill_notes_text_view(void);
-void set_directory_btn_select_directory(void);
+
+
 
 
 
