@@ -7,7 +7,7 @@ bool initialize_spike_gen_data_read_write_handlers(void)
 	save_spike_gen_data_directory[0] = &save_spike_gen_data_directory_v0;
 	load_spike_gen_data_directory[0] = &load_spike_gen_data_directory_v0;
 
-	return 1;
+	return TRUE;
 }
 bool is_spike_gen_data(char *spike_gen_data_path)
 {

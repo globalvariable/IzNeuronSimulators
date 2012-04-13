@@ -17,6 +17,7 @@ struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeD
 	CurrentPatternBufferLimited		*limited_current_pattern_buffer;
 	NeuronDynamicsBufferLimited	*limited_neuron_dynamics_buffer;
 	SpikeData					*spike_data;
+	TrialsData					*trials_data;
 };
 
 SpikeGenData* allocate_spike_generator_data(SpikeGenData *data, TrialsData *trials_data);

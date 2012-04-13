@@ -13,6 +13,7 @@ SpikeGenData* allocate_spike_generator_data(SpikeGenData *data, TrialsData *tria
 	}	
 	data = g_new0(SpikeGenData, 1);
 	data->network = allocate_network(data->network);
+	data->trials_data = trials_data;
 	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeGenData", "allocate_spike_generator_data", "Created spike_generator_data.");
 	return data;
 }

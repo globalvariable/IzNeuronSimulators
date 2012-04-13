@@ -1287,28 +1287,22 @@ void create_directory_button_func(void)
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
 	path = &path_temp[7];   // since     uri returns file:///home/....	
-	if (!(*create_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data->network))		// record in last format version
+	if (!(*create_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data))		// record in last format version
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "create_directory_button_func", "! (*create_spike_gen_data_directory)().");
 	return;
 }
 
 void save_button_func(void)
 {
-/*	char *path_temp = NULL, *path = NULL;
+	char *path_temp = NULL, *path = NULL;
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
 	path = &path_temp[7];   // since     uri returns file:///home/....
-	if (is_spike_pattern_generator_data(path)) 		// First check if data directory was created previously
-	{			
-		if ((*save_spike_pattern_generator_data_directory[SPIKEPATTERNGENERATOR_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(3, path, spike_pattern_generator_get_network(), txv_notes))		// record in last format version
-			printf("SimulationView: INFO: SpikePatternGenerator Data save is successful\n");
-		else
-			printf("SimulationView: ERROR: SpikePatternGenerator Data save FAILED\n");
-	}
-	else
-	{
-			printf("SimulationView: ERROR: Not a SpikePatternGenerator Data\n");		
-	}		
-	return;*/
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	if (! is_spike_gen_data(path)) 		// First check if data directory was created previously
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "save_button_func", "! is_spike_pattern_generator_data().");			
+	if (!(*save_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data, txv_notes))		// record in last format version
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "save_button_func", "! (*save_spike_pattern_generator_data_directory)().");
+	return;
 }
 
 void load_button_func(void)
