@@ -2,8 +2,10 @@
 
 static bool create_main_meta_file(SpikeGenData *spike_gen_data, char * main_dir_path);
 static bool save_notes(char* main_dir_path, GtkWidget *text_view);
-static bool save_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path);
 static bool save_neuron_params(Network * network, char *main_dir_path);
+static bool save_trial_start_available_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path);
+static bool save_in_refractory_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path);
+static bool save_in_trial_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path);
 
 int create_spike_gen_data_directory_v0(int num, ...)
 {
@@ -96,6 +98,8 @@ int save_spike_gen_data_directory_v0(int num, ...)
     	text_view = va_arg ( arguments, GtkWidget *);   	
 	va_end ( arguments );
 
+	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "Saving spike_gen_data files...");
+
 	strcpy(main_dir_path, path_chooser);						// SpikePatternGeneratorData should be selected to save 
 	if ((dir_main_folder = opendir(main_dir_path)) == NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "opendir() == NULL: Couldn' t open SpikeGenData directory.");
@@ -103,11 +107,19 @@ int save_spike_gen_data_directory_v0(int num, ...)
         if(! save_notes(main_dir_path, text_view))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_notes().");
 
-        if(! save_current_pattern_templates(spike_gen_data, main_dir_path))
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_current_pattern_templates().");
-
 	if (! save_neuron_params(spike_gen_data->network, main_dir_path))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_neuron_params().");
+
+        if(! save_trial_start_available_current_pattern_templates(spike_gen_data, main_dir_path))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_trial_start_available_current_pattern_templates().");
+
+        if(! save_in_refractory_current_pattern_templates(spike_gen_data, main_dir_path))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_trial_start_available_current_pattern_templates().");
+
+        if(! save_in_trial_current_pattern_templates(spike_gen_data, main_dir_path))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "! save_in_trial_current_pattern_templates().");
+
+	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_spike_gen_data_directory_v0", "Saving spike_gen_data files...complete");
 
 	return 1;
 }
@@ -149,15 +161,227 @@ static bool save_notes(char* main_dir_path, GtkWidget *text_view)
 	return TRUE;
 }
 
-static bool save_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path)
+static bool save_trial_start_available_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path)
 {
-current_pattern_template_in_refractory_0001
-current_pattern_template_trial_start_available_0001
-current_pattern_template_in_trial_trial_type_11_0001
-current_pattern_template_in_trial_trial_type_12_0001
+	FILE *fp;
+	unsigned int i,j,k,m,n;
+	char current_pattern_name[100];
+	char current_pattern_num[10];
+	char current_pattern_path[700];	
+	CurrentTemplate *current_templates = spike_gen_data->current_templates;
+	CurrentPatternTemplate	*trial_start_available_currents = current_templates->trial_start_available_currents;
+	Network *network = spike_gen_data->network;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	for (m = 0; m < current_templates->num_of_trial_start_available_currents; m++)
+	{
+		if (m < 10)
+		{
+			strcpy(current_pattern_name, "/current_pattern_template_trial_start_available_0");
+			sprintf(current_pattern_num, "%u" , m);
+			strcat(current_pattern_name, current_pattern_num);			
+		}
+		else if (m < 100)
+		{
+			strcpy(current_pattern_name, "/current_pattern_template_trial_start_available_");
+			sprintf(current_pattern_num, "%u" , m);
+			strcat(current_pattern_name, current_pattern_num);			
+		}		
+		else
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_trial_start_available_current_pattern_templates", "spike_gen_data->num_of_trial_start_available_currents >100 .");
+
+		strcpy(current_pattern_path, main_dir_path);
+	 	strcat(current_pattern_path, current_pattern_name);
+		if ((fp = fopen(current_pattern_path, "w")) == NULL) 
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_trial_start_available_current_pattern_templates", "fopen() == NULL: Couldn' t create /current_pattern_template_trial_start_available file.");
+
+		fprintf(fp,"----------SpikeGeneratorData - TrialStartAvailableCurrentPattern File----------\n");
+		fprintf(fp,"LENGTH\t%llu\n", trial_start_available_currents[m].template_length);
+		fprintf(fp,"NUM_OF_SAMPLES\t%u\n", trial_start_available_currents[m].num_of_template_samples);
+		fprintf(fp,"------------NOISE_PARAMS------------\n");
+		for (i=0; i < network->layer_count; i++)
+		{
+			ptr_layer = network->layers[i];	
+			for (j=0; j<ptr_layer->neuron_group_count; j++)
+			{
+				fprintf(fp,"Layer %u NeuronGroup:%u\n", i, j);		
+				ptr_neuron_group = ptr_layer->neuron_groups[j];
+				for (k=0; k<ptr_neuron_group->neuron_count; k++)
+				{
+					fprintf(fp, "%llu\t%.16E\n", trial_start_available_currents[m].noise_params[i][j][k].noise_addition_interval, trial_start_available_currents[m].noise_params[i][j][k].noise_variance);
+				}
+			}
+		}	
+		fprintf(fp,"------------TEMPLATES------------\n");
+		for (i=0; i < network->layer_count; i++)
+		{
+			ptr_layer = network->layers[i];	
+			for (j=0; j<ptr_layer->neuron_group_count; j++)
+			{
+				ptr_neuron_group = ptr_layer->neuron_groups[j];
+				for (k=0; k<ptr_neuron_group->neuron_count; k++)
+				{
+					for (n = 0; n <  trial_start_available_currents[m].num_of_template_samples; n++)		
+						fprintf(fp, "%.16E\n", trial_start_available_currents[m].template_samples[n].current_sample[i][j][k]);
+				}
+			}
+		}	
+		fprintf(fp,"----------SpikeGeneratorData - End of TrialStartAvailableCurrentPattern File----------\n");		
+		fclose(fp);
+	}
+	return TRUE;
+}
+
+static bool save_in_refractory_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path)
+{
+	FILE *fp;
+	unsigned int i,j,k,m,n;
+	char current_pattern_name[100];
+	char current_pattern_num[10];
+	char current_pattern_path[700];	
+	CurrentTemplate *current_templates = spike_gen_data->current_templates;
+	CurrentPatternTemplate	*in_refractory_currents = current_templates->in_refractory_currents;
+	Network *network = spike_gen_data->network;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	for (m = 0; m < current_templates->num_of_in_refractory_currents; m++)
+	{
+		if (m < 10)
+		{
+			strcpy(current_pattern_name, "/current_pattern_template_in_refractory_0");
+			sprintf(current_pattern_num, "%u" , m);
+			strcat(current_pattern_name, current_pattern_num);			
+		}
+		else if (m < 100)
+		{
+			strcpy(current_pattern_name, "/current_pattern_template_in_refractory_");
+			sprintf(current_pattern_num, "%u" , m);
+			strcat(current_pattern_name, current_pattern_num);			
+		}		
+		else
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_in_refractory_current_pattern_templates", "spike_gen_data->num_of_in_refractory_currents >100 .");
+
+		strcpy(current_pattern_path, main_dir_path);
+	 	strcat(current_pattern_path, current_pattern_name);
+		if ((fp = fopen(current_pattern_path, "w")) == NULL) 
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_in_refractory_current_pattern_templates", "fopen() == NULL: Couldn' t create /current_pattern_template_in_refractory file.");
+
+		fprintf(fp,"----------SpikeGeneratorData - InRefractoryCurrentPattern File----------\n");
+		fprintf(fp,"LENGTH\t%llu\n", in_refractory_currents[m].template_length);
+		fprintf(fp,"NUM_OF_SAMPLES\t%u\n", in_refractory_currents[m].num_of_template_samples);
+		fprintf(fp,"------------NOISE_PARAMS------------\n");
+		for (i=0; i < network->layer_count; i++)
+		{
+			ptr_layer = network->layers[i];	
+			for (j=0; j<ptr_layer->neuron_group_count; j++)
+			{
+				fprintf(fp,"Layer %u NeuronGroup:%u\n", i, j);		
+				ptr_neuron_group = ptr_layer->neuron_groups[j];
+				for (k=0; k<ptr_neuron_group->neuron_count; k++)
+				{
+					fprintf(fp, "%llu\t%.16E\n", in_refractory_currents[m].noise_params[i][j][k].noise_addition_interval, in_refractory_currents[m].noise_params[i][j][k].noise_variance);
+				}
+			}
+		}	
+		fprintf(fp,"------------TEMPLATES------------\n");
+		for (i=0; i < network->layer_count; i++)
+		{
+			ptr_layer = network->layers[i];	
+			for (j=0; j<ptr_layer->neuron_group_count; j++)
+			{
+				ptr_neuron_group = ptr_layer->neuron_groups[j];
+				for (k=0; k<ptr_neuron_group->neuron_count; k++)
+				{
+					for (n = 0; n <  in_refractory_currents[m].num_of_template_samples; n++)		
+						fprintf(fp, "%.16E\n", in_refractory_currents[m].template_samples[n].current_sample[i][j][k]);
+				}
+			}
+		}	
+		fprintf(fp,"----------SpikeGeneratorData - End of InRefractoryCurrentPattern File----------\n");		
+		fclose(fp);
+	}
 
 	return TRUE;
 }
+
+static bool save_in_trial_current_pattern_templates(SpikeGenData *spike_gen_data, char* main_dir_path)
+{
+	FILE *fp;
+	unsigned int i,j,k,m,n, p;
+	char current_pattern_name[100];
+	char current_pattern_num[10];
+	char current_pattern_path[700];	
+	char trial_type_num[10];
+	CurrentTemplate *current_templates = spike_gen_data->current_templates;
+	CurrentPatternTemplate	**in_trial_currents = current_templates->in_trial_currents;
+	Network *network = spike_gen_data->network;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	TrialsData *trials_data = spike_gen_data->trials_data;
+
+	for (p = 0; p < trials_data->trial_types_data.num_of_types; p++)
+	{
+		for (m = 0; m < current_templates->num_of_in_trial_currents; m++)
+		{
+			sprintf(trial_type_num, "%u_" , trials_data->trial_types_data.type_data[p].type);
+			strcpy(current_pattern_name, "/current_pattern_template_in_trial_");
+			strcat(current_pattern_name, trial_type_num);	
+			if (m < 10)
+			{
+				sprintf(current_pattern_num, "%u" , m);
+				strcat(current_pattern_name, current_pattern_num);			
+			}
+			else if (m < 100)
+			{
+				sprintf(current_pattern_num, "%u" , m);
+				strcat(current_pattern_name, current_pattern_num);			
+			}		
+			else
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_in_trial_current_pattern_templates", "spike_gen_data->num_of_in_trial_currents >100 .");
+
+			strcpy(current_pattern_path, main_dir_path);
+	 		strcat(current_pattern_path, current_pattern_name);
+			if ((fp = fopen(current_pattern_path, "w")) == NULL) 
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_in_trial_current_pattern_templates", "fopen() == NULL: Couldn' t create /current_pattern_template_in_trial file.");
+
+			fprintf(fp,"----------SpikeGeneratorData - InTrialCurrentPattern File----------\n");
+			fprintf(fp,"LENGTH\t%llu\n", in_trial_currents[p][m].template_length);
+			fprintf(fp,"NUM_OF_SAMPLES\t%u\n", in_trial_currents[p][m].num_of_template_samples);
+			fprintf(fp,"------------NOISE_PARAMS------------\n");
+			for (i=0; i < network->layer_count; i++)
+			{
+				ptr_layer = network->layers[i];	
+				for (j=0; j<ptr_layer->neuron_group_count; j++)
+				{
+					fprintf(fp,"Layer %u NeuronGroup:%u\n", i, j);		
+					ptr_neuron_group = ptr_layer->neuron_groups[j];
+					for (k=0; k<ptr_neuron_group->neuron_count; k++)
+					{
+						fprintf(fp, "%llu\t%.16E\n", in_trial_currents[p][m].noise_params[i][j][k].noise_addition_interval, in_trial_currents[p][m].noise_params[i][j][k].noise_variance);
+					}
+				}
+			}	
+			fprintf(fp,"------------TEMPLATES------------\n");
+			for (i=0; i < network->layer_count; i++)
+			{
+				ptr_layer = network->layers[i];	
+				for (j=0; j<ptr_layer->neuron_group_count; j++)
+				{
+					ptr_neuron_group = ptr_layer->neuron_groups[j];
+					for (k=0; k<ptr_neuron_group->neuron_count; k++)
+					{
+						for (n = 0; n <  in_trial_currents[p][m].num_of_template_samples; n++)		
+							fprintf(fp, "%.16E\n", in_trial_currents[p][m].template_samples[n].current_sample[i][j][k]);
+					}
+				}
+			}	
+			fprintf(fp,"----------SpikeGeneratorData - End of InTrialCurrentPattern File----------\n");		
+			fclose(fp);
+		}
+	}
+	return TRUE;
+}
+
 
 static bool save_neuron_params(Network * network, char *main_dir_path)
 {
@@ -186,7 +410,7 @@ static bool save_neuron_params(Network * network, char *main_dir_path)
 	double tau_inhibitory;
 
  	strcpy(temp_path, main_dir_path);
- 	strcat(temp_path, "/NeuronParameters");
+ 	strcat(temp_path, "/neuron_parameters");
 	if ((fp = fopen(temp_path, "w")) == NULL)  
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad", "save_notes", "fopen() == NULL: Couldn' t create /NeuronParameters file.");
 	

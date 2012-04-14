@@ -40,7 +40,7 @@ CurrentPatternGraph* allocate_current_pattern_graph(GtkWidget *hbox, CurrentPatt
 	graph->y = g_new0(float, num_of_data_points);
 
 	for (i = 0; i < num_of_data_points; i++)
-		graph->x[i] = i*sampling_interval/1000000;
+		graph->x[i] = i*(sampling_interval/1000000.0);
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (num_of_data_points, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
 	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), -100 , (graph->graph_len/1000000) + 100, 200, -200);	
