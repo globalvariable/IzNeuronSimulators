@@ -182,7 +182,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 				
 }
 
-bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double v, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, double I_inject, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
+bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory) 
 {
 	IzNeuronParams	*ptr_iz_params;
 	ptr_iz_params = nrn->iz_params;
@@ -193,8 +193,8 @@ bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double v, double
 		return FALSE;
 	}	
 	nrn->inhibitory = inhibitory;
-	ptr_iz_params->v = v - v_resting; 
-	ptr_iz_params->u = b * ptr_iz_params->v;		
+	ptr_iz_params->v = 0; 
+	ptr_iz_params->u = 0;		
 	ptr_iz_params->a = a;
 	ptr_iz_params->b = b;
 	ptr_iz_params->c = c - v_resting;	
@@ -204,7 +204,6 @@ bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double v, double
 	ptr_iz_params->v_resting = v_resting;			
 	ptr_iz_params->v_threshold = v_threshold - v_resting;
 	ptr_iz_params->v_peak = v_peak - v_resting;	
-	ptr_iz_params->I_inject = I_inject;
 	ptr_iz_params->E_excitatory = E_excitatory-v_resting;      // Vogels & Abbott 2005   eqtns 1,2
 	ptr_iz_params->E_inhibitory = E_inhibitory-v_resting;
 	ptr_iz_params->decay_rate_excitatory = -1.0/tau_excitatory;
@@ -222,5 +221,30 @@ bool inject_current_to_neuron(Neuron *nrn, double I_inject)
 	if (nrn == NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "inject_current_to_neuron", "neuron was not allocated.");
 	nrn->iz_params->I_inject = I_inject;
+	return TRUE;
+}
+
+bool get_iz_neuron_parameters(Neuron *neuron, double *a, double *b, double *c, double *d, double *k, double *C, double *v_resting, double *v_threshold, double *v_peak, bool *inhibitory, double *E_excitatory, double *E_inhibitory, double *tau_excitatory, double *tau_inhibitory)
+{
+	IzNeuronParams	*ptr_iz_params;			
+	if (neuron == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "get_iz_neuron_parameters", "neuron == NULL.");
+	ptr_iz_params = neuron->iz_params;
+	if (ptr_iz_params == NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "get_iz_neuron_parameters", "iz_params == NULL.");
+	*inhibitory = neuron->inhibitory;
+	*a = ptr_iz_params->a;
+	*b = ptr_iz_params->b;
+	*c = ptr_iz_params->c + ptr_iz_params->v_resting;
+	*d = ptr_iz_params->d;
+	*k = ptr_iz_params->k;
+	*C = 1/ptr_iz_params->E;
+	*v_resting = ptr_iz_params->v_resting;
+	*v_threshold = ptr_iz_params->v_threshold + ptr_iz_params->v_resting;
+	*v_peak = ptr_iz_params->v_peak + ptr_iz_params->v_resting;
+	*E_excitatory =  ptr_iz_params->E_excitatory + ptr_iz_params->v_resting;
+	*E_inhibitory =  ptr_iz_params->E_inhibitory + ptr_iz_params->v_resting;
+	*tau_excitatory =  -1.0/ptr_iz_params->decay_rate_excitatory;
+	*tau_inhibitory =  -1.0/ptr_iz_params->decay_rate_inhibitory;
 	return TRUE;
 }

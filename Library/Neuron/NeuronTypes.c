@@ -3,7 +3,25 @@
 
 void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b, double *c, double *d, double *k, double *C, double *v_resting, double *v_threshold, double *v_peak, bool *inhibitory, double *E_excitatory, double *E_inhibitory, double *tau_excitatory, double *tau_inhibitory)
 {
-	if (neuron_type == NRN_TYPE_VIRTUAL)
+	if (neuron_type == NRN_TYPE_NO_TYPE)
+	{
+		*v = 0;
+		*a = 0;
+		*b = 0;
+		*c = 0;
+		*d = 0;
+		*C = 0;
+		*k = 0;
+		*v_resting = 0;
+		*v_threshold = 0;
+		*v_peak = 0;
+		*inhibitory = 0;
+		*E_excitatory = 0;
+		*E_inhibitory = 0;
+		*tau_excitatory = 0;
+		*tau_inhibitory = 0;		
+	}
+	else if (neuron_type == NRN_TYPE_VIRTUAL)
 	{
 		*v = -65;
 		*a = 0.03;
@@ -116,7 +134,11 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 
 char *get_neuron_type_string(int neuron_type, char *str)
 {
-	if (neuron_type == NRN_TYPE_VIRTUAL) 
+	if (neuron_type == NRN_TYPE_NO_TYPE)
+	{
+		str = "---NO TYPE---";
+	}
+	else if (neuron_type == NRN_TYPE_VIRTUAL) 
 	{
 		str = "Virtual Neuron";
 	}

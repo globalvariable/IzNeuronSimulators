@@ -7,15 +7,12 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Net
 
 bool parker_sochacki_set_order_tolerance(Network *network, unsigned int max_ps_order, double ps_error_tolerance)
 {
-	char str[200];
 	if (ps_error_tolerance < 0)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_set_order_tolerance", "ps_error_tolerance < 0");
 
 	parker_sochacki_max_order = max_ps_order;
 	parker_sochacki_error_tolerance = ps_error_tolerance;
 
-	sprintf(str, "Parker-Sochacki Order: %u\tError Tolerance: %.16E", parker_sochacki_max_order, parker_sochacki_error_tolerance);	
-	print_message(INFO_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_set_order_tolerance", str);	
 	if (allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(network))
 		return TRUE;
 	else
