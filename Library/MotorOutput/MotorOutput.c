@@ -95,7 +95,7 @@ bool add_neurons_in_layer_to_motor_output_class(MotorOutputs* motor_outputs, Net
 	return TRUE;
 }
 
-void handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, TimeStamp current_time)
+bool handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, TimeStamp current_time)
 {
 	unsigned int i, j, k;
 	unsigned int num_of_outputs, num_of_classes, num_of_neurons; // in class
@@ -120,7 +120,7 @@ void handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, 
 				neuron_list = class->neuron_list;
 				for(k = 0; k < num_of_neurons; k++)
 					*total_firing_in_class += neuron_list[k]->stats->num_of_firings_for_motor_output;
-				if (*total_firing_in_class > largest_firing)
+				if (*total_firing_in_class >= largest_firing)
 				{	
 					second_largest_firing = largest_firing;	
 					largest_firing = *total_firing_in_class;
@@ -129,11 +129,24 @@ void handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, 
 			}
 			if (second_largest_firing == largest_firing)   // there is an equavalence at firing rate of classes, stay stationary
 			{
-	//			STOP MOTOR OUTPUT
+				printf ("No move %u\n", largest_firing);
+				write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_NO_MOVE, 0);
 			}
-			else
+			else   		//		MOVE ROBOT TO LEFT OR RIGHT ACOORDING TO LARGEST CLASS
 			{
-		//		MOVE ROBOT TO LEFT OR RIGHT ACOORDING TO LARGEST CLASS
+				switch (largest_class)  
+				{
+					case NEURONS_MOTOR_OUTPUT_CLASS_LEFT_MOVE:
+						printf ("Left move %u\n", largest_firing);
+						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_LEFT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
+						break;
+					case NEURONS_MOTOR_OUTPUT_CLASS_RIGHT_MOVE:
+						printf ("Right move %u\n", largest_firing);
+						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_RIGHT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
+						break;
+					default:
+						return print_message(ERROR_MSG ,"IzNeuronSimulators", "MotorOutput", "handle_motor_outputs", "Invalid neuron motor output class !!!.");
+				}
 			}
 			/// RESET COUNTERS
 			output->bin_start_time = current_time;
@@ -150,7 +163,7 @@ void handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, 
 			second_largest_firing = 0;
 		}
 	}
-	return;
+	return TRUE;
 }
 
 void clear_motor_output_counters(MotorOutputs* motor_outputs)
@@ -178,4 +191,24 @@ void clear_motor_output_counters(MotorOutputs* motor_outputs)
 		}
 	}
 	return;
+}
+
+bool any_unused_classes_for_motor_outputs(MotorOutputs* motor_outputs)
+{
+	unsigned int i, j;
+	unsigned int num_of_outputs, num_of_classes; 
+	MotorOutput *output;
+
+	num_of_outputs = motor_outputs->num_of_outputs;
+	for (i = 0; i < num_of_outputs; i++)
+	{	
+		output = &(motor_outputs->outputs[i]);
+		num_of_classes = output->num_of_classes;
+		for(j = 0; j < num_of_classes; j ++)
+		{
+			if (motor_outputs->outputs[i].classes[j].layer == NULL)	
+				return TRUE;
+		}
+	}
+	return FALSE;
 }

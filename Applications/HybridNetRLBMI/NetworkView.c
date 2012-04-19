@@ -730,6 +730,7 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_start_hybrid_network), "clicked", G_CALLBACK(start_hybrid_network_button_func), NULL);
 
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
+	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
 	gtk_widget_set_sensitive(btn_submit_injection_current, FALSE);	
@@ -878,11 +879,7 @@ static void submit_parker_sochacki_params_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");		
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
-	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, TRUE);	
-	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);	
-	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
-	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
-	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
+	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, TRUE);	
 }
 
 static void add_layer_to_motor_output_class_button_func(void)
@@ -894,7 +891,16 @@ static void add_layer_to_motor_output_class_button_func(void)
 	motor_output_class_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_to_motor_output_class)), &end_ptr, 10);	
 
 	if (! add_neurons_in_layer_to_motor_output_class(bmi_data->motor_outputs, bmi_data->in_silico_network, layer_num, 0, motor_output_class_num))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "! add_neurons_in_layer_to_motor_output_class().");				
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "! add_neurons_in_layer_to_motor_output_class().");		
+
+	if (any_unused_classes_for_motor_outputs(bmi_data->motor_outputs))
+		return (void)print_message(INFO_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "Still there are unassinged classes by a network layer.");
+
+	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, TRUE);	
+	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
+	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
+	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);				
 }
 
 static void connect_internal_layer_to_internal_layer_button_func(void)

@@ -38,8 +38,11 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	bool spike_generated;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	Network		*in_silico_network =  bmi_data->in_silico_network;
+	MotorOutputs *motor_outputs = bmi_data->motor_outputs;
+	TrialsData	*trials_data = bmi_data->trials_data;
 	Neuron		**all_neurons = in_silico_network->all_neurons;
 	Neuron 		*nrn;
+
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	unsigned int i, num_of_all_neurons = in_silico_network->num_of_neurons;
@@ -72,12 +75,19 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			for (i = 0; i < num_of_all_neurons; i++)
 			{
 				nrn = all_neurons[i];
+				nrn->iz_params->I_inject = 21;
 				if (!evaluate_neuron_dyn(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)
-					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);	
+				{
+					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
+					nrn->stats->num_of_firings_for_firing_rate_bin++;
+					nrn->stats->num_of_firings_for_motor_output++;
+				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns);
+			if (!handle_motor_outputs(motor_outputs, trials_data, time_ns)) {
+				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
 		}
 		integration_start_time = integration_end_time;
 		// routines	
