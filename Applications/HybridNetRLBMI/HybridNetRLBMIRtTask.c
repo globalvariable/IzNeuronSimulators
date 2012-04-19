@@ -54,6 +54,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	prev_time = rt_get_cpu_time_ns();	
 	integration_start_time = ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_iz_neuron_dynamics (in_silico_network);
+	clear_motor_output_counters(bmi_data->motor_outputs);
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
 	for (i = 0; i < num_of_all_neurons; i++)  // blue spike buffer handler might schedule events earlier.

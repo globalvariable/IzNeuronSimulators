@@ -27,6 +27,10 @@ static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
+static GtkWidget *btn_add_layer_to_motor_output_class;
+static GtkWidget *entry_layer_to_motor_output_class;
+static GtkWidget *entry_to_motor_output_class;
+
 static GtkWidget *entry_internal_neurons_excitatory_connection_probability;
 static GtkWidget *entry_internal_neurons_weight_excitatory_min;
 static GtkWidget *entry_internal_neurons_weight_excitatory_max;
@@ -81,6 +85,7 @@ static void interrogate_network_button_func(void);
 static void interrogate_neuron_button_func(void);
 static void set_neuron_param_entries(int neuron_type);
 static void submit_parker_sochacki_params_button_func(void);
+static void add_layer_to_motor_output_class_button_func(void);
 
 static void connect_internal_layer_to_internal_layer_button_func(void);
 static void connect_external_layer_to_internal_layer_button_func(void);
@@ -308,6 +313,28 @@ bool create_network_view_gui(void)
 	btn_submit_parker_sochacki_params = gtk_button_new_with_label("Submit Parker-Sochacki Params");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_parker_sochacki_params, TRUE, TRUE, 0);
 	
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);     
+
+	btn_add_layer_to_motor_output_class = gtk_button_new_with_label("Add");
+        gtk_box_pack_start(GTK_BOX(hbox),btn_add_layer_to_motor_output_class, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	lbl = gtk_label_new("Layer");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_layer_to_motor_output_class = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entry_layer_to_motor_output_class), "0");
+	gtk_box_pack_start(GTK_BOX(hbox), entry_layer_to_motor_output_class, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_layer_to_motor_output_class, 20, 25) ;	
+	lbl = gtk_label_new("to Output_0 Class:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_to_motor_output_class = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), entry_to_motor_output_class, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_to_motor_output_class), "0");
+	gtk_widget_set_size_request(entry_to_motor_output_class, 20, 25) ;	
+
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
 
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -689,6 +716,7 @@ bool create_network_view_gui(void)
     	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
       	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
       	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_add_layer_to_motor_output_class), "clicked", G_CALLBACK(add_layer_to_motor_output_class_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_internal_layer_to_internal_layer), "clicked", G_CALLBACK(connect_internal_layer_to_internal_layer_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_external_layer_to_internal_layer), "clicked", G_CALLBACK(connect_external_layer_to_internal_layer_button_func), NULL);
 
@@ -855,6 +883,18 @@ static void submit_parker_sochacki_params_button_func(void)
 	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
+}
+
+static void add_layer_to_motor_output_class_button_func(void)
+{
+	unsigned int layer_num, motor_output_class_num;
+	char *end_ptr;
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	layer_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_layer_to_motor_output_class)), &end_ptr, 10);	
+	motor_output_class_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_to_motor_output_class)), &end_ptr, 10);	
+
+	if (! add_neurons_in_layer_to_motor_output_class(bmi_data->motor_outputs, bmi_data->in_silico_network, layer_num, 0, motor_output_class_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "! add_neurons_in_layer_to_motor_output_class().");				
 }
 
 static void connect_internal_layer_to_internal_layer_button_func(void)

@@ -1,6 +1,8 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
+#define MOTOR_OUTPUT_BIN_SIZE	50000000 // 50 ms
+
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
@@ -8,6 +10,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
 #include "../../Library/SpikeData/SpikeData.h"
+#include "../../Library/MotorOutput/MotorOutput.h"
 
 struct __HybridNetRLBMIData		
 {
@@ -17,6 +20,7 @@ struct __HybridNetRLBMIData
 	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;
 	SpikeData					*blue_spike_spike_data;
 	SpikeData					*in_silico_spike_data;
+	MotorOutputs					*motor_outputs;
 	bool						simulation_in_progress;
 };
 

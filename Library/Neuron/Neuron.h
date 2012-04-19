@@ -12,6 +12,7 @@ typedef unsigned long long int NeuronAddress;
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
+#include "NeuronStats.h"
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
@@ -62,6 +63,7 @@ struct __Neuron
 	NeuronSynapseList			*syn_list;
 	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
+	NeuronStats					*stats;
 };
 
 bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
