@@ -13,7 +13,6 @@ typedef struct __MotorOutputs MotorOutputs;
 
 
 #include "../Neuron/Neuron.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
 #include "MotorOutputTimeStamp.h"
 
 struct __MotorOutputClass
@@ -43,7 +42,7 @@ MotorOutputs* allocate_motor_outputs(MotorOutputs* motor_outputs, unsigned int n
 MotorOutputs* deallocate_motor_outputs(MotorOutputs* motor_outputs);
 bool increment_num_of_classes_in_motor_output(MotorOutputs* motor_outputs, unsigned int output_num, TimeStamp bin_size);
 bool add_neurons_in_layer_to_motor_output_class(MotorOutputs* motor_outputs, Network *network, unsigned int layer_num, unsigned int output_num, unsigned int class_num);
-bool handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, TimeStamp current_time);
+bool handle_motor_outputs(MotorOutputs* motor_outputs, TimeStamp current_time);
 void clear_motor_output_counters(MotorOutputs* motor_outputs);
 bool any_unused_classes_for_motor_outputs(MotorOutputs* motor_outputs);
 

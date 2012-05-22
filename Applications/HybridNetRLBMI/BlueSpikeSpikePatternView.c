@@ -52,8 +52,8 @@ static void pause_button_func(void)
 	}
 }
 
-NetworkSpikePatternGraphScroll* get_blue_spike_spike_pattern_graph_ptr(void)
+/*NetworkSpikePatternGraphScroll* get_blue_spike_spike_pattern_graph_ptr(void)
 {
 	return blue_spike_spike_pattern_graph;
 }
-
+*/

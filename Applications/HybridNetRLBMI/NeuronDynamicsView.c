@@ -165,11 +165,11 @@ unsigned int get_num_neuron_dynamics_graphs_w_scroll(void)
 	return  NUM_OF_NEURON_DYNAMICS_GRAPHS;
 }
 
-NeuronDynamicsGraphScrollLimited** get_neuron_dynamics_graphs_w_scroll_ptr(void)
+/*NeuronDynamicsGraphScrollLimited** get_neuron_dynamics_graphs_w_scroll_ptr(void)
 {
 	return neuron_dynamics_graph_arr;
 }
-
+*/
 void send_global_pause_button_sensitive_request(void)
 {
 	gtk_widget_set_sensitive(btn_global_pause, TRUE);			

@@ -7,14 +7,16 @@
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
 #include "Gui.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
+#include "../../../BlueSpike/BlueSpikeData.h"
+#include "../../../BlueSpike/RtTasksData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
 #include "../../Library/SpikeData/SpikeData.h"
 #include "../../Library/MotorOutput/MotorOutput.h"
 
 struct __HybridNetRLBMIData		
 {
-	TrialsData					*trials_data;
+	BlueSpikeData				*blue_spike_data;
+	RtTasksData					*rt_tasks_data;
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
 	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;

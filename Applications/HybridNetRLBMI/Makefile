@@ -12,8 +12,8 @@ GTK_FLAGS = $(shell pkg-config --cflags --libs gtk+-2.0 gtkdatabox)
 
 all: HybridNetRLBMI
 
-HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../Library/MotorOutput/MotorOutputTimeStamp.o
-	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../Library/MotorOutput/MotorOutputTimeStamp.o ### HybridNetRLBMI
+HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../Library/MotorOutput/MotorOutputTimeStamp.o
+	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Synapse/Synapse.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../Library/MotorOutput/MotorOutputTimeStamp.o ### HybridNetRLBMI
 
 HybridNetRLBMIRtTask.o: HybridNetRLBMIRtTask.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### Gui
@@ -66,20 +66,20 @@ InSilicoSpikePatternView.o: InSilicoSpikePatternView.c
 ../../Library/Combos/NeuronDynamicsCombo.o: ../../Library/Combos/NeuronDynamicsCombo.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### ../../Library/Combos/NeuronDynamicsCombo
 
-../../Library/Graphs/SpikePatternGraph.o: ../../Library/Graphs/SpikePatternGraph.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/SpikePatternGraph
+##../../Library/Graphs/SpikePatternGraph.o: ../../Library/Graphs/SpikePatternGraph.c
+##	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/SpikePatternGraph
 
-../../Library/Graphs/NeuronDynamicsGraph.o: ../../Library/Graphs/NeuronDynamicsGraph.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/NeuronDynamicsGraph
+##../../Library/Graphs/NeuronDynamicsGraph.o: ../../Library/Graphs/NeuronDynamicsGraph.c
+##	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/NeuronDynamicsGraph
 
 ../../Library/Graphs/StatusMarker.o: ../../Library/Graphs/StatusMarker.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/StatusMarker
 
 ../../Library/NeuronDynamicsData/NeuronDynamicsData.o: ../../Library/NeuronDynamicsData/NeuronDynamicsData.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/InjectionCurrentData/InjectionCurrentData
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/NeuronDynamicsData/NeuronDynamicsData
 
-../../Library/InjectionCurrentData/InjectionCurrentData.o: ../../Library/InjectionCurrentData/InjectionCurrentData.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/InjectionCurrentData/InjectionCurrentData
+##../../Library/InjectionCurrentData/InjectionCurrentData.o: ../../Library/InjectionCurrentData/InjectionCurrentData.c
+##	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/InjectionCurrentData/InjectionCurrentData
 
 ../../../BlueSpike/Library/Misc/Randn.o: ../../../BlueSpike/Library/Misc/Randn.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### ../../../BlueSpike/Library/Misc/Randn

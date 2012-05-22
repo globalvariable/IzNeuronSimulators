@@ -95,7 +95,7 @@ bool add_neurons_in_layer_to_motor_output_class(MotorOutputs* motor_outputs, Net
 	return TRUE;
 }
 
-bool handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, TimeStamp current_time)
+bool handle_motor_outputs(MotorOutputs* motor_outputs, TimeStamp current_time)
 {
 	unsigned int i, j, k;
 	unsigned int num_of_outputs, num_of_classes, num_of_neurons; // in class
@@ -130,7 +130,7 @@ bool handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, 
 			if (second_largest_firing == largest_firing)   // there is an equavalence at firing rate of classes, stay stationary
 			{
 				printf ("No move %u\n", largest_firing);
-				write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_NO_MOVE, 0);
+//				write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_NO_MOVE, 0);
 			}
 			else   		//		MOVE ROBOT TO LEFT OR RIGHT ACOORDING TO LARGEST CLASS
 			{
@@ -138,11 +138,11 @@ bool handle_motor_outputs(MotorOutputs* motor_outputs, TrialsData *trials_data, 
 				{
 					case NEURONS_MOTOR_OUTPUT_CLASS_LEFT_MOVE:
 						printf ("Left move %u\n", largest_firing);
-						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_LEFT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
+//						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_LEFT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
 						break;
 					case NEURONS_MOTOR_OUTPUT_CLASS_RIGHT_MOVE:
 						printf ("Right move %u\n", largest_firing);
-						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_RIGHT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
+//						write_to_motor_output_time_stamp_buffer(trials_data->motor_outputs_from_neural_net, i, current_time, MOTOR_OUTPUT_MOVE_TO_RIGHT, NEURONS_MOTOR_OUTPUT_MOTOR_SPEED);
 						break;
 					default:
 						return print_message(ERROR_MSG ,"IzNeuronSimulators", "MotorOutput", "handle_motor_outputs", "Invalid neuron motor output class !!!.");

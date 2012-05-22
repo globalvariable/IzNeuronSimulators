@@ -76,7 +76,7 @@ static GtkWidget *btn_simulate_with_punishment;
 static GtkWidget *btn_start_hybrid_network;
 
 // GRAPHS
-static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
+//static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
 // FIRST COLUMN
 static void combo_neuron_type_func (void);
@@ -96,7 +96,7 @@ static void simulate_with_no_reward_button_func(void);
 
 static void start_hybrid_network_button_func(void);
 
-static ConstantCurrent *constant_current = NULL;
+//static ConstantCurrent *constant_current = NULL;
 
 bool create_network_view_gui(void)
 {
@@ -700,7 +700,7 @@ bool create_network_view_gui(void)
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
-	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+//	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
@@ -871,7 +871,7 @@ static void submit_parker_sochacki_params_button_func(void)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	if (! parker_sochacki_set_order_tolerance(bmi_data->in_silico_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");
-	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
+//	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
 	bmi_data->neuron_dynamics_limited_buffer = allocate_neuron_dynamics_buffer_limited(bmi_data->in_silico_network, bmi_data->neuron_dynamics_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
@@ -958,13 +958,13 @@ static void submit_injection_current_button_func(void)
 	unsigned int layer_num, nrn_grp_num, nrn_num;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_injection_current_button_func", "! layer_neuron_group_neuron_get_selected().");
-	constant_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
+//	constant_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
 }
 
 
 static void simulate_with_no_reward_button_func(void)
 {
-	char *end_ptr;
+/*	char *end_ptr;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	Neuron *neuron;
 	float *y_neuron_dynamics = neuron_dynamics_graph->y;
@@ -1024,7 +1024,7 @@ static void simulate_with_no_reward_button_func(void)
 		}		
 	}
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	*/
 }
 
 

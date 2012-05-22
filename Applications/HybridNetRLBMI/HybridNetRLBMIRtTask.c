@@ -39,7 +39,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	Network		*in_silico_network =  bmi_data->in_silico_network;
 	MotorOutputs *motor_outputs = bmi_data->motor_outputs;
-	TrialsData	*trials_data = bmi_data->trials_data;
+
 	Neuron		**all_neurons = in_silico_network->all_neurons;
 	Neuron 		*nrn;
 
@@ -55,7 +55,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
         period = nano2count(IZ_PS_NETWORK_SIM_PERIOD);
         rt_task_make_periodic(handler, rt_get_time() + period, period);
 	prev_time = rt_get_cpu_time_ns();	
-	integration_start_time = ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	integration_start_time = ((bmi_data->rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_iz_neuron_dynamics (in_silico_network);
 	clear_motor_output_counters(bmi_data->motor_outputs);
         mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -69,7 +69,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 		evaluate_and_save_jitter(IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, prev_time, curr_time);
 		prev_time = curr_time;
 		// routines
-		integration_end_time =  ((shared_memory->rt_tasks_data.current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+		integration_end_time =  ((bmi_data->rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 		for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 		{
 			for (i = 0; i < num_of_all_neurons; i++)
@@ -86,7 +86,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns);
-			if (!handle_motor_outputs(motor_outputs, trials_data, time_ns)) {
+			if (!handle_motor_outputs(motor_outputs, time_ns)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
 		}
 		integration_start_time = integration_end_time;
@@ -107,10 +107,10 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	Network		*blue_spike_network = bmi_data->blue_spike_network;
 	Neuron		*blue_spike_neuron;
-	SpikeTimeStampItem *spike_time_stamp_buff = shared_memory->spike_time_stamp.spike_time_stamp_buff;
+	SpikeTimeStampItem *spike_time_stamp_buff = bmi_data->blue_spike_data->spike_time_stamp.spike_time_stamp_buff;
 	SpikeTimeStampItem *spike_time_stamp_item; 
 	unsigned int blue_spike_buff_read_idx, end_idx;
-	unsigned int *blue_spike_buff_write_idx = &(shared_memory->spike_time_stamp.buff_idx_write);
+	unsigned int *blue_spike_buff_write_idx = &(bmi_data->blue_spike_data->spike_time_stamp.buff_idx_write);
 	unsigned int blue_spike_buff_size = SPIKE_TIME_STAMP_BUFF_SIZE;
 	unsigned int mwa_or_layer, channel_or_neuron_group, unit_or_neuron;
 	TimeStamp spike_time;
