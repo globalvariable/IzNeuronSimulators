@@ -12,6 +12,10 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
 #include "../../Library/SpikeData/SpikeData.h"
 #include "../../Library/MotorOutput/MotorOutput.h"
+#include "../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.h"
+#include "../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.h"
+#include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
+#include "../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.h"
 
 struct __HybridNetRLBMIData		
 {
@@ -23,6 +27,10 @@ struct __HybridNetRLBMIData
 	SpikeData					*blue_spike_spike_data;
 	SpikeData					*in_silico_spike_data;
 	MotorOutputs					*motor_outputs;
+	TrialHand2NeuralNetMsg		*msgs_trial_hand_2_neural_net;
+	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
+	MovObjHand2NeuralNetMsg		*msgs_mov_obj_hand_2_neural_net;
+	NeuralNet2MovObjHandMsg		*msgs_neural_net_2_mov_obj_hand;
 	bool						simulation_in_progress;
 };
 

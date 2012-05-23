@@ -6,7 +6,7 @@ static GtkWidget **btn_pause_arr;
 static GtkWidget **btn_select_arr;
 static LayerNrnGrpNeuronCombo **combos_select_neuron_arr;
 static NeuronDynamicsCombo **combo_neuron_dynamics_arr;
-static NeuronDynamicsGraphScrollLimited **neuron_dynamics_graph_arr;
+//static NeuronDynamicsGraphScrollLimited **neuron_dynamics_graph_arr;
 
 static void global_pause_button_func (void);
 static void pause_button_func (GtkWidget *btn_pause);
@@ -30,7 +30,7 @@ bool create_neuron_dynamics_view_gui(void)
 	btn_select_arr = g_new0(GtkWidget*, NUM_OF_NEURON_DYNAMICS_GRAPHS);
 	combos_select_neuron_arr = g_new0(LayerNrnGrpNeuronCombo*, NUM_OF_NEURON_DYNAMICS_GRAPHS);
 	combo_neuron_dynamics_arr= g_new0(NeuronDynamicsCombo*, NUM_OF_NEURON_DYNAMICS_GRAPHS);
-	neuron_dynamics_graph_arr = g_new0(NeuronDynamicsGraphScrollLimited*, NUM_OF_NEURON_DYNAMICS_GRAPHS);
+//	neuron_dynamics_graph_arr = g_new0(NeuronDynamicsGraphScrollLimited*, NUM_OF_NEURON_DYNAMICS_GRAPHS);
 
 	btn_global_pause = gtk_button_new_with_label("Paused");
 	gtk_box_pack_start (GTK_BOX (vbox), btn_global_pause, FALSE, FALSE, 0);
@@ -65,7 +65,7 @@ bool create_neuron_dynamics_view_gui(void)
 		gtk_box_pack_start (GTK_BOX (hbox), btn_select_arr[i], FALSE, FALSE, 0);
   		hbox = gtk_hbox_new(TRUE, 0);
     		gtk_box_pack_start(GTK_BOX(vbox1),hbox, TRUE,TRUE,0);
-		neuron_dynamics_graph_arr[i] = allocate_neuron_dynamics_graph_scroll_limited(hbox, neuron_dynamics_graph_arr[i], GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, bmi_data->trials_data, bmi_data->neuron_dynamics_limited_buffer, i);  // 100 ms latency
+//		neuron_dynamics_graph_arr[i] = allocate_neuron_dynamics_graph_scroll_limited(hbox, neuron_dynamics_graph_arr[i], GRAPH_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, GRAPH_SCROLL_LENGTHS/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, BUFFER_FOLLOWUP_LATENCY, NUM_OF_STATUS_MARKERS, bmi_data->trials_data, bmi_data->neuron_dynamics_limited_buffer, i);  // 100 ms latency
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_layer);
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_neuron_group);	
 		g_signal_connect(G_OBJECT(combos_select_neuron_arr[i]->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron_arr[i]->combo_neuron);
@@ -108,7 +108,7 @@ static void pause_button_func (GtkWidget *btn_pause)
 	}
 	if (i == NUM_OF_NEURON_DYNAMICS_GRAPHS)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NeuronDynamicsView", "pause_button_func", "i == NUM_OF_GRAPHS.");	
-	if (neuron_dynamics_graph_arr[i]->locally_paused)
+/*	if (neuron_dynamics_graph_arr[i]->locally_paused)
 	{
 		if (send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(i))   // should resume all graphs at the same time to provide sync
 			gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"R");  
@@ -121,7 +121,7 @@ static void pause_button_func (GtkWidget *btn_pause)
 			neuron_dynamics_graph_arr[i]->local_pause_request = TRUE;
 		gtk_button_set_label (GTK_BUTTON(btn_pause_arr[i]),"P");		
 	}
-	return;
+*/	return;
 }
 
 static void select_button_func (GtkWidget *btn_select)
