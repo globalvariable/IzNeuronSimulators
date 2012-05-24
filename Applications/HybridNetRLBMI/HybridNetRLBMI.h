@@ -16,6 +16,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.h"
+#include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 
 struct __HybridNetRLBMIData		
 {
@@ -31,7 +32,7 @@ struct __HybridNetRLBMIData
 	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
 	MovObjHand2NeuralNetMsg		*msgs_mov_obj_hand_2_neural_net;
 	NeuralNet2MovObjHandMsg		*msgs_neural_net_2_mov_obj_hand;
-	bool						simulation_in_progress;
+	TrialStatusEvents				*trial_status_events;
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);
