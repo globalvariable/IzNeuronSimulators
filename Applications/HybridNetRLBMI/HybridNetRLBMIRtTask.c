@@ -16,6 +16,7 @@ void hybrid_net_rl_bmi_create_rt_threads(void)
 	static bool first = TRUE;
 	if (first)
 	{
+		get_hybrid_net_rl_bmi_data()->simulation_in_progress = TRUE;
 		hybrid_net_rl_bmi_internal_network_handling_rt_thread =  rt_thread_create(hybrid_net_rl_bmi_internal_network_handler, NULL, 10000);
 		hybrid_net_rl_bmi_blue_spike_handling_rt_thread = rt_thread_create( hybrid_net_rl_bmi_blue_spike_rt_handler, NULL, 10000);
 		first = FALSE;

@@ -16,7 +16,7 @@ typedef struct __NeuronSpikePatternGraphScroll NeuronSpikePatternGraphScroll;
 #include "../Network/Network.h"
 #include "../SpikeData/SpikeData.h"
 #include "StatusMarker.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
+#include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 
 struct  __NeuronSpikePatternGraphScroll	
 {
@@ -47,12 +47,12 @@ struct  __NetworkSpikePatternGraphScroll		// when one needs real time scrolling 
 	unsigned int				source_spike_data_buffer_read_idx;
 	unsigned int				spike_handling_buffer_read_idx;
 	unsigned int				data_point_placement_start_idx;
-	TrialsData				*trials_data;
+	TrialStatusEvents			*trial_status_events;
 	unsigned int				trial_status_event_buffer_read_idx;
 	StatusMarkers 			*status_markers;
 };
 
-NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialsData *trials_data);  // this height should be adjusted manually so that the graph size will be determined.
+NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events);  // this height should be adjusted manually so that the graph size will be determined.
 
 
 bool determine_spike_pattern_graph_scroll_start_time_and_read_indexes(NetworkSpikePatternGraphScroll *graph, TimeStamp current_system_time);

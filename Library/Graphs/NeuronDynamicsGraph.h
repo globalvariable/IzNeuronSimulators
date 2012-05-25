@@ -17,7 +17,7 @@ typedef struct 	__NeuronDynamicsGraphScrollLimited 	NeuronDynamicsGraphScrollLim
 #include "../Network/Network.h"
 #include "../NeuronDynamicsData/NeuronDynamicsData.h"
 #include "StatusMarker.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
+#include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 
 
 struct  __NeuronDynamicsGraph
@@ -54,7 +54,7 @@ struct  __NeuronDynamicsGraphScroll
 	unsigned int		active_neuron;
 	int				active_dynamics_type;  // to get type from combo
 	StatusMarkers	*status_markers;
-	TrialsData		*trials_data;
+	TrialStatusEvents	*trial_status_events;
 	unsigned int		trial_status_event_buffer_read_idx;
 };
 
@@ -80,7 +80,7 @@ struct  __NeuronDynamicsGraphScrollLimited		// To be faster when buffering. The 
 	unsigned int		limited_dynamics_buffer_list_idx;  // to get selected neuron and dynamics type' s value from neuron dynamics buffer limited
 	NeuronDynamicsBufferLimited* limited_dynamics_buffer;
 	StatusMarkers	*status_markers;
-	TrialsData		*trials_data;
+	TrialStatusEvents	*trial_status_events;
 	unsigned int		trial_status_event_buffer_read_idx;
 };
 
@@ -89,7 +89,7 @@ bool update_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
 bool clear_neuron_dynamics_graph(NeuronDynamicsGraph *graph);
 bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStamp new_length, bool log_request);
 
-NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox, NeuronDynamicsGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data);
+NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox, NeuronDynamicsGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialStatusEvents *trial_status_events);
 bool determine_neuron_dynamics_graph_scroll_start_indexes(NeuronDynamicsGraphScroll *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int neuron_dynamics_buffer_write_idx, unsigned int neuron_dynamics_buffer_size);
 bool handle_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScroll *graph, NeuronDynamicsBuffer *neuron_dynamics_buffer, TimeStamp current_system_time);
 bool scroll_neuron_dynamics_graph(NeuronDynamicsGraphScroll *graph);
@@ -97,7 +97,7 @@ bool submit_neuron_dynamics_graph_neuron_and_dynamics_type(NeuronDynamicsGraphSc
 bool set_total_limits_neuron_dynamics_graph_scroll(NeuronDynamicsGraphScroll *graph);
 bool clear_neuron_dynamics_graph_w_scroll(NeuronDynamicsGraphScroll *graph);
 
-NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(GtkWidget *hbox, NeuronDynamicsGraphScrollLimited *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data, NeuronDynamicsBufferLimited* limited_dynamics_buffer, unsigned int limited_dynamics_buffer_list_idx);
+NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(GtkWidget *hbox, NeuronDynamicsGraphScrollLimited *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, NeuronDynamicsBufferLimited* limited_dynamics_buffer, unsigned int limited_dynamics_buffer_list_idx);
 bool determine_neuron_dynamics_graph_scroll_limited_start_indexes(NeuronDynamicsGraphScrollLimited *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int neuron_dynamics_limited_buffer_write_idx, unsigned int neuron_dynamics_limited_buffer_size);
 bool handle_limited_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsGraphScrollLimited *graph, TimeStamp current_system_time);
 bool scroll_limited_neuron_dynamics_graph(NeuronDynamicsGraphScrollLimited *graph);

@@ -76,7 +76,7 @@ static GtkWidget *btn_simulate_with_punishment;
 static GtkWidget *btn_start_hybrid_network;
 
 // GRAPHS
-//static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
+static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
 // FIRST COLUMN
 static void combo_neuron_type_func (void);
@@ -700,7 +700,7 @@ bool create_network_view_gui(void)
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
-//	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph(hbox, neuron_dynamics_graph, (1000000*(unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_simulation_length))))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
@@ -964,7 +964,7 @@ static void submit_injection_current_button_func(void)
 
 static void simulate_with_no_reward_button_func(void)
 {
-/*	char *end_ptr;
+	char *end_ptr;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	Neuron *neuron;
 	float *y_neuron_dynamics = neuron_dynamics_graph->y;
@@ -996,7 +996,7 @@ static void simulate_with_no_reward_button_func(void)
 				for (k = 0; k < num_of_neurons_in_neuron_group; k++)
 				{
 					neuron = get_neuron_address(bmi_data->in_silico_network, i, j, k);
-					neuron->iz_params->I_inject = constant_current->current[i][j][k];
+//					neuron->iz_params->I_inject = constant_current->current[i][j][k];
 					if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
 						return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! evaluate_neuron_dyn().");
 //					if (spike_generated)  {		}
@@ -1024,7 +1024,7 @@ static void simulate_with_no_reward_button_func(void)
 		}		
 	}
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	*/
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "!update_neuron_dynamics_graph().");	
 }
 
 

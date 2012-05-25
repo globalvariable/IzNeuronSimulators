@@ -2,7 +2,7 @@
 
 
 
-NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialsData *trials_data)
+NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events)
 {
 	GdkColor color_bg;
 	GdkColor color_line;
@@ -92,7 +92,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 			}
 		}
 	}
-	graph->trials_data = trials_data;
+	graph->trial_status_events = trial_status_events;
 	gtk_widget_show_all(hbox);	
 	set_total_limits_network_spike_pattern_graph(network, graph);
 	return graph;						
@@ -103,7 +103,7 @@ bool determine_spike_pattern_graph_scroll_start_time_and_read_indexes(NetworkSpi
 	graph->new_part_start_time = current_system_time;
 	graph->source_spike_data_buffer_read_idx = graph->source_spike_data_to_plot->buff_idx_write;
 	graph->spike_handling_buffer_read_idx = graph->spike_handling_buffer->buff_idx_write;
-	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
+	graph->trial_status_event_buffer_read_idx = graph->trial_status_events->buff_write_idx;
 	return TRUE;
 }
 
@@ -192,18 +192,18 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 			}
 			graph->source_spike_data_buffer_read_idx = end_idx;	
 
-			while (graph->trial_status_event_buffer_read_idx != graph->trials_data->trials_status_event_buffer.buff_write_idx)
+			while (graph->trial_status_event_buffer_read_idx != graph->trial_status_events->buff_write_idx)
 			{
-				status_event_item = &(graph->trials_data->trials_status_event_buffer.buff[graph->trial_status_event_buffer_read_idx]);
+				status_event_item = &(graph->trial_status_events->buff[graph->trial_status_event_buffer_read_idx]);
 				graph_len_to_scroll = graph->graph_len_to_scroll;
 				graph_len = graph->graph_len;
-				status_marker_x = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+				status_marker_x = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 				markers = graph->status_markers->markers;
-				switch (status_event_item->status_type)
+				switch (status_event_item->trial_status)
 				{
 					case TRIAL_STATUS_TRIALS_DISABLED:    // Do nothing
 						break;  		
-					case TRIAL_STATUS_IN_TRIAL:
+					case TRIAL_STATUS_IN_TRIAL:	
 						markers[STATUS_MARKER_GREEN].x[0] = status_marker_x;   
 						markers[STATUS_MARKER_GREEN].x[1] = status_marker_x;
 						break;
@@ -219,7 +219,7 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 						return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "Unknown trial_status.");
 				}
 				graph->trial_status_event_buffer_read_idx++;
-				if (graph->trial_status_event_buffer_read_idx == TRIAL_STATUS_EVENT_BUFFER_SIZE)
+				if (graph->trial_status_event_buffer_read_idx == graph->trial_status_events->buffer_size)
 					graph->trial_status_event_buffer_read_idx = 0;
 			}
 			// plot and send scroll request to get prepared for next plotting.

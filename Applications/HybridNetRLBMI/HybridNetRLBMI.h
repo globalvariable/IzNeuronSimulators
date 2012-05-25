@@ -33,6 +33,7 @@ struct __HybridNetRLBMIData
 	MovObjHand2NeuralNetMsg		*msgs_mov_obj_hand_2_neural_net;
 	NeuralNet2MovObjHandMsg		*msgs_neural_net_2_mov_obj_hand;
 	TrialStatusEvents				*trial_status_events;
+	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);
