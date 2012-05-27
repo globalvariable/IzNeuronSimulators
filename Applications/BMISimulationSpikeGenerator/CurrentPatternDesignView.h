@@ -8,17 +8,16 @@
 #include <math.h>
 #include "BMISimulationSpikeGenerator.h"
 #include "BufferViewHandler.h"
+#include "SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/Neuron/Neuron.h"
 #include "../../Library/Neuron/NeuronTypes.h"
 #include "../../../BlueSpike/Library/Misc/Randn.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/Combos/TrialTypesCombo.h"
+#include "../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
-#include "../../Library/SpikeGenData/SpikeGenData.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
-#include "../../Library/SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.h"
 
 #define LINE 0
 #define SIN 1

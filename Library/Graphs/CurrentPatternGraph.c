@@ -98,7 +98,7 @@ bool clear_current_pattern_graph(CurrentPatternGraph *graph)
 	return TRUE;
 }
 
-CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox, CurrentPatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data)
+CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox, CurrentPatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialStatusEvents *trial_status_events)
 {
 	unsigned int i;
 	if (graph != NULL)
@@ -106,8 +106,8 @@ CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox
 		print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "allocate_current_pattern_graph_scroll", "graph != NULL");	
 		return graph;
 	}
-	if (trials_data == NULL)
-		return (CurrentPatternGraphScroll*) print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "allocate_current_pattern_graph_scroll", "graph != NULL");	
+	if (trial_status_events == NULL)
+		return (CurrentPatternGraphScroll*) print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "allocate_current_pattern_graph_scroll", "trial_status_events == NULL");	
 	graph = g_new0(CurrentPatternGraphScroll,1);
 	pthread_mutex_init(&(graph->mutex), NULL);
 	graph->paused = TRUE;
@@ -159,7 +159,7 @@ CurrentPatternGraphScroll* allocate_current_pattern_graph_scroll(GtkWidget *hbox
 			return (CurrentPatternGraphScroll*)print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "allocate_current_pattern_graph_scroll", "! get_status_marker_color().");
  		gtk_databox_graph_add (GTK_DATABOX (graph->databox), gtk_databox_lines_new (2, graph->status_markers->markers[i].x, graph->status_markers->markers[i].y, &color_status_marker, 1)); 			
 	}
-	graph->trials_data = trials_data;
+	graph->trial_status_events = trial_status_events;
 	gtk_widget_show_all(hbox);	
 
 	return graph;	
@@ -182,7 +182,7 @@ bool determine_current_pattern_graph_scroll_start_indexes(CurrentPatternGraphScr
 		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
 	graph->new_part_start_time = current_system_time;
 	graph->new_part_start_idx = current_system_times_idx;
-	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
+	graph->trial_status_event_buffer_read_idx = graph->trial_status_events->buff_write_idx;
 	return TRUE;
 }
 
@@ -227,33 +227,33 @@ bool handle_current_pattern_graph_scrolling_and_plotting(CurrentPatternGraphScro
 				else
 					idx++;
 			}
-			while (graph->trial_status_event_buffer_read_idx != graph->trials_data->trials_status_event_buffer.buff_write_idx)
+			while (graph->trial_status_event_buffer_read_idx != graph->trial_status_events->buff_write_idx)
 			{
 				markers = graph->status_markers->markers;
-				status_event_item = &(graph->trials_data->trials_status_event_buffer.buff[graph->trial_status_event_buffer_read_idx]);
+				status_event_item = &(graph->trial_status_events->buff[graph->trial_status_event_buffer_read_idx]);
 				graph_len_to_scroll = graph->graph_len_to_scroll;
 				graph_len = graph->graph_len;
-				switch (status_event_item->status_type)
+				switch (status_event_item->trial_status)
 				{
 					case TRIAL_STATUS_TRIALS_DISABLED:    // Do nothing
 						break;  		
 					case TRIAL_STATUS_IN_TRIAL:	
-						markers[STATUS_MARKER_GREEN].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_GREEN].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_GREEN].x[1] = markers[STATUS_MARKER_GREEN].x[0];
 						break;
 					case TRIAL_STATUS_IN_REFRACTORY:	
-						markers[STATUS_MARKER_RED].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_RED].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_RED].x[1] = markers[STATUS_MARKER_RED].x[0];
 						break;
 					case TRIAL_STATUS_START_TRIAL_AVAILABLE:  
-						markers[STATUS_MARKER_YELLOW].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_YELLOW].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_YELLOW].x[1] = markers[STATUS_MARKER_YELLOW].x[0];
 						break;		
 					default:
 						return print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "handle_current_pattern_graph_scrolling_and_plotting", "Unknown trial_status.");
 				}
 				graph->trial_status_event_buffer_read_idx++;
-				if (graph->trial_status_event_buffer_read_idx == TRIAL_STATUS_EVENT_BUFFER_SIZE)
+				if (graph->trial_status_event_buffer_read_idx == graph->trial_status_events->buffer_size)
 					graph->trial_status_event_buffer_read_idx = 0;
 			}
 			set_total_limits_current_pattern_graph_scroll(graph);
@@ -358,7 +358,7 @@ bool clear_current_pattern_graph_w_scroll(CurrentPatternGraphScroll *graph)
 	return TRUE;
 }
 
-CurrentPatternGraphScrollLimited* allocate_current_pattern_graph_scroll_limited(GtkWidget *hbox, CurrentPatternGraphScrollLimited *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialsData *trials_data, CurrentPatternBufferLimited* limited_current_buffer, unsigned int limited_current_buffer_list_idx)
+CurrentPatternGraphScrollLimited* allocate_current_pattern_graph_scroll_limited(GtkWidget *hbox, CurrentPatternGraphScrollLimited *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, CurrentPatternBufferLimited* limited_current_buffer, unsigned int limited_current_buffer_list_idx)
 {
 	unsigned int i;
 	if (graph != NULL)
@@ -416,7 +416,7 @@ CurrentPatternGraphScrollLimited* allocate_current_pattern_graph_scroll_limited(
 			return (CurrentPatternGraphScrollLimited*)print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "allocate_current_pattern_graph_scroll_limited", "! get_status_marker_color().");
  		gtk_databox_graph_add (GTK_DATABOX (graph->databox), gtk_databox_lines_new (2, graph->status_markers->markers[i].x, graph->status_markers->markers[i].y, &color_status_marker, 1)); 			
 	}
-	graph->trials_data = trials_data;
+	graph->trial_status_events = trial_status_events;
 	graph->limited_current_buffer = limited_current_buffer;
 	graph->limited_current_buffer_list_idx = limited_current_buffer_list_idx;
 	gtk_widget_show_all(hbox);	
@@ -440,7 +440,7 @@ bool determine_current_pattern_graph_scroll_limited_start_indexes(CurrentPattern
 		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
 	graph->new_part_start_time = current_system_time;
 	graph->new_part_start_idx = current_system_times_idx;
-	graph->trial_status_event_buffer_read_idx = graph->trials_data->trials_status_event_buffer.buff_write_idx;
+	graph->trial_status_event_buffer_read_idx = graph->trial_status_events->buff_write_idx;
 	return TRUE;
 }
 bool handle_limited_current_pattern_graph_scrolling_and_plotting(CurrentPatternGraphScrollLimited *graph, TimeStamp current_system_time)
@@ -491,33 +491,33 @@ bool handle_limited_current_pattern_graph_scrolling_and_plotting(CurrentPatternG
 				else
 					idx++;
 			}
-			while (graph->trial_status_event_buffer_read_idx != graph->trials_data->trials_status_event_buffer.buff_write_idx)
+			while (graph->trial_status_event_buffer_read_idx != graph->trial_status_events->buff_write_idx)
 			{
 				markers = graph->status_markers->markers;
-				status_event_item = &(graph->trials_data->trials_status_event_buffer.buff[graph->trial_status_event_buffer_read_idx]);
+				status_event_item = &(graph->trial_status_events->buff[graph->trial_status_event_buffer_read_idx]);
 				graph_len_to_scroll = graph->graph_len_to_scroll;
 				graph_len = graph->graph_len;
-				switch (status_event_item->status_type)
+				switch (status_event_item->trial_status)
 				{
 					case TRIAL_STATUS_TRIALS_DISABLED:    // Do nothing
 						break;  		
 					case TRIAL_STATUS_IN_TRIAL:	
-						markers[STATUS_MARKER_GREEN].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_GREEN].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_GREEN].x[1] = markers[STATUS_MARKER_GREEN].x[0];
 						break;
 					case TRIAL_STATUS_IN_REFRACTORY:	
-						markers[STATUS_MARKER_RED].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_RED].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_RED].x[1] = markers[STATUS_MARKER_RED].x[0];
 						break;
 					case TRIAL_STATUS_START_TRIAL_AVAILABLE:  
-						markers[STATUS_MARKER_YELLOW].x[0] = (status_event_item->status_change_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
+						markers[STATUS_MARKER_YELLOW].x[0] = (status_event_item->status_start_time - (new_part_start_time + graph_len_to_scroll - graph_len)) / 1000000.0;   // find beginning of graph and put marker
 						markers[STATUS_MARKER_YELLOW].x[1] = markers[STATUS_MARKER_YELLOW].x[0];
 						break;		
 					default:
 						return print_message(ERROR_MSG ,"IzNeuronSimulators", "CurrentPatternGraph", "handle_current_pattern_graph_scrolling_and_plotting", "Unknown trial_status.");
 				}
 				graph->trial_status_event_buffer_read_idx++;
-				if (graph->trial_status_event_buffer_read_idx == TRIAL_STATUS_EVENT_BUFFER_SIZE)
+				if (graph->trial_status_event_buffer_read_idx == graph->trial_status_events->buffer_size)
 					graph->trial_status_event_buffer_read_idx = 0;
 			}
 			set_total_limits_limited_current_pattern_graph_scroll(graph);

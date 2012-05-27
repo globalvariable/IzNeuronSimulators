@@ -1,5 +1,6 @@
 #include "BufferViewHandler.h"
 
+static RtTasksData *rt_tasks_data = NULL;
 static Network* network;
 static CurrentPatternBufferLimited* current_pattern_buffer;
 static NeuronDynamicsBufferLimited *neuron_dynamics_buffer;
@@ -23,7 +24,8 @@ static gboolean timeout_callback(gpointer user_data) ;
 
 bool buffer_view_handler(void)
 {
-	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_spike_gen_data();
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
+	rt_tasks_data = spike_gen_data->rt_tasks_data;
 	network = spike_gen_data->network;
 	current_pattern_buffer = spike_gen_data->limited_current_pattern_buffer;
 	neuron_dynamics_buffer = spike_gen_data->limited_neuron_dynamics_buffer;
@@ -46,7 +48,7 @@ static gboolean timeout_callback(gpointer user_data)
 	unsigned int buffer_write_idx;
 	TimeStamp last_sample_time;
 
-	current_system_time = (shared_memory->rt_tasks_data.current_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	current_system_time = (rt_tasks_data->current_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	if (buffer_visualization_global_pause_request)
 	{
 		buffer_view_handler_paused_global = TRUE;

@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <gtk/gtk.h>
 #include <string.h>
-#include "../../Library/SpikeGenData/SpikeGenData.h"
+#include "../../BMISimulationSpikeGenerator.h"
 
 
 int create_spike_gen_data_directory_v0(int num, ...);

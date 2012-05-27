@@ -58,7 +58,7 @@ static bool create_main_meta_file(SpikeGenData *spike_gen_data, char * main_dir_
 	FILE *fp;
 	unsigned int  i,j;
 	Network *network = spike_gen_data->network;
-	TrialsData *trials_data = spike_gen_data->trials_data;
+	TrialTypesData *trial_types_data = spike_gen_data->trial_types_data;
 	Layer		*ptr_layer;
 	NeuronGroup	*ptr_neuron_group;
 	
@@ -87,9 +87,9 @@ static bool create_main_meta_file(SpikeGenData *spike_gen_data, char * main_dir_
 	}
 	fprintf(fp,"NUM_OF_TRIAL_START_AVAILABLE_CURRENTS\t%u\n", spike_gen_data->current_templates->num_of_trial_start_available_currents);
 	fprintf(fp,"NUM_OF_IN_REFRACTORY_CURRENTS\t%u\n", spike_gen_data->current_templates->num_of_in_refractory_currents);
-	fprintf(fp,"NUM_OF_TRIAL_TYPES\t%u\n", trials_data->trial_types_data.num_of_types);
-	for (i = 0; i < trials_data->trial_types_data.num_of_types; i ++)
-		fprintf(fp,"NUM_OF_IN_TRIAL_CURRENTS_FOR_TRIAL_TYPE_%u\t%u\n", trials_data->trial_types_data.type_data[i].type, spike_gen_data->current_templates->num_of_in_trial_currents);  // should be equal for each trialk type, no problem. ( see comment in CurrentTemplate strucy: use OKEK of number of currents for each trial having different numbers of trial currents (for random trial current selection))
+	fprintf(fp,"NUM_OF_TRIAL_TYPES\t%u\n", trial_types_data->num_of_trial_types);
+	for (i = 0; i < trial_types_data->num_of_trial_types; i ++)
+		fprintf(fp,"NUM_OF_IN_TRIAL_CURRENTS_FOR_TRIAL_TYPE_%u\t%u\n", trial_types_data->types[i].type, spike_gen_data->current_templates->num_of_in_trial_currents);  // should be equal for each trialk type, no problem. ( see comment in CurrentTemplate strucy: use OKEK of number of currents for each trial having different numbers of trial currents (for random trial current selection))
 	fprintf(fp,"INJECTED_CURRENT_PATTERN_SAMPLING_INTERVAL\t%llu\n", PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	fprintf(fp,"PARKER_SOCHACKI_ERROR_TOLERANCE\t%.16E\n", get_maximum_parker_sochacki_error_tolerance() );
 	fprintf(fp,"PARKER_SOCHACKI_MAX_ORDER\t%d\n", get_maximum_parker_sochacki_order());	
@@ -335,13 +335,13 @@ static bool save_in_trial_current_pattern_templates(SpikeGenData *spike_gen_data
 	Network *network = spike_gen_data->network;
 	Layer		*ptr_layer;
 	NeuronGroup	*ptr_neuron_group;
-	TrialsData *trials_data = spike_gen_data->trials_data;
+	TrialTypesData *trial_types_data = spike_gen_data->trial_types_data;
 
-	for (p = 0; p < trials_data->trial_types_data.num_of_types; p++)
+	for (p = 0; p < trial_types_data->num_of_trial_types; p++)
 	{
 		for (m = 0; m < current_templates->num_of_in_trial_currents; m++)
 		{
-			sprintf(trial_type_num, "%u_" , trials_data->trial_types_data.type_data[p].type);
+			sprintf(trial_type_num, "%u_" , trial_types_data->types[p].type);
 			strcpy(current_pattern_name, "/current_pattern_template_in_trial_");
 			strcat(current_pattern_name, trial_type_num);	
 			if (m < 10)
@@ -554,18 +554,18 @@ static bool load_main_meta_file(SpikeGenData *spike_gen_data, char* main_dir_pat
 	num_of_in_refractory_currents = strtoull(word, &end_ptr, 10);
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); }   //NUM_OF_TRIAL_TYPES",
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }
-	if (spike_gen_data->trials_data->trial_types_data.num_of_types != strtoull(word, &end_ptr, 10))
+	if (spike_gen_data->trial_types_data->num_of_trial_types != strtoull(word, &end_ptr, 10))
 		{ fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "Number of trials types in shared memory trials data is not same the one read from meta."); }
-	for (i = 0; i < spike_gen_data->trials_data->trial_types_data.num_of_types; i++)
+	for (i = 0; i < spike_gen_data->trial_types_data->num_of_trial_types; i++)
 	{
 		if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); }   //NUM_OF_IN_TRIAL_CURRENTS",
 		if(!get_word_in_line('_', 8, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }	
-		if (spike_gen_data->trials_data->trial_types_data.type_data[i].type != strtoull(word, &end_ptr, 10))
+		if (spike_gen_data->trial_types_data->types[i].type != strtoull(word, &end_ptr, 10))
 			{ fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "trial type in shared memory trials data does not match the one read from meta."); }
 		if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }	
 		num_of_in_trial_currents = strtoull(word, &end_ptr, 10);
 	}
-	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, spike_gen_data->trials_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, spike_gen_data->trial_types_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); }   //INJECTED_CURRENT_PATTERN_SAMPLING_INTERVAL
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }
 	if (strtoull(word, &end_ptr, 10) != PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)
@@ -919,13 +919,13 @@ static bool load_in_trial_current_pattern_templates(SpikeGenData *spike_gen_data
 	Network *network = spike_gen_data->network;
 	Layer		*ptr_layer;
 	NeuronGroup	*ptr_neuron_group;
-	TrialsData *trials_data = spike_gen_data->trials_data;
+	TrialTypesData *trial_types_data = spike_gen_data->trial_types_data;
 
-	for (p = 0; p < trials_data->trial_types_data.num_of_types; p++)
+	for (p = 0; p < trial_types_data->num_of_trial_types; p++)
 	{
 		for (m = 0; m < current_templates->num_of_in_trial_currents; m++)
 		{
-			sprintf(trial_type_num, "%u_" , trials_data->trial_types_data.type_data[p].type);
+			sprintf(trial_type_num, "%u_" , trial_types_data->types[p].type);
 			strcpy(current_pattern_name, "/current_pattern_template_in_trial_");
 			strcat(current_pattern_name, trial_type_num);	
 			if (m < 10)

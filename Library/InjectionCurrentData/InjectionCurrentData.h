@@ -20,7 +20,7 @@ typedef struct __ConstantCurrent ConstantCurrent;
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../../../BlueSpike/Library/Misc/Randn.h"
 #include "../Network/Network.h"
-#include "../../../ExperimentControllers/TrialControllers/Library/TrialsData/TrialsData.h"
+#include "../../../ExperimentHandlers/Library/TrialsData/TrialTypes.h"
 
 
 struct __CurrentNoiseParams
@@ -90,8 +90,8 @@ struct __ConstantCurrent
 	InjectionCurrent		***current;
 };
 
-CurrentTemplate* allocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents);
-CurrentTemplate* deallocate_current_templates(Network *network, TrialsData *trials_data, CurrentTemplate* current_data);
+CurrentTemplate* allocate_current_templates(Network *network, TrialTypesData *trial_types_data, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents);
+CurrentTemplate* deallocate_current_templates(Network *network, TrialTypesData *trial_types_data, CurrentTemplate* current_data);
 
 ConstantCurrent* allocate_constant_current(Network * network, ConstantCurrent* constant_current);
 ConstantCurrent* deallocate_constant_current(Network * network, ConstantCurrent* constant_current);
