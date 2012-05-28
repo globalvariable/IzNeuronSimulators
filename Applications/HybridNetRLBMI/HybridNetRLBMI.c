@@ -35,7 +35,7 @@ int main( int argc, char *argv[])
 
 	trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
 
-	for (i = 0; i < MAX_NUM_OF_MOTOR_OUTPUTS; i++)
+	for (i = 0; i < hybrid_net_rl_bmi_data->motor_outputs->num_of_outputs; i++)
 	{
 		if (!increment_num_of_classes_in_motor_output(hybrid_net_rl_bmi_data->motor_outputs, i, MOTOR_OUTPUT_BIN_SIZE)) {
 			print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! increment_num_of_classes_in_motor_output()."); return -1; }

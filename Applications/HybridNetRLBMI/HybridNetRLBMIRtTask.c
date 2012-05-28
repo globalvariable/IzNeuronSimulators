@@ -39,6 +39,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	RtTasksData *rt_tasks_data = bmi_data->rt_tasks_data;
 	Network		*in_silico_network =  bmi_data->in_silico_network;
 	MotorOutputs *motor_outputs = bmi_data->motor_outputs;
+	NeuralNet2MovObjHandMsg	*msgs_neural_net_2_mov_obj_hand = bmi_data->msgs_neural_net_2_mov_obj_hand;
 
 	Neuron		**all_neurons = in_silico_network->all_neurons;
 	Neuron 		*nrn;
@@ -86,7 +87,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns);
-			if (!handle_motor_outputs(motor_outputs, time_ns)) {
+			if (!handle_motor_outputs(motor_outputs, time_ns, msgs_neural_net_2_mov_obj_hand)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
 		}
 		integration_start_time = integration_end_time;

@@ -5,6 +5,7 @@
 #include <rtai_shm.h>
 #include <rtai_nam2num.h>
 #include "HybridNetRLBMI.h"
+#include "HandleMotorOutputs.h"
 #include "../../../BlueSpike/Library/RtTaskStats/RtTaskStats.h"
 
 
