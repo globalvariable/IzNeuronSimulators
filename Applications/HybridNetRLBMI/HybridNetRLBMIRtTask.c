@@ -3,7 +3,8 @@
 
 static bool hybrid_net_rl_bmi_rt_tasks_stay_alive = 1;
 
-static int hybrid_net_rl_bmi_internal_network_handling_rt_thread = 0;
+static int *hybrid_net_rl_bmi_internal_network_handling_rt_threads = NULL;
+static unsigned int *hybrid_net_rl_bmi_internal_network_handling_rt_thread_ids = NULL;
 static int hybrid_net_rl_bmi_blue_spike_handling_rt_thread = 0;
 
 
@@ -14,10 +15,21 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args);
 void hybrid_net_rl_bmi_create_rt_threads(void)
 {
 	static bool first = TRUE;
+	unsigned int i, num_of_dedicated_cpu_threads;
+	if (IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS == 0)
+		return (void)print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_create_rt_threads", "IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS == 0.");		
+	num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_THREADS_PER_CPU;
 	if (first)
 	{
 		get_hybrid_net_rl_bmi_data()->simulation_in_progress = TRUE;
-		hybrid_net_rl_bmi_internal_network_handling_rt_thread =  rt_thread_create(hybrid_net_rl_bmi_internal_network_handler, NULL, 10000);
+		hybrid_net_rl_bmi_internal_network_handling_rt_threads = g_new0(int, num_of_dedicated_cpu_threads);
+		hybrid_net_rl_bmi_internal_network_handling_rt_thread_ids = g_new0(unsigned int, num_of_dedicated_cpu_threads);
+
+		for (i = 0; i < num_of_dedicated_cpu_threads; i++)
+		{
+			hybrid_net_rl_bmi_internal_network_handling_rt_thread_ids[i] = i; 
+			hybrid_net_rl_bmi_internal_network_handling_rt_threads[i] =  rt_thread_create(hybrid_net_rl_bmi_internal_network_handler, &(hybrid_net_rl_bmi_internal_network_handling_rt_thread_ids[i]), 10000);
+		}
 		hybrid_net_rl_bmi_blue_spike_handling_rt_thread = rt_thread_create( hybrid_net_rl_bmi_blue_spike_rt_handler, NULL, 10000);
 		first = FALSE;
 	}
@@ -46,12 +58,25 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
-	unsigned int i, num_of_all_neurons = in_silico_network->num_of_neurons;
-	if (! check_rt_task_specs_to_init(rt_tasks_data, IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, IZ_PS_NETWORK_SIM_PERIOD))  {
+	unsigned int i, neurons_start_idx, neurons_end_idx; 
+	unsigned int num_of_dedicated_cpu_threads;
+	unsigned int cpu_id, cpu_thread_id;
+
+	/// share the neurons in between rt_threads;    ie.g there are 21 neurons and 4 dedicated cpu threads. then the cpu threads will have 6 + 6 + 6 + 3 neurons to handle
+	num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_THREADS_PER_CPU;
+	neurons_start_idx = ((in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads)+1) * ( *((unsigned int*)args) );
+	neurons_end_idx = ((in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads)+1)  * ( ( *((unsigned int*)args) ) + 1);
+	if (neurons_end_idx >  in_silico_network->num_of_neurons)
+		neurons_end_idx = in_silico_network->num_of_neurons;
+
+	cpu_id =  (*((unsigned int*)args)) / MAX_NUM_OF_THREADS_PER_CPU;   // find the cpu_id and cpu_thread_id to run this rt_thread
+	cpu_thread_id = (*((unsigned int*)args)) - (cpu_id * MAX_NUM_OF_THREADS_PER_CPU);
+
+	if (! check_rt_task_specs_to_init(rt_tasks_data, cpu_id, cpu_thread_id, IZ_PS_NETWORK_SIM_PERIOD))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
-        if (! (handler = rt_task_init_schmod(IZ_PS_NETWORK_SIM_TASK_NAME, IZ_PS_NETWORK_SIM_TASK_PRIORITY, IZ_PS_NETWORK_SIM_STACK_SIZE, IZ_PS_NETWORK_SIM_MSG_SIZE, IZ_PS_NETWORK_SIM_POLICY, 1 << ((IZ_PS_NETWORK_SIM_CPU_ID*MAX_NUM_OF_THREADS_PER_CPU)+IZ_PS_NETWORK_SIM_CPU_THREAD_ID)))) {
+        if (! (handler = rt_task_init_schmod(IZ_PS_NETWORK_SIM_TASK_NAME, IZ_PS_NETWORK_SIM_TASK_PRIORITY, IZ_PS_NETWORK_SIM_STACK_SIZE, IZ_PS_NETWORK_SIM_MSG_SIZE, IZ_PS_NETWORK_SIM_POLICY, 1 << ((cpu_id*MAX_NUM_OF_THREADS_PER_CPU)+cpu_thread_id)))) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "handler = rt_task_init_schmod()."); exit(1); }
-	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, IZ_PS_NETWORK_SIM_PERIOD, IZ_PS_NETWORK_SIM_POSITIVE_JITTER_THRES, IZ_PS_NETWORK_SIM_NEGATIVE_JITTER_THRES))  {
+	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, cpu_id, cpu_thread_id, IZ_PS_NETWORK_SIM_PERIOD, IZ_PS_NETWORK_SIM_POSITIVE_JITTER_THRES, IZ_PS_NETWORK_SIM_NEGATIVE_JITTER_THRES))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_rt_task_specs_to_rt_tasks_data()."); exit(1); }	
         period = nano2count(IZ_PS_NETWORK_SIM_PERIOD);
         rt_task_make_periodic(handler, rt_get_time() + period, period);
@@ -61,19 +86,19 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	clear_motor_output_counters(bmi_data->motor_outputs);
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
-	for (i = 0; i < num_of_all_neurons; i++)  // blue spike buffer handler might schedule events earlier.
+	for (i = neurons_start_idx; i < neurons_end_idx; i++)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
 		clear_neuron_event_buffer(all_neurons[i]);
         while (hybrid_net_rl_bmi_rt_tasks_stay_alive) 
 	{
         	rt_task_wait_period();
 		curr_time = rt_get_cpu_time_ns();
-		evaluate_and_save_jitter(rt_tasks_data, IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, prev_time, curr_time);
+		evaluate_and_save_jitter(rt_tasks_data, cpu_id, cpu_thread_id, prev_time, curr_time);
 		prev_time = curr_time;
 		// routines
 		integration_end_time =  ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 		for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 		{
-			for (i = 0; i < num_of_all_neurons; i++)
+			for (i = neurons_start_idx; i < neurons_end_idx; i++)  // simulate the neurons for which this thread is responsible
 			{
 				nrn = all_neurons[i];
 				//nrn->iz_params->I_inject = 21;
@@ -92,7 +117,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 		}
 		integration_start_time = integration_end_time;
 		// routines	
-		evaluate_and_save_period_run_time(rt_tasks_data, IZ_PS_NETWORK_SIM_CPU_ID, IZ_PS_NETWORK_SIM_CPU_THREAD_ID, curr_time, rt_get_cpu_time_ns());		
+		evaluate_and_save_period_run_time(rt_tasks_data, cpu_id, cpu_thread_id, curr_time, rt_get_cpu_time_ns());		
         }
 	rt_make_soft_real_time();
         rt_task_delete(handler);
