@@ -1685,7 +1685,7 @@ static void set_neuron_param_entries(int neuron_type)
 static void quit_button_func(void)
 {
 	bmi_simulation_spike_generator_kill_rt_task();
-	if (! delete_rt_task_from_rt_tasks_data(get_bmi_simulation_spike_generator_data()->rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_PERIOD ))
+	if (! delete_rt_task_from_rt_tasks_data(get_bmi_simulation_spike_generator_data()->rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, SPIKE_GENERATOR_PERIOD ))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "quit_button_func", "! delete_rt_task_from_rt_tasks_data().");	
 	print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "quit_button_func", "QUIT.");				
 	gtk_main_quit();	

@@ -7,7 +7,8 @@ typedef struct __SpikeGenData SpikeGenData;
 
 #include "Gui.h"
 #include "BMISimulationSpikeGeneratorRtTask.h"
-#include "../../../BlueSpike/BlueSpikeData.h"
+#include "../../../BlueSpike/SpikeTimeStamp.h"
+#include "../../../BlueSpike/KernelSpike/KernelSpikeSharedMem.h"
 #include "../../../BlueSpike/RtTasksData.h"
 #include "../../Library/InjectionCurrentData/InjectionCurrentData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
@@ -18,7 +19,7 @@ typedef struct __SpikeGenData SpikeGenData;
 
 struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeData
 {
-	BlueSpikeData				*blue_spike_data;
+	SpikeTimeStamp 				*sorted_spike_time_stamp;    /// spike time stamps from biological neurons 
 	RtTasksData					*rt_tasks_data;
 	Network						*network;
 	CurrentTemplate				*current_templates;
