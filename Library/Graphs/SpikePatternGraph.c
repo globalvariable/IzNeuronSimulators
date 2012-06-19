@@ -181,7 +181,10 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 				spike_item = &(source_spike_data_buffer_buff[idx]);
 				spike_time = spike_item->peak_time;
 				if (spike_time < new_part_start_time)
+				{
 					print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
+					printf("spike_time = %llu, new_part_start_time = %llu", spike_time, new_part_start_time);
+				}
 				if (spike_time < new_part_end_time)
 					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
