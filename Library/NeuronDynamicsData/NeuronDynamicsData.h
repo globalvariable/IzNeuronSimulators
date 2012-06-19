@@ -7,7 +7,6 @@
 typedef struct __NeuronDynamics NeuronDynamics;
 typedef struct __NetworkNeuronDynamics NetworkNeuronDynamics;
 typedef struct __NeuronDynamicsBuffer NeuronDynamicsBuffer;
-typedef struct __SelectedNeuronDynList SelectedNeuronDynList;
 typedef struct __SelectedNeuronDynamics SelectedNeuronDynamics;
 typedef struct __NeuronDynamicsBufferLimited NeuronDynamicsBufferLimited;
 
@@ -16,19 +15,6 @@ typedef struct __NeuronDynamicsBufferLimited NeuronDynamicsBufferLimited;
 struct __NeuronDynamics
 {
 	double dyn[MAX_NUM_OF_NEURON_DYNAMICS_TYPE];   /// *num_of_allocated_samples
-};
-
-struct __SelectedNeuronDynamics
-{
-	double	*neuron_dynamic;	// num_of_selected_neurons
-};
-
-struct __SelectedNeuronDynList
-{	
-	unsigned int	layer;
-	unsigned int	neuron_group;
-	unsigned int	neuron_num;
-	int			dynamics_type;
 };
 
 struct __NetworkNeuronDynamics
@@ -45,14 +31,20 @@ struct __NeuronDynamicsBuffer
 	TimeStamp				last_sample_time;
 };
 
+struct __SelectedNeuronDynamics
+{	
+	pthread_mutex_t 	mutex;   // required for get_neuron_dynamics_limited_last_sample_time_and_write_idx()
+	unsigned int		neuron_id;
+	int				dynamics_type;
+	double			*neuron_dynamic;	// num_of_selected_neurons
+	unsigned int 		buff_write_idx;
+	unsigned int 		buffer_size;
+	TimeStamp		last_sample_time;
+};
+
 struct __NeuronDynamicsBufferLimited		// For faster handling of dynamics buffer.
 {
-	pthread_mutex_t 			mutex;
-	SelectedNeuronDynamics	*buffer;
-	unsigned int 				buff_write_idx;
-	unsigned int 				buffer_size;
-	TimeStamp				last_sample_time;
-	SelectedNeuronDynList		*selected_dyns;
+	SelectedNeuronDynamics	*selected_dyns;
 	unsigned int 				num_of_selected_neurons;
 };
 
@@ -64,6 +56,6 @@ bool get_neuron_dynamics_last_sample_time_and_write_idx(NeuronDynamicsBuffer *bu
 NeuronDynamicsBufferLimited* allocate_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, unsigned int buffer_size, unsigned int num_of_selected_neurons);
 NeuronDynamicsBufferLimited* deallocate_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer);
 bool submit_selected_neuron_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num,  int dynamics_type, unsigned int list_idx);
-bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time);
-bool get_neuron_dynamics_limited_last_sample_time_and_write_idx(NeuronDynamicsBufferLimited *buffer, TimeStamp *last_sample_time, unsigned int *write_idx);
+bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx);
+bool get_neuron_dynamics_limited_last_sample_time_and_write_idx(NeuronDynamicsBufferLimited *buffer, unsigned int selected_neuron_list_idx, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

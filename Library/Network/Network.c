@@ -525,3 +525,29 @@ bool is_layer_connected_to_layer(Network *this_network, unsigned int this_layer,
 	}
 	return TRUE;	
 }
+
+bool get_neuron_id_in_network(Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, unsigned int *neuron_id)
+{
+	unsigned int temp_id = 0;
+	unsigned int i, j;
+	Layer		*ptr_layer;
+	NeuronGroup	*ptr_neuron_group;
+	for (i = 0; i < network->layer_count; i++)
+	{
+		ptr_layer = network->layers[i];	
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			if ((i == layer) && (j == neuron_group))
+			{
+				*neuron_id = temp_id + neuron_num;
+				return TRUE;
+			}
+			else
+			{
+				temp_id = temp_id + ptr_neuron_group->neuron_count;
+			}	
+		}
+	}
+	return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "get_neuron_id_in_network", "Couldn' t find the specified neuron in the network.");	
+}

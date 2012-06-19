@@ -10,6 +10,7 @@ SpikeData* allocate_spike_data(SpikeData *spike_data, unsigned int buffer_size)
 		return spike_data;
 	}
 	spike_data = g_new0(SpikeData,1);
+	pthread_mutex_init(&(spike_data->mutex), NULL);	
 	spike_data->buff = g_new0(SpikeTimeStampItem, buffer_size);
 	spike_data->buffer_size = buffer_size;
 	print_message(INFO_MSG ,"IzNeuronSimulators", "SpikeData", "allocate_spike_data", "Created spike_data.");
@@ -28,16 +29,21 @@ SpikeData* deallocate_spike_data(SpikeData *spike_data)
 
 bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time)
 {
-	unsigned int buff_idx_write;
+	unsigned int *buff_idx_write;
+	SpikeTimeStampItem *item;
 
-	buff_idx_write = spike_data->buff_idx_write;
-	spike_data->buff[buff_idx_write].peak_time = spike_time;
-	spike_data->buff[buff_idx_write].mwa_or_layer = mwa_or_layer;
-	spike_data->buff[buff_idx_write].channel_or_neuron_group = channel_or_neuron_group;
-	spike_data->buff[buff_idx_write].unit_or_neuron = unit_or_neuron;	
-	if ((buff_idx_write +1) ==  spike_data->buffer_size )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
-		spike_data->buff_idx_write = 0;
+	buff_idx_write = &(spike_data->buff_idx_write);
+	item = &(spike_data->buff[*buff_idx_write]);
+
+	pthread_mutex_lock(&(spike_data->mutex));
+	item->peak_time = spike_time;
+	item->mwa_or_layer = mwa_or_layer;
+	item->channel_or_neuron_group = channel_or_neuron_group;
+	item->unit_or_neuron = unit_or_neuron;	
+	if ((*buff_idx_write +1) ==  spike_data->buffer_size )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
+		*buff_idx_write = 0;
 	else
-		spike_data->buff_idx_write++;		
+		(*buff_idx_write)++;
+	pthread_mutex_unlock(&(spike_data->mutex));	
 	return TRUE;
 }

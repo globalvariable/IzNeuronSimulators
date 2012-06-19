@@ -80,10 +80,10 @@ static gboolean timeout_callback(gpointer user_data)
 		buffer_view_handler_paused_global = FALSE;
 		buffer_visualization_global_resume_request = FALSE;
 
-		get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer_limited, &last_sample_time, &neuron_dynamics_buffer_write_idx);   // lock/unlocks mutexes
 		for (i=0; i < num_of_neuron_dynamics_graphs; i++)
 		{
-			if (! determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph_arr[i] , current_system_time, last_sample_time, neuron_dynamics_buffer_write_idx, neuron_dynamics_buffer_limited->buffer_size))
+			get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer_limited, i, &last_sample_time, &neuron_dynamics_buffer_write_idx);   // lock/unlocks mutexes
+			if (! determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph_arr[i] , current_system_time, last_sample_time, neuron_dynamics_buffer_write_idx, neuron_dynamics_buffer_limited->selected_dyns[i].buffer_size))
 				return print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "gboolean timeout_callback","! determine_neuron_dynamics_graph_scroll_limited_start_indexes().");	
 			if (!neuron_dynamics_graph_arr[i]->locally_paused)
 				clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph_arr[i]);

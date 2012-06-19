@@ -78,7 +78,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 
 	cpu_id =  ((*((unsigned int*)args)) / MAX_NUM_OF_CPU_THREADS_PER_CPU);   // find the cpu_id and cpu_thread_id to run this rt_thread
 	cpu_thread_id = (*((unsigned int*)args)) - (cpu_id * MAX_NUM_OF_CPU_THREADS_PER_CPU);
-	cpu_thread_task_id = cpu_thread_id;
+	cpu_thread_task_id = 0;
 	cpu_id =  IZ_PS_NETWORK_SIM_CPU_ID + cpu_id;
 	if (! check_rt_task_specs_to_init(rt_tasks_data, cpu_id, cpu_thread_id, cpu_thread_task_id, IZ_PS_NETWORK_SIM_PERIOD))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
@@ -119,10 +119,10 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					nrn->stats->num_of_firings_for_motor_output++;
 				}	
 			}
-			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns);
-			if (!handle_motor_outputs(motor_outputs, time_ns, msgs_neural_net_2_mov_obj_hand)) {
+			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
+/*			if (!handle_motor_outputs(motor_outputs, time_ns, msgs_neural_net_2_mov_obj_hand)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
-		}
+*/		}
 		integration_start_time = integration_end_time;
 		// routines	
 		evaluate_and_save_period_run_time(rt_tasks_data, cpu_id, cpu_thread_id, cpu_thread_task_id, curr_time, rt_get_cpu_time_ns());		

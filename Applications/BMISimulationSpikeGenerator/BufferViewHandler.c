@@ -77,8 +77,8 @@ static gboolean timeout_callback(gpointer user_data)
 			clear_limited_current_pattern_graph_w_scroll(current_pattern_graph);
 		}
 
-		get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer, &last_sample_time, &buffer_write_idx);   // lock/unlocks mutexes
-		if (!  determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph, current_system_time, last_sample_time, buffer_write_idx, neuron_dynamics_buffer->buffer_size))
+		get_neuron_dynamics_limited_last_sample_time_and_write_idx(neuron_dynamics_buffer, 0, &last_sample_time, &buffer_write_idx);   // lock/unlocks mutexes // 0 th selected neuron
+		if (!  determine_neuron_dynamics_graph_scroll_limited_start_indexes(neuron_dynamics_graph, current_system_time, last_sample_time, buffer_write_idx, neuron_dynamics_buffer->selected_dyns[0].buffer_size))
 			return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BufferViewHandler", "gboolean timeout_callback","! determine_neuron_dynamics_graph_scroll_start_indexes().");	
 		if (!neuron_dynamics_graph->locally_paused)
 			clear_limited_neuron_dynamics_graph_w_scroll(neuron_dynamics_graph);

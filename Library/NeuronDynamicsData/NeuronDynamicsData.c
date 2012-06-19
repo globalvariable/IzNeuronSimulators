@@ -101,13 +101,14 @@ NeuronDynamicsBufferLimited* allocate_neuron_dynamics_buffer_limited(Network *ne
 		return buffer;
 	}
 	buffer = g_new0(NeuronDynamicsBufferLimited,1);
-	pthread_mutex_init(&(buffer->mutex), NULL);
-	buffer->buffer = g_new0(SelectedNeuronDynamics, buffer_size);
-	for (i = 0; i <  buffer_size; i++)
-		buffer->buffer[i].neuron_dynamic = g_new0(double, num_of_selected_neurons);
-	buffer->selected_dyns = g_new0(SelectedNeuronDynList, num_of_selected_neurons);
+	buffer->selected_dyns = g_new0(SelectedNeuronDynamics, num_of_selected_neurons);
+	for(i = 0; i < num_of_selected_neurons; i++)
+	{
+		pthread_mutex_init(&(buffer->selected_dyns[i].mutex), NULL);	
+		buffer->selected_dyns[i].neuron_dynamic = g_new0(double, buffer_size);
+		buffer->selected_dyns[i].buffer_size = buffer_size;
+	}
 	buffer->num_of_selected_neurons = num_of_selected_neurons;
-	buffer->buffer_size = buffer_size;
 	print_message(INFO_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "allocate_neuron_dynamics_buffer_limited", "Created neuron_dynamics_buffer_limited.");
 	return buffer;
 }
@@ -120,65 +121,70 @@ NeuronDynamicsBufferLimited* deallocate_neuron_dynamics_buffer_limited(Network *
 
 bool submit_selected_neuron_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num,  int dynamics_type, unsigned int list_idx)
 {
+	unsigned int neuron_id;
 	if (!is_neuron(network, layer, neuron_group, neuron_num))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "! is_neuron().");
 	if ((dynamics_type >= MAX_NUM_OF_NEURON_DYNAMICS_TYPE) || (dynamics_type < 0))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "(dynamics_type >= MAX_NUM_OF_NEURON_DYNAMICS_TYPE) || (dynamics_type < 0).");
 	if (list_idx >= buffer->num_of_selected_neurons)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "list_idx >= buffer->num_of_selected_neurons.");	
-	pthread_mutex_lock(&(buffer->mutex));	
-	buffer->selected_dyns[list_idx].layer = layer;
-	buffer->selected_dyns[list_idx].neuron_group = neuron_group;
-	buffer->selected_dyns[list_idx].neuron_num = neuron_num;
+	if (! get_neuron_id_in_network(network, layer, neuron_group, neuron_num, &neuron_id))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "! get_neuron_id_in_network().");	
+	buffer->selected_dyns[list_idx].neuron_id = neuron_id;
 	buffer->selected_dyns[list_idx].dynamics_type = dynamics_type;
-	pthread_mutex_unlock(&(buffer->mutex));	
 	return TRUE;
 }
 
-bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time) 
+bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx) 
 {
 	unsigned int i;
-	SelectedNeuronDynList	*selected_dyns = buffer->selected_dyns;
-	unsigned int num_of_selected_neurons = buffer->num_of_selected_neurons;
-	double *neuron_dynamic = buffer->buffer[buffer->buff_write_idx].neuron_dynamic;
+	unsigned int neuron_id;
+	SelectedNeuronDynamics	*selected_dyns;
 	IzNeuronParams		*iz_params;
 
-	pthread_mutex_lock(&(buffer->mutex));
-	for (i = 0; i < num_of_selected_neurons; i++)
+	for (i = 0; i < buffer->num_of_selected_neurons; i++)
 	{
-		iz_params = network->layers[selected_dyns[i].layer]->neuron_groups[selected_dyns[i].neuron_group]->neurons[selected_dyns[i].neuron_num].iz_params;
-		switch (selected_dyns[i].dynamics_type)
+		neuron_id = buffer->selected_dyns[i].neuron_id;
+		if (neuron_start_idx > neuron_id)	
+			continue;
+ 		if (neuron_id >= neuron_end_idx )	// selected_neuron is not in neuron indexes of calling thread.
+			continue;
+		selected_dyns = &(buffer->selected_dyns[i]);
+		iz_params = network->all_neurons[neuron_id]->iz_params;
+		switch (selected_dyns->dynamics_type)
 		{
 			case DYNAMICS_TYPE_V:
-				 neuron_dynamic[i] = iz_params->v;
+				selected_dyns->neuron_dynamic[selected_dyns->buff_write_idx] = iz_params->v;
 				break;
 			case DYNAMICS_TYPE_U:
-				 neuron_dynamic[i] = iz_params->u;
+				selected_dyns->neuron_dynamic[selected_dyns->buff_write_idx] = iz_params->u;
 				break;
 			case DYNAMICS_TYPE_E:
-				 neuron_dynamic[i] = iz_params->conductance_excitatory;
+				selected_dyns->neuron_dynamic[selected_dyns->buff_write_idx] = iz_params->conductance_excitatory;
 				break;
 			case DYNAMICS_TYPE_I:
-				neuron_dynamic[i] = iz_params->conductance_inhibitory;
+				selected_dyns->neuron_dynamic[selected_dyns->buff_write_idx] = iz_params->conductance_inhibitory;
 				break;
 			default: 
 				return print_message(BUG_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "push_neuron_dynamics_to_neuron_dynamics_buffer_limited", "Unknown dynamics type.");		
 		}
+		pthread_mutex_lock(&(selected_dyns->mutex));   // for get_neuron_dynamics_limited_last_sample_time_and_write_idx
+		if ((selected_dyns->buff_write_idx + 1) == selected_dyns->buffer_size)
+			selected_dyns->buff_write_idx = 0;
+		else
+			selected_dyns->buff_write_idx++;
+		selected_dyns->last_sample_time = sampling_time;		
+		pthread_mutex_unlock(&(selected_dyns->mutex));
 	}
-	if ((buffer->buff_write_idx + 1) == buffer->buffer_size)
-		buffer->buff_write_idx = 0;
-	else
-		buffer->buff_write_idx++;
-	buffer->last_sample_time = sampling_time;
-	pthread_mutex_unlock(&(buffer->mutex));
 	return TRUE;
 }
 
-bool get_neuron_dynamics_limited_last_sample_time_and_write_idx(NeuronDynamicsBufferLimited *buffer, TimeStamp *last_sample_time, unsigned int *write_idx)
+bool get_neuron_dynamics_limited_last_sample_time_and_write_idx(NeuronDynamicsBufferLimited *buffer, unsigned int selected_neuron_list_idx, TimeStamp *last_sample_time, unsigned int *write_idx)
 {
-	pthread_mutex_lock(&(buffer->mutex));
-	*write_idx = buffer->buff_write_idx;
-	*last_sample_time = buffer->last_sample_time;
-	pthread_mutex_unlock(&(buffer->mutex));
+	SelectedNeuronDynamics	*selected_dyns = &(buffer->selected_dyns[selected_neuron_list_idx]);
+	pthread_mutex_lock(&(selected_dyns->mutex));
+	*write_idx = selected_dyns->buff_write_idx;
+	*last_sample_time = selected_dyns->last_sample_time;
+	pthread_mutex_unlock(&(selected_dyns->mutex));
 	return TRUE;
 }

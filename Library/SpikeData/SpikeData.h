@@ -5,13 +5,15 @@
 
 typedef struct __SpikeData SpikeData;
 
-#include "../../../BlueSpike/SpikeTimeStamp.h"
-#include "../../../BlueSpike/Library/Misc/Misc.h"
 #include <stdbool.h>
 #include <gtk/gtk.h>
+#include <pthread.h>
+#include "../../../BlueSpike/SpikeTimeStamp.h"
+#include "../../../BlueSpike/Library/Misc/Misc.h"
 
 struct __SpikeData
 {
+	pthread_mutex_t 			mutex;   // required for multi_threaded simulation through the network
 	SpikeTimeStampItem		*buff;
 	unsigned int				buff_idx_write;
 	unsigned int				buffer_size;

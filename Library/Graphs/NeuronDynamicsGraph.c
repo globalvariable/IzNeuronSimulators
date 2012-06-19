@@ -510,11 +510,12 @@ bool handle_limited_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsG
 			scroll_limited_neuron_dynamics_graph(graph);
 		new_part_start_time = graph->new_part_start_time;
 		new_part_end_time = new_part_start_time + graph->graph_len_to_scroll;
-		buffer_size = limited_dynamics_buffer->buffer_size;
+
 
 		if (current_system_time > (new_part_end_time + graph->buffer_followup_latency) )
 		{
 			selection_list_idx = graph->limited_dynamics_buffer_list_idx;
+			buffer_size = limited_dynamics_buffer->selected_dyns[selection_list_idx].buffer_size;
 			idx =  graph->new_part_start_idx;
 			if ((idx + graph->num_of_data_points_to_scroll) > buffer_size)
 				end_idx = idx + graph->num_of_data_points_to_scroll - buffer_size;
@@ -523,7 +524,7 @@ bool handle_limited_neuron_dynamics_graph_scrolling_and_plotting(NeuronDynamicsG
 			graph_old_part_end_idx = graph->num_of_data_points - graph->num_of_data_points_to_scroll;
 			while (idx != end_idx)
 			{
-				graph->y[graph_old_part_end_idx + graph_sample_idx] = limited_dynamics_buffer->buffer[idx].neuron_dynamic[selection_list_idx];
+				graph->y[graph_old_part_end_idx + graph_sample_idx] = limited_dynamics_buffer->selected_dyns[selection_list_idx].neuron_dynamic[idx];
 				graph_sample_idx++;
 				if ((idx + 1) == buffer_size)
 					idx = 0;

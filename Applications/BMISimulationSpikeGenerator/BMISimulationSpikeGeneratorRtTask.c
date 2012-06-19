@@ -128,7 +128,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
@@ -159,7 +159,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;									
 					case TRIAL_TYPE_IN_VIVO_BMI_RIGHT_TARGET:	
@@ -187,7 +187,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
@@ -228,7 +228,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -263,7 +263,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 
@@ -292,7 +292,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
@@ -317,7 +317,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 
 						break;									
@@ -340,7 +340,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
@@ -376,7 +376,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -406,7 +406,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns);	
+					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 
