@@ -115,8 +115,9 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				if (spike_generated)
 				{
 					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
-					nrn->stats->num_of_firings_for_firing_rate_bin++;
-					nrn->stats->num_of_firings_for_motor_output++;
+			//		nrn->stats->num_of_firings_for_firing_rate_bin++;
+			//		nrn->stats->num_of_firings_for_motor_output++;
+					in_silico_network->num_of_spikes++;
 				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);

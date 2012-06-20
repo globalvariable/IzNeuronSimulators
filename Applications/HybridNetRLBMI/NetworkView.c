@@ -75,6 +75,9 @@ static GtkWidget *btn_simulate_with_punishment;
 
 static GtkWidget *btn_start_hybrid_network;
 
+static GtkWidget *btn_clear_network_num_of_spike_events;
+static GtkWidget *btn_print_network_num_of_spike_events;
+
 // GRAPHS
 static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
@@ -95,6 +98,9 @@ static void submit_injection_current_button_func(void);
 static void simulate_with_no_reward_button_func(void);
 
 static void start_hybrid_network_button_func(void);
+
+static void clear_network_num_of_spike_events_button_func(void);
+static void print_network_num_of_spike_events_button_func(void);
 
 //static ConstantCurrent *constant_current = NULL;
 
@@ -693,6 +699,17 @@ bool create_network_view_gui(void)
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	btn_clear_network_num_of_spike_events = gtk_button_new_with_label("Clear All Spike Events Log");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_clear_network_num_of_spike_events, TRUE, TRUE, 0);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	btn_print_network_num_of_spike_events = gtk_button_new_with_label("Print All Spike Events Log");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_print_network_num_of_spike_events, TRUE, TRUE, 0);
+
+
 /////////  GRAPHS  ////////////////////////////////
 
 	vbox = gtk_vbox_new(TRUE, 0);
@@ -728,6 +745,8 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_start_hybrid_network), "clicked", G_CALLBACK(start_hybrid_network_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_clear_network_num_of_spike_events), "clicked", G_CALLBACK(clear_network_num_of_spike_events_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_print_network_num_of_spike_events), "clicked", G_CALLBACK(print_network_num_of_spike_events_button_func), NULL);
 
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, FALSE);	
@@ -1033,4 +1052,13 @@ static void start_hybrid_network_button_func(void)
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
 	hybrid_net_rl_bmi_create_rt_threads();	
 	send_global_pause_button_sensitive_request();	 // enable pause/resume button to resume buffer visualization. resume adjusts buffer read indexes and start times. 
+}
+
+static void clear_network_num_of_spike_events_button_func(void)
+{
+	get_hybrid_net_rl_bmi_data()->in_silico_network->num_of_spikes = 0;
+}
+static void print_network_num_of_spike_events_button_func(void)
+{
+	printf("total spikes: %llu\n", get_hybrid_net_rl_bmi_data()->in_silico_network->num_of_spikes);
 }
