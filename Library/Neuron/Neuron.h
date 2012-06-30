@@ -8,12 +8,13 @@ typedef unsigned long long int NeuronAddress;
 #include <stdbool.h>
 #include <gtk/gtk.h>
 #include "../Event/Event.h"
-#include "../Synapse/Synapse.h"
+#include "../Axon/Axon.h"
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "NeuronStats.h"
-
+#include "../STDP/STDP.h"
+#include "../Eligibility/Eligibility.h"
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
 #define MAX_U_VALUE	400
@@ -60,10 +61,13 @@ struct __Neuron
 	unsigned int					neuron_num;	
 	bool						inhibitory;	
 	IzNeuronParams				*iz_params;
-	NeuronSynapseList			*syn_list;
+	NeuronAxonList				*axon_list;
 	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
 	NeuronStats					*stats;
+	NeuronSynapseList			*syn_list;
+	STDPList					*stdp_list;
+	EligibilityList					*eligibility_list;
 };
 
 bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 

@@ -39,7 +39,7 @@ Network* deallocate_network(Network *network)
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
 				g_free(ptr_neuron->iz_params);
 				destroy_neuron_event_buffer(ptr_neuron);
-				destroy_neuron_synapse_list(ptr_neuron);	
+				destroy_neuron_axon_list(ptr_neuron);	
 				destroy_neuron_parker_sochacki_pol_vals(ptr_neuron);		
 			}
 			g_free(ptr_neuron_group->neurons);	
@@ -242,7 +242,7 @@ static bool increment_number_of_neuron_group_in_layer(Network *network, int laye
 
 
 
-bool connect_layers(Network *this_network, unsigned int this_layer, Network *target_network, unsigned int target_layer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, SynapticDelay EPSP_delay_max, SynapticDelay EPSP_delay_min, SynapticDelay IPSP_delay_max, SynapticDelay IPSP_delay_min, SynapticDelay delay_hard_max, SynapticDelay delay_hard_min, double excitatory_connection_probability, double inhibitory_connection_probability)
+bool connect_layers(Network *this_network, unsigned int this_layer, Network *target_network, unsigned int target_layer, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, AxonalDelay EPSP_delay_max, AxonalDelay EPSP_delay_min, AxonalDelay IPSP_delay_max, AxonalDelay IPSP_delay_min, AxonalDelay delay_hard_max, AxonalDelay delay_hard_min, double excitatory_connection_probability, double inhibitory_connection_probability, bool stdp_pre_post_enabled, bool stdp_post_pre_enabled, bool eligibility_enabled)
 {
 	Layer		*ptr_this_layer = NULL;
 	Layer		*ptr_target_layer = NULL;	
@@ -284,8 +284,8 @@ bool connect_layers(Network *this_network, unsigned int this_layer, Network *tar
 					if (ptr_this_neuron == ptr_target_neuron)
 						continue; // Do not connect the neuron to itself
 					neuron_connected = FALSE;
-					if (!create_synapse(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, delay_hard_min, delay_hard_max, excitatory_connection_probability, inhibitory_connection_probability, &neuron_connected))
-						return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_network_layer_to_network_layer", "! create_synapse().");		
+					if (!create_axon(ptr_this_neuron, ptr_target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, delay_hard_min, delay_hard_max, excitatory_connection_probability, inhibitory_connection_probability, &neuron_connected))
+						return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_network_layer_to_network_layer", "! create_axon().");		
 					if (neuron_connected)
 						counter_synapses++;
 				}

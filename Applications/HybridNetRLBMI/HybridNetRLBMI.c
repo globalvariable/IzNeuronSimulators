@@ -26,13 +26,13 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net = allocate_shm_server_mov_obj_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
-
+/*
 	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
 
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
-
+*/
 	trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
 
 	for (i = 0; i < hybrid_net_rl_bmi_data->motor_outputs->num_of_outputs; i++)

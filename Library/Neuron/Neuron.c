@@ -31,9 +31,9 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	nrn->iz_params->conductance_inhibitory = 0;
 	nrn->iz_params->k_v_threshold = k * nrn->iz_params->v_threshold;
 	nrn->inhibitory = inhibitory;
-	if (nrn->syn_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
-	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	if (nrn->axon_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->axon_list = g_new0(NeuronAxonList,1);
 	if (nrn->event_buff != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
@@ -42,6 +42,15 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 	nrn->stats = g_new0(NeuronStats,1);
+	if (nrn->syn_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	if (nrn->stdp_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->stdp_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->stdp_list = g_new0(STDPList, 1);
+	if (nrn->eligibility_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->eligibility_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->eligibility_list = g_new0(EligibilityList, 1);
 	return TRUE;
 }
 
@@ -51,9 +60,9 @@ bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;
 	nrn->inhibitory = inhibitory;
-	if (nrn->syn_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
-	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	if (nrn->axon_list != NULL)
+		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->axon_list = g_new0(NeuronAxonList,1);
 	if (nrn->event_buff != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
 	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
@@ -70,7 +79,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	Neuron		*ptr_neuron = NULL;
 	IzNeuronParams				*ptr_iz_params;
 	NeuronEventBuffer *ptr_neuron_event_buffer;
-	NeuronSynapseList	*ptr_neuron_syn_list;
+	NeuronAxonList	*ptr_neuron_axon_list;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
 	int i;
 	
@@ -83,7 +92,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	}
 	ptr_iz_params = ptr_neuron->iz_params;
 	ptr_neuron_event_buffer = ptr_neuron->event_buff;		
-	ptr_neuron_syn_list = ptr_neuron->syn_list;
+	ptr_neuron_axon_list = ptr_neuron->axon_list;
 	ptr_ps_vals = ptr_neuron->ps_vals;
 
 					
@@ -126,9 +135,10 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		printf ("Event TimeStamp / Event From / Synaptic Weight\n");		
 		for (i = 0; i < ptr_neuron_event_buffer->buff_size; i++)
 		{
+			pthread_mutex_lock(&(ptr_neuron_event_buffer->mutex));
 			printf ("%llu\t\t", ptr_neuron_event_buffer->time[i]);
-			printf ("%llu\t\t", (NeuronAddress) ptr_neuron_event_buffer->from[i]);		
-			printf ("%.5f\n", ptr_neuron_event_buffer->weight[i]);				
+			printf ("%u\t\t",  ptr_neuron_event_buffer->syn_idx[i]);	
+			pthread_mutex_unlock(&(ptr_neuron_event_buffer->mutex));	
 		}
 	}
 	else
@@ -137,23 +147,22 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	}		
 	printf ("--------------Interrogating Event Buffer...Complete ---------\n");							
 
-	printf ("--------------Interrogating Synapse List ---------\n");				
-	if (ptr_neuron_syn_list != NULL)
+	printf ("--------------Interrogating Axon List ---------\n");				
+	if (ptr_neuron_axon_list != NULL)
 	{
-		printf ("Number of Synapses: %d\n", ptr_neuron_syn_list->num_of_synapses);
-		printf ("Synapse To / Synaptic Delay / Synaptic Weight\n");		
-		for (i = 0; i < ptr_neuron_syn_list->num_of_synapses; i++)
+		printf ("Number of Axons: %d\n", ptr_neuron_axon_list->num_of_axons);
+		printf ("Axon To / Axonal Delay\n");		
+		for (i = 0; i < ptr_neuron_axon_list->num_of_axons; i++)
 		{
-			printf ("%llu\t\t", (NeuronAddress) ptr_neuron_syn_list->to[i]);
-			printf ("%u\t\t", (SynapticDelay) ptr_neuron_syn_list->delay[i]);		
-			printf ("%.5f\n", ptr_neuron_syn_list->weight[i]);				
+			printf ("%llu\t\t", (NeuronAddress) ptr_neuron_axon_list->to[i]);
+			printf ("%u\t\t", (AxonalDelay) ptr_neuron_axon_list->delay[i]);		
 		}
 	}
 	else
 	{
-		printf ("Synapse list is not allocated yet\n");					
+		printf ("Axon list is not allocated yet\n");					
 	}
-	printf ("--------------Interrogating Synapse List....Complete ---------\n");				
+	printf ("--------------Interrogating Axon List....Complete ---------\n");				
 		
 	printf ("--------------   Interrogating Parker Sochacki Ploynomial Values ---------\n");
 	if (ptr_ps_vals != NULL)	
