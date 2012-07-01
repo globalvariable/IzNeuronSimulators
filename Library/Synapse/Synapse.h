@@ -19,7 +19,7 @@ struct __NeuronSynapseList
 {
 	SynapticWeight	*weight;
 	SynapseType		*type;    // save the list of the synapse type. Do not let excitatory synapses be negative or inhibitory synapses be positive during learning.
-	unsigned int		num_of_synapses; 
+	SynapseIndex		num_of_synapses; 
 };
 
 

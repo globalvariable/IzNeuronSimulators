@@ -111,8 +111,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			{
 				nrn = all_neurons[i];
 				//nrn->iz_params->I_inject = 21;
-				if (!evaluate_neuron_dyn(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
-					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn()."); exit(1); }	
+				if (!evaluate_neuron_dyn_stdp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
+					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dynevaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)
 				{
 					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);

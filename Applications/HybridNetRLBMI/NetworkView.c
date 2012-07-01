@@ -1212,8 +1212,8 @@ static void simulate_with_no_reward_button_func(void)
 				{
 					neuron = get_neuron_address(bmi_data->in_silico_network, i, j, k);
 //					neuron->iz_params->I_inject = constant_current->current[i][j][k];
-					if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
-						return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! evaluate_neuron_dyn().");
+					if (!evaluate_neuron_dyn_stdp_elig(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
+						return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "simulate_with_no_reward_button_func", "! evaluate_neuron_dyn_stdp_elig().");
 //					if (spike_generated)  {		}
 					if ((i != layer_num) || (j != nrn_grp_num) || (k != nrn_num))
 						continue;

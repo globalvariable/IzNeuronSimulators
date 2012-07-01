@@ -38,11 +38,23 @@ struct __ParkerSochackiPolynomialVals
 bool parker_sochacki_set_order_tolerance(Network *network, unsigned int max_ps_order, double ps_error_tolerance);
 int get_maximum_parker_sochacki_order(void);
 double get_maximum_parker_sochacki_error_tolerance(void);
+
+// PS INTEGRATION WITH ONLY SYNAPTIC INTEGRATION (NO STDP)
 bool evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, bool *spike_generated, TimeStamp *spike_time);
 bool parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time, bool *spike_generated, TimeStamp *spike_time);
-int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, unsigned int num_of_synapses, double dt);
-void parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, unsigned int num_of_synapses, double dt, int p);
+int parker_sochacki_step (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double dt);
+void parker_sochacki_update(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double dt, int p);
 double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, double dt);
+
 void clear_parker_sochacki_polynomials(Network *network, int num_of_layers, int *num_of_neuron_groups,  int **num_of_neurons_in_group); /// For debugging, delete when testing complete
 void destroy_neuron_parker_sochacki_pol_vals(Neuron *neuron);
+
+
+// PS INTEGRATION WITH STDP & ELIGIBILITY
+bool evaluate_neuron_dyn_stdp_elig(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, bool *spike_generated, TimeStamp *spike_time);
+bool parker_sochacki_integration_stdp_elig(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time, bool *spike_generated, TimeStamp *spike_time, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, IzNeuronParams *iz_params);
+int parker_sochacki_step_stdp_elig (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double dt, IzNeuronParams *iz_params, double *stdp_pre_post, double *stdp_post_pre, double *eligibility);
+void parker_sochacki_update_stdp_elig(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, SynapseIndex num_of_synapses, double dt, int p, IzNeuronParams *iz_params);
+
+
 #endif
