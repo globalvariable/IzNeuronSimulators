@@ -130,8 +130,10 @@ bool submit_selected_neuron_to_neuron_dynamics_buffer_limited(Network *network, 
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "list_idx >= buffer->num_of_selected_neurons.");	
 	if (! get_neuron_id_in_network(network, layer, neuron_group, neuron_num, &neuron_id))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsData", "submit_selected_neuron_to_neuron_dynamics_buffer_limited", "! get_neuron_id_in_network().");	
+	pthread_mutex_lock(&(buffer->selected_dyns->mutex));  // not so much necessary but required when/if you have different number fo dynamics type for different neurons. 
 	buffer->selected_dyns[list_idx].neuron_id = neuron_id;
 	buffer->selected_dyns[list_idx].dynamics_type = dynamics_type;
+	pthread_mutex_unlock(&(buffer->selected_dyns->mutex)); 
 	return TRUE;
 }
 

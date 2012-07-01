@@ -36,7 +36,7 @@ struct __SelectedNeuronDynamics
 	pthread_mutex_t 	mutex;   // required for get_neuron_dynamics_limited_last_sample_time_and_write_idx()
 	unsigned int		neuron_id;
 	int				dynamics_type;
-	double			*neuron_dynamic;	// num_of_selected_neurons
+	double			*neuron_dynamic;	// buffer size
 	unsigned int 		buff_write_idx;
 	unsigned int 		buffer_size;
 	TimeStamp		last_sample_time;

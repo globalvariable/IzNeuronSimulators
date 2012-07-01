@@ -87,6 +87,8 @@ static GtkWidget *btn_simulate_with_no_reward;
 static GtkWidget *btn_simulate_with_reward;
 static GtkWidget *btn_simulate_with_punishment;
 
+static GtkWidget *btn_ready_for_simulation;
+
 static GtkWidget *btn_start_hybrid_network;
 
 static GtkWidget *btn_clear_network_num_of_spike_events;
@@ -112,6 +114,8 @@ static void submit_stdp_and_eligibility_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void submit_injection_current_button_func(void);
 static void simulate_with_no_reward_button_func(void);
+
+static void ready_for_simulation_button_func(void);
 
 static void start_hybrid_network_button_func(void);
 
@@ -855,6 +859,14 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 	
+	btn_ready_for_simulation = gtk_button_new_with_label("Ready");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_ready_for_simulation, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	
 	btn_start_hybrid_network = gtk_button_new_with_label("Start Hybrid Network");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_start_hybrid_network, TRUE, TRUE, 0);
 
@@ -906,6 +918,8 @@ bool create_network_view_gui(void)
 
       	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
+
+      	g_signal_connect(G_OBJECT(btn_ready_for_simulation), "clicked", G_CALLBACK(ready_for_simulation_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_start_hybrid_network), "clicked", G_CALLBACK(start_hybrid_network_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_clear_network_num_of_spike_events), "clicked", G_CALLBACK(clear_network_num_of_spike_events_button_func), NULL);
@@ -1054,11 +1068,7 @@ static void submit_parker_sochacki_params_button_func(void)
 	if (! parker_sochacki_set_order_tolerance(bmi_data->in_silico_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");
 //	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
-	bmi_data->neuron_dynamics_limited_buffer = allocate_neuron_dynamics_buffer_limited(bmi_data->in_silico_network, bmi_data->neuron_dynamics_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
-	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
-	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
-	if (!buffer_view_handler())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");		
+	
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
 	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, TRUE);	
@@ -1247,4 +1257,15 @@ static void clear_network_num_of_spike_events_button_func(void)
 static void print_network_num_of_spike_events_button_func(void)
 {
 	printf("total spikes: %llu\n", get_hybrid_net_rl_bmi_data()->in_silico_network->num_of_spikes);
+}
+
+static void ready_for_simulation_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	bmi_data->neuron_dynamics_limited_buffer = allocate_neuron_dynamics_buffer_limited(bmi_data->in_silico_network, bmi_data->neuron_dynamics_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
+	bmi_data->stdp_limited_buffer = allocate_stdp_buffer_limited(bmi_data->in_silico_network, bmi_data->stdp_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_STDP_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
+	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	if (!buffer_view_handler())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");	
 }

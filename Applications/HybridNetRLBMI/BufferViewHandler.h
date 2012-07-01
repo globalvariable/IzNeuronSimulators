@@ -12,6 +12,7 @@
 #include "NeuronDynamicsView.h"
 #include "BlueSpikeSpikePatternView.h"
 #include "InSilicoSpikePatternView.h"
+#include "STDPView.h"
 
 
 
@@ -19,6 +20,7 @@ bool buffer_view_handler(void);
 void send_global_resume_request_to_buffer_view_handler(void);
 void send_global_pause_request_to_buffer_view_handler(void);
 bool send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
+bool send_stdp_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
 bool send_blue_spike_spike_graph_resume_request_to_buffer_view_handler(void);
 bool send_in_silico_spike_graph_resume_request_to_buffer_view_handler(void);
 bool is_buffer_view_handler_paused(void);

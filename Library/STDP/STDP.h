@@ -4,6 +4,11 @@
 
 typedef struct 	__STDPList		STDPList;
 
+
+#define STDP_TYPE_PRE_POST	0
+#define STDP_TYPE_POST_PRE	1
+#define MAX_NUM_OF_STDP_TYPE	2
+
 #include "../Network/Network.h"
 
 struct __STDPList
@@ -27,5 +32,7 @@ struct __STDPList
 bool create_ps_stdp_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
 
 bool create_ps_stdp_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
+
+bool all_the_neurons_have_stdp(Network *network);
 
 #endif

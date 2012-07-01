@@ -57,6 +57,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	Neuron 		*nrn;
 
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
+	STDPBufferLimited *stdp_buffer_limited = bmi_data->stdp_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	unsigned int i, neurons_start_idx, neurons_end_idx; 
 	unsigned int num_of_dedicated_cpu_threads;
@@ -121,6 +122,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
+			push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 /*			if (!handle_motor_outputs(motor_outputs, time_ns, msgs_neural_net_2_mov_obj_hand)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
 */		}

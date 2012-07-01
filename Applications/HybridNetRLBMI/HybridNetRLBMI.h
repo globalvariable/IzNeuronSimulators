@@ -12,6 +12,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../BlueSpike/KernelSpike/KernelSpikeSharedMem.h"
 #include "../../../BlueSpike/RtTasksData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
+#include "../../Library/STDPData/STDPData.h"
 #include "../../Library/SpikeData/SpikeData.h"
 #include "../../Library/MotorOutput/MotorOutput.h"
 #include "../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.h"
@@ -27,6 +28,7 @@ struct __HybridNetRLBMIData
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
 	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;
+	STDPBufferLimited			*stdp_limited_buffer;
 	SpikeData					*blue_spike_spike_data;   // for visualization
 	SpikeData					*in_silico_spike_data;  // for visualization
 	MotorOutputs					*motor_outputs;
