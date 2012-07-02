@@ -1264,6 +1264,7 @@ static void ready_for_simulation_button_func(void)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	bmi_data->neuron_dynamics_limited_buffer = allocate_neuron_dynamics_buffer_limited(bmi_data->in_silico_network, bmi_data->neuron_dynamics_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
 	bmi_data->stdp_limited_buffer = allocate_stdp_buffer_limited(bmi_data->in_silico_network, bmi_data->stdp_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_STDP_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
+	bmi_data->eligibility_limited_buffer = allocate_eligibility_buffer_limited(bmi_data->in_silico_network, bmi_data->eligibility_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_ELIGIBILITY_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	if (!buffer_view_handler())

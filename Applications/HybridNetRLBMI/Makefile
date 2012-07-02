@@ -12,8 +12,8 @@ GTK_FLAGS = $(shell pkg-config --cflags --libs gtk+-2.0 gtkdatabox)
 
 all: HybridNetRLBMI
 
-HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.o ../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/Graphs/SpikePatternGraph.o HandleMotorOutputs.o ../../Library/STDP/STDP.o ../../Library/Eligibility/Eligibility.o ../../Library/STDPData/STDPData.o ../../Library/Graphs/STDPGraph.o ../../Library/Combos/STDPCombo.o ../../Library/Synapse/Synapse.o ../../Library/Combos/LayerNrnGrpNrnSynapseCombo.o STDPView.o 
-	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.o ../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/Graphs/SpikePatternGraph.o HandleMotorOutputs.o ../../Library/STDP/STDP.o ../../Library/Eligibility/Eligibility.o ../../Library/STDPData/STDPData.o ../../Library/Graphs/STDPGraph.o ../../Library/Combos/STDPCombo.o ../../Library/Synapse/Synapse.o ../../Library/Combos/LayerNrnGrpNrnSynapseCombo.o STDPView.o ### HybridNetRLBMI
+HybridNetRLBMI: HybridNetRLBMI.c HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.o ../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/Graphs/SpikePatternGraph.o HandleMotorOutputs.o ../../Library/STDP/STDP.o ../../Library/Eligibility/Eligibility.o ../../Library/STDPData/STDPData.o ../../Library/Graphs/STDPGraph.o ../../Library/Combos/STDPCombo.o ../../Library/Synapse/Synapse.o ../../Library/Combos/LayerNrnGrpNrnSynapseCombo.o STDPView.o ../../Library/EligibilityData/EligibilityData.o EligibilityView.o ../../Library/Graphs/EligibilityGraph.o 
+	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $< HybridNetRLBMIRtTask.o Gui.o NetworkView.o ../../../BlueSpike/Library/Misc/Misc.o  ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/ParkerSochacki/ParkerSochacki.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/Network/Network.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../../BlueSpike/Library/Misc/Randn.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o BufferViewHandler.o NeuronDynamicsView.o ../../Library/SpikeData/SpikeData.o BlueSpikeSpikePatternView.o InSilicoSpikePatternView.o ../../Library/Graphs/StatusMarker.o ../../Library/MotorOutput/MotorOutput.o ../../Library/MotorOutput/MotorOutputTypes.o ../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.o ../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.o ../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/Graphs/SpikePatternGraph.o HandleMotorOutputs.o ../../Library/STDP/STDP.o ../../Library/Eligibility/Eligibility.o ../../Library/STDPData/STDPData.o ../../Library/Graphs/STDPGraph.o ../../Library/Combos/STDPCombo.o ../../Library/Synapse/Synapse.o ../../Library/Combos/LayerNrnGrpNrnSynapseCombo.o STDPView.o ../../Library/EligibilityData/EligibilityData.o EligibilityView.o ../../Library/Graphs/EligibilityGraph.o ### HybridNetRLBMI
 
 HybridNetRLBMIRtTask.o: HybridNetRLBMIRtTask.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### Gui
@@ -38,6 +38,9 @@ InSilicoSpikePatternView.o: InSilicoSpikePatternView.c
 
 STDPView.o: STDPView.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### STDPView
+
+EligibilityView.o: EligibilityView.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### EligibilityView
 
 HandleMotorOutputs.o: HandleMotorOutputs.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### HandleMotorOutput
@@ -74,12 +77,17 @@ HandleMotorOutputs.o: HandleMotorOutputs.c
 
 ../../Library/Graphs/STDPGraph.o: ../../Library/Graphs/STDPGraph.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/STDPGraph
-
 ../../Library/Combos/STDPCombo.o: ../../Library/Combos/STDPCombo.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Combos/STDPCombo
 
 ../../Library/Eligibility/Eligibility.o: ../../Library/Eligibility/Eligibility.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Eligibility/Eligibility
+
+../../Library/EligibilityData/EligibilityData.o: ../../Library/EligibilityData/EligibilityData.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/EligibilityData/EligibilityData
+
+../../Library/Graphs/EligibilityGraph.o: ../../Library/Graphs/EligibilityGraph.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Graphs/EligibilityGraph
 
 ../../Library/ParkerSochacki/ParkerSochacki.o: ../../Library/ParkerSochacki/ParkerSochacki.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/ParkerSochacki/ParkerSochacki
@@ -136,7 +144,7 @@ HandleMotorOutputs.o: HandleMotorOutputs.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### ../../../ExperimentHandlers/Library/Status/TrialStatus
 
 clean:
-	rm -f HybridNetRLBMI *.o ../../../BlueSpike/Library/Misc/*.o ../../Library/Neuron/*.o  ../../Library/ParkerSochacki/*.o ../../Library/Event/*.o ../../Library/Axon/*.o ../../Library/Network/*.o ../../Library/Combos/*.o ../../Library/Graphs/*.o ../../../BlueSpike/Library/RtTaskStats/*.o ../../Library/InjectionCurrentData/*.o ../../Library/NeuronDynamicsData/*.o ../../Library/SpikeData/*.o ../../Library/MotorOutput/*.o ../../../ExperimentHandlers/Library/Messages/*.o ../../../ExperimentHandlers/Library/Status/*.o ../../Library/STDP/*.o ../../Library/Eligibility/*.o ../../Library/STDPData/*.o ../../Library/Synapse/*.o
+	rm -f HybridNetRLBMI *.o ../../../BlueSpike/Library/Misc/*.o ../../Library/Neuron/*.o  ../../Library/ParkerSochacki/*.o ../../Library/Event/*.o ../../Library/Axon/*.o ../../Library/Network/*.o ../../Library/Combos/*.o ../../Library/Graphs/*.o ../../../BlueSpike/Library/RtTaskStats/*.o ../../Library/InjectionCurrentData/*.o ../../Library/NeuronDynamicsData/*.o ../../Library/SpikeData/*.o ../../Library/MotorOutput/*.o ../../../ExperimentHandlers/Library/Messages/*.o ../../../ExperimentHandlers/Library/Status/*.o ../../Library/STDP/*.o ../../Library/Eligibility/*.o ../../Library/STDPData/*.o ../../Library/Synapse/*.o ../../Library/EligibilityData/*.o
 
 .PHONY: clean
 
