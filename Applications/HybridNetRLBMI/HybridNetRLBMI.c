@@ -46,7 +46,7 @@ int main( int argc, char *argv[])
 	{
 		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
 		{
-			if (!add_neuron_nodes_to_layer(hybrid_net_rl_bmi_data->blue_spike_network, MAX_NUM_OF_UNIT_PER_CHAN,i, FALSE)) {
+			if (!add_neuron_nodes_to_layer(hybrid_net_rl_bmi_data->blue_spike_network, MAX_NUM_OF_UNIT_PER_CHAN - 2 ,i, FALSE)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "add_neuron_nodes_to_layer()."); return -1; }				
 		}
 	}

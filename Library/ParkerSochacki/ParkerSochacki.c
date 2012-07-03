@@ -355,7 +355,7 @@ double newton_raphson_peak_detection(double v_peak, double *v_pol_vals, int p, d
 	}
 	if (i == NEWTON_RAPHSON_MAX_ITERATION)
 		printf ("Newton-Raphson error tolerance failure\n");
-	if (dt_part > dt)
+	if ((dt_part > dt) || (dt_part < 0))
 	{
 		printf("Newton-Raphson divergence\n");
 		dt_part = dt/2;

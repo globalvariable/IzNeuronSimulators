@@ -1,7 +1,7 @@
 #ifndef ELIGIBILITY_VIEW_H
 #define ELIGIBILITY_VIEW_H
 
-#define NUM_OF_ELIGIBILITY_GRAPHS	4
+#define NUM_OF_ELIGIBILITY_GRAPHS	2
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
