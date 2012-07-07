@@ -13,7 +13,7 @@ static void combos_select_synapse_func(GtkWidget *changed_combo);
 bool create_eligibility_view_gui(void)
 {
 	unsigned int i;
-	GtkWidget *frame, *frame_label, *vbox, *vbox1, *hbox, *hbox1;
+	GtkWidget *frame, *frame_label, *vbox, *vbox1, *hbox;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
         frame = gtk_frame_new ("");
         frame_label = gtk_label_new ("     Eligibility     ");      

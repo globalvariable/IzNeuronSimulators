@@ -41,9 +41,6 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	if (nrn->ps_vals != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
-	nrn->stats = g_new0(NeuronStats,1);
-	if (nrn->syn_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->syn_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->syn_list = g_new0(NeuronSynapseList,1);
 	if (nrn->stdp_list != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->stdp_list was allocated before. Re-use of initialize_neuron_params");	
@@ -70,7 +67,6 @@ bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron
 	if (nrn->ps_vals != NULL)
 		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
-	nrn->stats = g_new0(NeuronStats,1);
 	return TRUE;
 }
 

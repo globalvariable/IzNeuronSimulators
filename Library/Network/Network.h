@@ -53,4 +53,5 @@ unsigned int get_num_of_neurons_in_network(Network *network);
 bool get_num_of_neuron_groups_in_network(Network *network, unsigned int *num_of_neuron_groups);
 bool is_layer_connected_to_layer(Network *this_network, unsigned int this_layer, Network *target_network, unsigned int target_layer, bool *connected);
 bool get_neuron_id_in_network(Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, unsigned int *neuron_id);
+bool set_layer_type_of_the_neurons_in_layer(Network *network, unsigned int layer_num, LayerType layer_type);
 #endif

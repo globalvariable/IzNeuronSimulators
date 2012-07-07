@@ -22,26 +22,18 @@ int main( int argc, char *argv[])
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->rt_tasks_data == NULL."); return -1; }
 	hybrid_net_rl_bmi_data->blue_spike_network = allocate_network(hybrid_net_rl_bmi_data->blue_spike_network);
 	hybrid_net_rl_bmi_data->in_silico_network = allocate_network(hybrid_net_rl_bmi_data->in_silico_network);
-	hybrid_net_rl_bmi_data->motor_outputs = allocate_motor_outputs(hybrid_net_rl_bmi_data->motor_outputs, 1);
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net = allocate_shm_server_mov_obj_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
 
-	if (! connect_to_mov_obj_hand()) {
+/*	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
 
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
-
+*/
 	trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
 
-	for (i = 0; i < hybrid_net_rl_bmi_data->motor_outputs->num_of_outputs; i++)
-	{
-		if (!increment_num_of_classes_in_motor_output(hybrid_net_rl_bmi_data->motor_outputs, i, MOTOR_OUTPUT_BIN_SIZE)) {
-			print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! increment_num_of_classes_in_motor_output()."); return -1; }
-		if (!increment_num_of_classes_in_motor_output(hybrid_net_rl_bmi_data->motor_outputs, i, MOTOR_OUTPUT_BIN_SIZE)) {
-			print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! increment_num_of_classes_in_motor_output()."); return -1; }
-	}
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
 	{
 		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
@@ -111,7 +103,7 @@ static bool connect_to_mov_obj_hand(void )
 					sleep(1);
 					if (hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand == NULL)
 						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "msgs_neural_net_2_mov_obj_hand == NULL.");	
-					if (!write_to_neural_net_2_mov_obj_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand, hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, MOV_OBJ_COMPONENT_NUM_NULL, MOV_OBJ_DIRECTION_NULL, MOV_OBJ_SPEED_NULL, MOV_OBJ_LOCATION_NULL))
+					if (!write_to_neural_net_2_mov_obj_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand, hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, 0, 0, 0, 0))
 						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "write_to_neural_net_2_mov_obj_hand_msg_buffer().");	
 					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Connection to MOV_OBJ_HANDLER is successful!!!");	
 					return TRUE;		

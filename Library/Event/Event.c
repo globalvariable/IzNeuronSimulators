@@ -46,7 +46,7 @@ bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, Synap
 	end_idx = neuron_event_buffer->read_idx; 
 
 	if ((((idx + 1) == event_buff_size) && (end_idx == 0)) || ((idx + 1) == end_idx))		// if write idx catches read idx (buffer full)
-//	if ((((*ptr_event_buffer_write_idx + 1) == event_buff_size) && (*ptr_event_buffer_read_idx == 0)) || ((*ptr_event_buffer_write_idx + 1) == *ptr_event_buffer_read_idx))	
+	/// SHOULD CHECK THIS BEFORE SHIFTING THE LAST INDEX: OTHERWISE READER CAN READ CORRUPTED LAST INDEX DATA.  // READER DOES NOT USE MUTEX (TO BE FASTER)
 	{
 		printf("ERROR: Event.c: insert_synaptic_event().\n");
 		printf("ERROR: Event.c: Event buffer is full for this neuron:\n");
@@ -76,10 +76,11 @@ bool insert_synaptic_event(Neuron *neuron, TimeStamp scheduled_event_time, Synap
 		}
 		else
 		{
-			if (scheduled_event_time < event_times[idx-1])		// push buffered item to the next index
+			buff_last_idx = idx-1;
+			if (scheduled_event_time < event_times[buff_last_idx])		// push buffered item to the next index
 			{
-				event_times[idx] = event_times[idx-1];
-				syn_indexes[idx] = syn_indexes[idx-1];
+				event_times[idx] = event_times[buff_last_idx];
+				syn_indexes[idx] = syn_indexes[buff_last_idx];
 				idx--;
 			}
 			else

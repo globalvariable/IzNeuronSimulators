@@ -27,9 +27,8 @@ static GtkWidget *entry_parker_sochacki_err_tol;
 static GtkWidget *entry_parker_sochacki_max_order;
 static GtkWidget *btn_submit_parker_sochacki_params;
 
-static GtkWidget *btn_add_layer_to_motor_output_class;
-static GtkWidget *entry_layer_to_motor_output_class;
-static GtkWidget *entry_to_motor_output_class;
+static GtkWidget *btn_make_output;
+static GtkWidget *entry_layer_to_make_output;
 
 static GtkWidget *entry_internal_neurons_excitatory_connection_probability;
 static GtkWidget *entry_internal_neurons_weight_excitatory_min;
@@ -104,7 +103,7 @@ static void interrogate_network_button_func(void);
 static void interrogate_neuron_button_func(void);
 static void set_neuron_param_entries(int neuron_type);
 static void submit_parker_sochacki_params_button_func(void);
-static void add_layer_to_motor_output_class_button_func(void);
+static void make_output_button_func(void);
 
 static void connect_internal_layer_to_internal_layer_button_func(void);
 static void connect_external_layer_to_internal_layer_button_func(void);
@@ -323,7 +322,7 @@ bool create_network_view_gui(void)
         entry_parker_sochacki_err_tol= gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_parker_sochacki_err_tol, FALSE,FALSE,0);
 	char temp_str[40];
-      	sprintf(temp_str, "%.1E", 1.0e-12);	
+      	sprintf(temp_str, "%.1E", 1.0e-3);	
 	gtk_entry_set_text(GTK_ENTRY(entry_parker_sochacki_err_tol), temp_str);
 	gtk_widget_set_size_request(entry_parker_sochacki_err_tol, 65, 25) ;
 	lbl = gtk_label_new("Max Order:");
@@ -344,22 +343,16 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);     
 
-	btn_add_layer_to_motor_output_class = gtk_button_new_with_label("Add");
-        gtk_box_pack_start(GTK_BOX(hbox),btn_add_layer_to_motor_output_class, FALSE,FALSE,0);
+	btn_make_output = gtk_button_new_with_label("   Make Output   ");
+        gtk_box_pack_start(GTK_BOX(hbox),btn_make_output, FALSE,FALSE,0);
 	lbl = gtk_label_new("");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
-	lbl = gtk_label_new("Layer");
+	lbl = gtk_label_new("Layer :");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_layer_to_motor_output_class = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(entry_layer_to_motor_output_class), "0");
-	gtk_box_pack_start(GTK_BOX(hbox), entry_layer_to_motor_output_class, FALSE,FALSE,0);
-	gtk_widget_set_size_request(entry_layer_to_motor_output_class, 20, 25) ;	
-	lbl = gtk_label_new("to Output_0 Class:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_to_motor_output_class = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), entry_to_motor_output_class, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_to_motor_output_class), "0");
-	gtk_widget_set_size_request(entry_to_motor_output_class, 20, 25) ;	
+        entry_layer_to_make_output = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entry_layer_to_make_output), "0");
+	gtk_box_pack_start(GTK_BOX(hbox), entry_layer_to_make_output, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_layer_to_make_output, 40, 25) ;	
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);	
 
@@ -434,13 +427,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_excitatory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_excitatory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_min), "1.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_min), "7.0");
 	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_excitatory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_excitatory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_max), "3.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_excitatory_delay_max), "7.0");	
 	gtk_widget_set_size_request(entry_internal_neurons_excitatory_delay_max, 50, 25) ;
 		
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -492,13 +485,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_inhibitory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_inhibitory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_min), "1.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_min), "7.0");
 	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_internal_neurons_inhibitory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_neurons_inhibitory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_max), "3.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_neurons_inhibitory_delay_max), "7.0");	
 	gtk_widget_set_size_request(entry_internal_neurons_inhibitory_delay_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -508,7 +501,7 @@ bool create_network_view_gui(void)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_connect_internal_layer_to_internal_layer, FALSE, FALSE, 0);
         entry_internal_layer_num_to_connect= gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_internal_layer_num_to_connect, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect), "0");
+	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect), "2");
 	gtk_widget_set_size_request(entry_internal_layer_num_to_connect, 30, 25);		
 	lbl = gtk_label_new("to");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);	
@@ -575,13 +568,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_excitatory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_excitatory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_min), "3.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_min), "7.0");
 	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_excitatory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_excitatory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_max), "5.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_excitatory_delay_max), "7.0");	
 	gtk_widget_set_size_request(entry_external_neurons_excitatory_delay_max, 50, 25) ;
 		
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -633,13 +626,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_inhibitory_delay_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_inhibitory_delay_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_min), "3.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_min), "7.0");
 	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_external_neurons_inhibitory_delay_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_external_neurons_inhibitory_delay_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_max), "5.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_external_neurons_inhibitory_delay_max), "7.0");	
 	gtk_widget_set_size_request(entry_external_neurons_inhibitory_delay_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -906,7 +899,7 @@ bool create_network_view_gui(void)
     	g_signal_connect(G_OBJECT(btn_interrogate_network), "clicked", G_CALLBACK(interrogate_network_button_func), NULL);		
       	g_signal_connect(G_OBJECT(btn_interrogate_neuron), "clicked", G_CALLBACK(interrogate_neuron_button_func), NULL); 
       	g_signal_connect(G_OBJECT(btn_submit_parker_sochacki_params), "clicked", G_CALLBACK(submit_parker_sochacki_params_button_func), NULL);
-      	g_signal_connect(G_OBJECT(btn_add_layer_to_motor_output_class), "clicked", G_CALLBACK(add_layer_to_motor_output_class_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_make_output), "clicked", G_CALLBACK(make_output_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_internal_layer_to_internal_layer), "clicked", G_CALLBACK(connect_internal_layer_to_internal_layer_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_external_layer_to_internal_layer), "clicked", G_CALLBACK(connect_external_layer_to_internal_layer_button_func), NULL);
 
@@ -926,7 +919,7 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_print_network_num_of_spike_events), "clicked", G_CALLBACK(print_network_num_of_spike_events_button_func), NULL);
 
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
-	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, FALSE);	
+	gtk_widget_set_sensitive(btn_make_output, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
 	gtk_widget_set_sensitive(btn_submit_injection_current, FALSE);	
@@ -934,6 +927,8 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, FALSE);	
+	gtk_widget_set_sensitive(btn_ready_for_simulation, FALSE);	
 
 	return TRUE;
 }
@@ -1067,37 +1062,26 @@ static void submit_parker_sochacki_params_button_func(void)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	if (! parker_sochacki_set_order_tolerance(bmi_data->in_silico_network, (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_max_order))), atof(gtk_entry_get_text(GTK_ENTRY(entry_parker_sochacki_err_tol)))))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_parker_sochacki_params_button_func", "! parker_sochacki_set_order_tolerance().");
-//	constant_current = allocate_constant_current (bmi_data->in_silico_network, constant_current);	
 	
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);	
-	gtk_widget_set_sensitive(btn_add_layer_to_motor_output_class, TRUE);	
+	gtk_widget_set_sensitive(btn_make_output, TRUE);	
 }
 
-static void add_layer_to_motor_output_class_button_func(void)
+static void make_output_button_func(void)
 {
-	unsigned int layer_num, motor_output_class_num;
+	unsigned int layer_num;
 	char *end_ptr;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
-	layer_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_layer_to_motor_output_class)), &end_ptr, 10);	
-	motor_output_class_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_to_motor_output_class)), &end_ptr, 10);	
-
-	if (! add_neurons_in_layer_to_motor_output_class(bmi_data->motor_outputs, bmi_data->in_silico_network, layer_num, 0, motor_output_class_num))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "! add_neurons_in_layer_to_motor_output_class().");		
-
-	if (any_unused_classes_for_motor_outputs(bmi_data->motor_outputs))
-		return (void)print_message(INFO_MSG ,"HybridNetRLBMI", "NetworkView", "add_layer_to_motor_output_class_button_func", "Still there are unassinged classes by a network layer.");
-
+	layer_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_layer_to_make_output)), &end_ptr, 10);	
+	set_layer_type_of_the_neurons_in_layer(bmi_data->in_silico_network, layer_num, NEURON_LAYER_TYPE_OUTPUT);
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, TRUE);	
-	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);	
+	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, TRUE);
 	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
-	gtk_widget_set_sensitive(btn_simulate_with_no_reward, TRUE);	
-	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);				
 }
 
 static void connect_internal_layer_to_internal_layer_button_func(void)
 {
-	srand ( time(NULL) );
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	unsigned int this_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect)));
 	unsigned int target_layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_layer_num_to_connect_internal_layer_to)));
@@ -1113,7 +1097,8 @@ static void connect_internal_layer_to_internal_layer_button_func(void)
 	double inhibitory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_internal_neurons_inhibitory_connection_probability)));
 
 	if (! connect_layers(bmi_data->in_silico_network, this_layer, bmi_data->in_silico_network, target_layer, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_max, EPSP_delay_min, IPSP_delay_max, IPSP_delay_min, MAXIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, excitatory_connection_probability, inhibitory_connection_probability, TRUE, TRUE, TRUE))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_internal_layer_to_internal_layer_button_func", "! connect_network_layer_to_network_layer().");		
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_internal_layer_to_internal_layer_button_func", "! connect_network_layer_to_network_layer().");	
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, TRUE);	
 }
 
 static void connect_external_layer_to_internal_layer_button_func(void)
@@ -1133,7 +1118,8 @@ static void connect_external_layer_to_internal_layer_button_func(void)
 	double inhibitory_connection_probability = atof(gtk_entry_get_text(GTK_ENTRY(entry_external_neurons_inhibitory_connection_probability)));
 
 	if (! connect_layers(bmi_data->blue_spike_network, this_layer, bmi_data->in_silico_network, target_layer, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_max, EPSP_delay_min, IPSP_delay_max, IPSP_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, excitatory_connection_probability, inhibitory_connection_probability, TRUE, TRUE, TRUE))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_external_layer_to_internal_layer_button_func", "! connect_ext_network_layer_to_int_network_layer().");		
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "connect_external_layer_to_internal_layer_button_func", "! connect_ext_network_layer_to_int_network_layer().");
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, TRUE);			
 }
 
 static void submit_stdp_and_eligibility_button_func(void)
@@ -1156,6 +1142,7 @@ static void submit_stdp_and_eligibility_button_func(void)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_stdp_for_neuron_group().");	
 	if (! create_ps_eligiblity_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_eligiblity_for_neuron_group().");	
+	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
 	return;
 }
 
@@ -1170,10 +1157,13 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 
 static void submit_injection_current_button_func(void)
 {
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	Neuron *neuron;
 	unsigned int layer_num, nrn_grp_num, nrn_num;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_injection_current_button_func", "! layer_neuron_group_neuron_get_selected().");
-//	constant_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
+	neuron = get_neuron_address(bmi_data->in_silico_network, layer_num, nrn_grp_num, nrn_num);					
+	neuron->iz_params->I_inject = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
 }
 
 
@@ -1269,4 +1259,5 @@ static void ready_for_simulation_button_func(void)
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");	
+	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
 }

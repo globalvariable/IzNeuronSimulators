@@ -50,7 +50,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	RtTasksData *rt_tasks_data = bmi_data->rt_tasks_data;
 	Network		*in_silico_network =  bmi_data->in_silico_network;
-	MotorOutputs *motor_outputs = bmi_data->motor_outputs;
 	NeuralNet2MovObjHandMsg	*msgs_neural_net_2_mov_obj_hand = bmi_data->msgs_neural_net_2_mov_obj_hand;
 
 	Neuron		**all_neurons = in_silico_network->all_neurons;
@@ -93,7 +92,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	prev_time = rt_get_cpu_time_ns();	
 	integration_start_time = ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_iz_neuron_dynamics (in_silico_network);
-	clear_motor_output_counters(bmi_data->motor_outputs);
+
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
 	for (i = neurons_start_idx; i < neurons_end_idx; i++)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
@@ -117,17 +116,17 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				if (spike_generated)
 				{
 					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
-			//		nrn->stats->num_of_firings_for_firing_rate_bin++;
-			//		nrn->stats->num_of_firings_for_motor_output++;
-					in_silico_network->num_of_spikes++;
+					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
+					{
+						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer(msgs_neural_net_2_mov_obj_hand, integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
+							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_to_neural_net_2_mov_obj_hand_msg_buffer()."); exit(1); }	
+					}
 				}	
 			}
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 			push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 			push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
-/*			if (!handle_motor_outputs(motor_outputs, time_ns, msgs_neural_net_2_mov_obj_hand)) {
-				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! handle_motor_outputs()."); exit(1); }	
-*/		}
+		}
 		integration_start_time = integration_end_time;
 		// routines	
 		evaluate_and_save_period_run_time(rt_tasks_data, cpu_id, cpu_thread_id, cpu_thread_task_id, curr_time, rt_get_cpu_time_ns());		

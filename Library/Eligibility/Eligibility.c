@@ -5,6 +5,7 @@
 bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min)
 {
 	unsigned int i, num_of_neurons = 0;
+	char msg[200];
 	Neuron *neuron = NULL;
 	if (is_neuron_group_free (network, layer, nrn_grp))
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligiblity_for_neuron_group", "is_neuron_group_free ().");
@@ -16,6 +17,8 @@ bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer,
 		if (! create_ps_eligiblity_for_neuron(neuron , parker_sochacki_max_order, eligibility_tau_max, eligibility_tau_min))
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligibility_for_neuron_group", "! create_ps_eligibility_for_neuron().");					
 	}
+	sprintf(msg, "Created Eligibility data for %u neurons in Layer: %u NeuronGroup: %u.", num_of_neurons, layer, nrn_grp);
+	print_message(INFO_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligibility_for_neuron_group", msg);
 	return TRUE;
 }
 

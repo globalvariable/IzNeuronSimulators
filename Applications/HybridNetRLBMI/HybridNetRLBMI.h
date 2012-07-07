@@ -15,7 +15,6 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../Library/STDPData/STDPData.h"
 #include "../../Library/EligibilityData/EligibilityData.h"
 #include "../../Library/SpikeData/SpikeData.h"
-#include "../../Library/MotorOutput/MotorOutput.h"
 #include "../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
@@ -33,7 +32,6 @@ struct __HybridNetRLBMIData
 	EligibilityBufferLimited			*eligibility_limited_buffer;
 	SpikeData					*blue_spike_spike_data;   // for visualization
 	SpikeData					*in_silico_spike_data;  // for visualization
-	MotorOutputs					*motor_outputs;
 	TrialHand2NeuralNetMsg		*msgs_trial_hand_2_neural_net;
 	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
 	MovObjHand2NeuralNetMsg		*msgs_mov_obj_hand_2_neural_net;

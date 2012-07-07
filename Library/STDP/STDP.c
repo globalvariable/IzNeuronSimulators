@@ -3,6 +3,7 @@
 
 bool create_ps_stdp_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_max, double STDP_pre_post_tau_min, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min)
 {
+	char msg[200];
 	unsigned int i, num_of_neurons = 0;
 	Neuron *neuron = NULL;
 	if (is_neuron_group_free (network, layer, nrn_grp))
@@ -15,6 +16,8 @@ bool create_ps_stdp_for_neuron_group(Network *network, unsigned int layer, unsig
 		if (! create_ps_stdp_for_neuron(neuron , parker_sochacki_max_order, STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min))
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "create_ps_stdp_for_neuron_group", "! create_ps_stdp_for_neuron().");					
 	}
+	sprintf(msg, "Created STDP data for %u neurons in Layer: %u NeuronGroup: %u.", num_of_neurons, layer, nrn_grp);
+	print_message(INFO_MSG ,"IzNeuronSimulators", "STDP", "create_ps_stdp_for_neuron_group", msg);
 	return TRUE;
 }
 

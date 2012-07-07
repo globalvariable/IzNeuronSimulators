@@ -4,6 +4,7 @@
 typedef struct __Neuron Neuron;
 typedef struct __IzNeuronParams IzNeuronParams;
 typedef unsigned long long int NeuronAddress;
+typedef unsigned int LayerType;
 
 #include <stdbool.h>
 #include <gtk/gtk.h>
@@ -12,9 +13,9 @@ typedef unsigned long long int NeuronAddress;
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
-#include "NeuronStats.h"
 #include "../STDP/STDP.h"
 #include "../Eligibility/Eligibility.h"
+
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
 #define MAX_U_VALUE	400
@@ -24,12 +25,16 @@ typedef unsigned long long int NeuronAddress;
 #define MAX_INHIBITORY_CONDUCTANCE_VALUE		150
 #define MIN_INHIBITORY_CONDUCTANCE_VALUE		-50
 
-#define MAX_NUM_OF_NEURON_DYNAMICS_TYPE	4
 #define DYNAMICS_TYPE_V						0
 #define DYNAMICS_TYPE_U						1
 #define DYNAMICS_TYPE_E						2     // excitatory
 #define DYNAMICS_TYPE_I						3	// inhibitory
+#define MAX_NUM_OF_NEURON_DYNAMICS_TYPE	4
 
+#define NEURON_LAYER_TYPE_UNSPECIFIED		0
+#define NEURON_LAYER_TYPE_INPUT				1
+#define NEURON_LAYER_TYPE_OUTPUT			2
+#define MAX_NUM_OF_NEURON_LAYER_TYPE		3
 
 struct __IzNeuronParams
 {
@@ -60,11 +65,11 @@ struct __Neuron
 	unsigned int					neuron_group;
 	unsigned int					neuron_num;	
 	bool						inhibitory;	
+	LayerType					layer_type;
 	IzNeuronParams				*iz_params;
 	NeuronAxonList				*axon_list;
 	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
-	NeuronStats					*stats;
 	NeuronSynapseList			*syn_list;
 	STDPList					*stdp_list;
 	EligibilityList					*eligibility_list;
