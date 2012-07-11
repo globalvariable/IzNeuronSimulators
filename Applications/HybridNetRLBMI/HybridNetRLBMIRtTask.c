@@ -115,6 +115,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dynevaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)
 				{
+					printf("spk time %llu\n", spike_time);
 					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
 					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 					{

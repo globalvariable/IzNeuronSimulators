@@ -26,12 +26,12 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net = allocate_shm_server_mov_obj_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
 
-/*	if (! connect_to_mov_obj_hand()) {
+	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
 
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
-*/
+
 	trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
 
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
@@ -162,11 +162,11 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					break;	
 				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   // not implemeted yet, for RL it will be required.
 					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
-					print_message(WARNING_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
+					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:  // not implemeted yet, for RL it will be required.
 					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
-					print_message(WARNING_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
+					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
 					break;
 				default: 
 					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
