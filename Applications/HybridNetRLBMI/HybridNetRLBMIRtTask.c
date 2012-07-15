@@ -52,8 +52,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	RtTasksData *rt_tasks_data = bmi_data->rt_tasks_data;
 	Network		*in_silico_network =  bmi_data->in_silico_network;
-	NeuralNet2MovObjHandMsg	*msgs_neural_net_2_mov_obj_hand = bmi_data->msgs_neural_net_2_mov_obj_hand;
-	MovObjHand2NeuralNetMsg	*msgs_mov_obj_hand_2_neural_net = bmi_data->msgs_mov_obj_hand_2_neural_net;
+	NeuralNet2MovObjHandMsgMultiThread *msgs_neural_net_2_mov_obj_hand_multi_thread = bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread;
+	MovObjHand2NeuralNetMsgMultiThread *msgs_mov_obj_hand_2_neural_net_multi_thread = bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
 	Neuron		**all_neurons = in_silico_network->all_neurons;
 	Neuron 		*nrn;
 
@@ -65,11 +65,15 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	unsigned int i, neurons_start_idx, neurons_end_idx; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
-	char task_name[8];
+	char task_name[10];
 	char task_num_name[4];
 
 	/// share the neurons in between rt_threads;    ie.g there are 21 neurons and 4 dedicated cpu threads. then the cpu threads will have 6 + 6 + 6 + 3 neurons to handle
 	num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
+	if (num_of_dedicated_cpu_threads != (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS)) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "num_of_dedicated_cpu_threads != (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS."); exit(1); }	
+	if (num_of_dedicated_cpu_threads != (NUM_OF_MOV_OBJ_HAND_2_NEURAL_NET_MSG_BUFFERS)) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "num_of_dedicated_cpu_threads != (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS."); exit(1); }	
 	neurons_start_idx = (((unsigned int)(in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads))+1) * ( task_num );
 	neurons_end_idx = (((unsigned int)(in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads))+1)  * (task_num + 1);
 	if (neurons_end_idx >  in_silico_network->num_of_neurons)		/// when CPU_NUM 4 and num_of_all_neuons = 5    neurons_start_idx will be 6 and neurons_end_idx will be 5
@@ -77,12 +81,12 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 
 	printf("neurons_start_idx = %u neurons_end_idx = %u\n", neurons_start_idx, neurons_end_idx);
 
-	sprintf(task_num_name, "%u", *((unsigned int*)args) );
+	sprintf(task_num_name, "%u", task_num );
 	strcpy(task_name, IZ_PS_NETWORK_SIM_TASK_NAME);
 	strcat(task_name, task_num_name);
 
-	cpu_id =  ((*((unsigned int*)args)) / MAX_NUM_OF_CPU_THREADS_PER_CPU);   // find the cpu_id and cpu_thread_id to run this rt_thread
-	cpu_thread_id = (*((unsigned int*)args)) - (cpu_id * MAX_NUM_OF_CPU_THREADS_PER_CPU);
+	cpu_id =  task_num / MAX_NUM_OF_CPU_THREADS_PER_CPU;   // find the cpu_id and cpu_thread_id to run this rt_thread
+	cpu_thread_id = task_num - (cpu_id * MAX_NUM_OF_CPU_THREADS_PER_CPU);
 	cpu_thread_task_id = 0;
 	cpu_id =  IZ_PS_NETWORK_SIM_CPU_ID + cpu_id;
 	if (! check_rt_task_specs_to_init(rt_tasks_data, cpu_id, cpu_thread_id, cpu_thread_task_id, IZ_PS_NETWORK_SIM_PERIOD))  {
@@ -102,8 +106,10 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	for (i = neurons_start_idx; i < neurons_end_idx; i++)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
 		reset_neuron_event_buffer(all_neurons[i]);
 
-	msgs_mov_obj_hand_2_neural_net->buff_read_idx = msgs_mov_obj_hand_2_neural_net->buff_write_idx; // to reset message buffer. previously written messages and reading of them now might lead to inconvenience.,
-
+	for (i = 0; i < num_of_dedicated_cpu_threads; i++)
+	{
+		((*msgs_mov_obj_hand_2_neural_net_multi_thread)[i])->buff_read_idx = ((*msgs_mov_obj_hand_2_neural_net_multi_thread)[i])->buff_write_idx; // to reset message buffer. previously written messages and reading of them now might lead to inconvenience.,
+	}
         while (hybrid_net_rl_bmi_rt_tasks_stay_alive) 
 	{
         	rt_task_wait_period();
@@ -122,10 +128,10 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dynevaluate_neuron_dyn()."); exit(1); }	
 				if (spike_generated)
 				{
-					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
+//					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
 					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 					{
-						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer(msgs_neural_net_2_mov_obj_hand, integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
+						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_to_neural_net_2_mov_obj_hand_msg_buffer()."); exit(1); }	
 					}
 					num_of_firing[i]++;

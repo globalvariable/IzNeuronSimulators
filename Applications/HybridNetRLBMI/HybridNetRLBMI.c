@@ -20,7 +20,8 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->blue_spike_network = allocate_network(hybrid_net_rl_bmi_data->blue_spike_network);
 	hybrid_net_rl_bmi_data->in_silico_network = allocate_network(hybrid_net_rl_bmi_data->in_silico_network);
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
-	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net = allocate_shm_server_mov_obj_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net);
+	hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread = g_new0(NeuralNet2MovObjHandMsgMultiThread, 1); 
+	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread = allocate_shm_server_mov_obj_hand_2_neural_net_multi_thread_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread); 
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
 	hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
 
@@ -87,26 +88,34 @@ static bool connect_to_mov_obj_hand(void )
 {
 	MovObjHand2NeuralNetMsgItem msg_item;
 	char str_mov_obj_hand_2_neural_net_msg[MOV_OBJ_HAND_2_NEURAL_NET_MSG_STRING_LENGTH];
-
+	unsigned int i, num_of_alive_responses = 0;
 	while (1) 
 	{ 
-		while (get_next_mov_obj_hand_2_neural_net_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net, &msg_item))
+		for (i = 0; i < (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS); i++)
 		{
-			get_mov_obj_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_mov_obj_hand_2_neural_net_msg);
-			print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
-			switch (msg_item.msg_type)
+			while (get_next_mov_obj_hand_2_neural_net_msg_buffer_item((*(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread))[i], &msg_item))
 			{
-				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_ARE_YOU_ALIVE:
-					hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand = allocate_shm_client_neural_net_2_mov_obj_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand);
-					sleep(1);
-					if (hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand == NULL)
-						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "msgs_neural_net_2_mov_obj_hand == NULL.");	
-					if (!write_to_neural_net_2_mov_obj_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand, hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, 0, 0, 0, 0))
-						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "write_to_neural_net_2_mov_obj_hand_msg_buffer().");	
-					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Connection to MOV_OBJ_HANDLER is successful!!!");	
-					return TRUE;		
-				default:
-					return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				get_mov_obj_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_mov_obj_hand_2_neural_net_msg);
+				print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				switch (msg_item.msg_type)
+				{
+					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_ARE_YOU_ALIVE:
+						(*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i] = allocate_shm_client_neural_net_2_mov_obj_hand_multi_thread_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread, i);
+						usleep(1000);
+						if (((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i]) == NULL)
+							return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "msgs_neural_net_2_mov_obj_hand == NULL.");	
+						if (!write_to_neural_net_2_mov_obj_hand_msg_buffer((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i], hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, 0, 0, 0, 0))
+							return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "write_to_neural_net_2_mov_obj_hand_msg_buffer().");	
+						num_of_alive_responses++;
+						if (num_of_alive_responses == (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS))
+						{
+							print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Connection to MOV_OBJ_HANDLER is successful!!!");
+							return TRUE;
+						}
+						break;		
+					default:
+						return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				}
 			}
 		}
 		print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Waiting for MOV_OBJ_HANDLER to connect.");	

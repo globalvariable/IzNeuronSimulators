@@ -59,25 +59,16 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 	SpikeTimeStampItem		*item, *item_insert;
 	unsigned int		*ptr_buffer_write_idx;   	
 	unsigned int 		buff_size;
-	unsigned int 		idx, end_idx, buff_last_idx; 	
+	unsigned int 		idx, buff_last_idx; 	
 
 	buff = spike_data->buff;
 	buff_size = spike_data->buffer_size;
 
-	pthread_mutex_lock(&(spike_data->mutex));
+//	pthread_mutex_lock(&(spike_data->mutex));   // no need to have it. no parallel writing to this data should be realized.
 	
 	ptr_buffer_write_idx = &(spike_data->buff_idx_write);
 
 	idx = *ptr_buffer_write_idx;
-	end_idx = spike_data->buff_idx_read; 
-
-	if ((((idx + 1) == buff_size) && (end_idx == 0)) || ((idx + 1) == end_idx))		// if write idx catches read idx (buffer full)
-	/// SHOULD CHECK THIS BEFORE SHIFTING THE LAST INDEX: OTHERWISE READER CAN READ CORRUPTED LAST INDEX DATA.  // READER DOES NOT USE MUTEX (TO BE FASTER)
-	{
-		pthread_mutex_unlock(&(spike_data->mutex));
-		print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data_with_sorting", "SpikeData buffer is FULL!!!.");
-		return FALSE;
-	}
 
 	do {
 		if (idx == 0)
@@ -129,7 +120,9 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 		*ptr_buffer_write_idx = 0;
 	else
 		(*ptr_buffer_write_idx)++;
-	pthread_mutex_unlock(&(spike_data->mutex));
+	if (*ptr_buffer_write_idx == spike_data->buff_idx_read)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data_with_sorting", "SpikeData buffer is FULL!!!.");
+//	pthread_mutex_unlock(&(spike_data->mutex));
 	return TRUE;
 }
 
