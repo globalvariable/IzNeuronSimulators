@@ -1242,11 +1242,11 @@ static void start_hybrid_network_button_func(void)
 
 static void clear_network_num_of_spike_events_button_func(void)
 {
-	get_hybrid_net_rl_bmi_data()->in_silico_network->num_of_spikes = 0;
+
 }
 static void print_network_num_of_spike_events_button_func(void)
 {
-	printf("total spikes: %llu\n", get_hybrid_net_rl_bmi_data()->in_silico_network->num_of_spikes);
+
 }
 
 static void ready_for_simulation_button_func(void)
@@ -1257,6 +1257,7 @@ static void ready_for_simulation_button_func(void)
 	bmi_data->eligibility_limited_buffer = allocate_eligibility_buffer_limited(bmi_data->in_silico_network, bmi_data->eligibility_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_ELIGIBILITY_GRAPHS);  // 3 second buffer for 1 second graph refresh rate. 
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	bmi_data->num_of_firing_of_neurons_in_trial = g_new0(FiringCount, bmi_data->in_silico_network->num_of_neurons);
 	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	

@@ -68,11 +68,13 @@ struct __Neuron
 	LayerType					layer_type;
 	IzNeuronParams				*iz_params;
 	NeuronAxonList				*axon_list;
-	NeuronEventBuffer				*event_buff;
+//	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
-	NeuronSynapseList			*syn_list;
+	SynapseList					*syn_list;
 	STDPList					*stdp_list;
 	EligibilityList					*eligibility_list;
+	NeuronTrialEventBuffer			*trial_event_buffer;
+	NeuronSortedEventBuffer		*sorted_event_buffer;
 };
 
 bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 

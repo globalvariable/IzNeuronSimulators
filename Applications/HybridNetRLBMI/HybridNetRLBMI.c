@@ -5,9 +5,6 @@ static HybridNetRLBMIData *hybrid_net_rl_bmi_data = NULL;
 static bool connect_to_trial_hand(void);
 static bool connect_to_mov_obj_hand(void);
 
-static int trial_hand_2_neural_net_msgs_handler_rt_thread = 0;
-static void *trial_hand_2_neural_net_msgs_handler(void *args); 
-
 int main( int argc, char *argv[])
 {
 	unsigned int i, j;
@@ -25,6 +22,7 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net = allocate_shm_server_mov_obj_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
+	hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
 
 	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
@@ -32,7 +30,7 @@ int main( int argc, char *argv[])
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
 
-	trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
+
 
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
 	{
@@ -55,16 +53,16 @@ HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void)
 
 static bool connect_to_trial_hand(void )
 {
-	TrialHand2NeuralNetMsgItem *msg_item;
+	TrialHand2NeuralNetMsgItem msg_item;
 	char str_trial_hand_2_neural_net_msg[TRIAL_HAND_2_NEURAL_NET_MSG_STRING_LENGTH];
 
 	while (1) 
 	{ 
 		while (get_next_trial_hand_2_neural_net_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net, &msg_item))
 		{
-			get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_2_neural_net_msg);
+			get_trial_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_trial_hand_2_neural_net_msg);
 			print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_trial_hand", str_trial_hand_2_neural_net_msg);	
-			switch (msg_item->msg_type)
+			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_NEURAL_NET_MSG_ARE_YOU_ALIVE:
 					hybrid_net_rl_bmi_data->msgs_neural_net_2_trial_hand = allocate_shm_client_neural_net_2_trial_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_trial_hand);
@@ -87,16 +85,16 @@ static bool connect_to_trial_hand(void )
 
 static bool connect_to_mov_obj_hand(void )
 {
-	MovObjHand2NeuralNetMsgItem *msg_item;
+	MovObjHand2NeuralNetMsgItem msg_item;
 	char str_mov_obj_hand_2_neural_net_msg[MOV_OBJ_HAND_2_NEURAL_NET_MSG_STRING_LENGTH];
 
 	while (1) 
 	{ 
 		while (get_next_mov_obj_hand_2_neural_net_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net, &msg_item))
 		{
-			get_mov_obj_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_mov_obj_hand_2_neural_net_msg);
+			get_mov_obj_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_mov_obj_hand_2_neural_net_msg);
 			print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
-			switch (msg_item->msg_type)
+			switch (msg_item.msg_type)
 			{
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_ARE_YOU_ALIVE:
 					hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand = allocate_shm_client_neural_net_2_mov_obj_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand);
@@ -117,72 +115,4 @@ static bool connect_to_mov_obj_hand(void )
 	return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Wrong hit in the code.");
 }
 
-static void *trial_hand_2_neural_net_msgs_handler(void *args)
-{
-	RT_TASK *handler;
-        RTIME period;
-	unsigned int prev_time, curr_time;
-	char str_trial_hand_msg[TRIAL_HAND_2_NEURAL_NET_MSG_STRING_LENGTH];
 
-	TrialHand2NeuralNetMsg *msgs_trial_hand_2_neural_net = NULL;
-	TrialHand2NeuralNetMsgItem *msg_item = NULL;
-	TrialStatusEvents* trial_status_events = NULL;
-	RtTasksData *rt_tasks_data = NULL;
-
-	msgs_trial_hand_2_neural_net = hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net;
-	trial_status_events = hybrid_net_rl_bmi_data->trial_status_events;
-	rt_tasks_data = hybrid_net_rl_bmi_data->rt_tasks_data;
-
-	if (! check_rt_task_specs_to_init(rt_tasks_data, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_PERIOD))  {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
-        if (! (handler = rt_task_init_schmod(TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_TASK_NAME, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_TASK_PRIORITY, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_STACK_SIZE, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_MSG_SIZE, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_POLICY, 1 << ((TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU)+TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_ID)))) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "handler = rt_task_init_schmod()."); exit(1); }
-	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_PERIOD, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_POSITIVE_JITTER_THRES, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_NEGATIVE_JITTER_THRES, "TrialHand2NeuralNetMsgHandler"))  {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_rt_task_specs_to_rt_tasks_data()."); exit(1); }	
-        period = nano2count(TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_PERIOD);
-
-        rt_task_make_periodic(handler, rt_get_time() + period, period);
-	prev_time = rt_get_cpu_time_ns();	
-        mlockall(MCL_CURRENT | MCL_FUTURE);
-	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
-
-        while (1) 
-	{
-        	rt_task_wait_period();
-		curr_time = rt_get_cpu_time_ns();
-		evaluate_and_save_jitter(rt_tasks_data, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_TASK_ID, prev_time, curr_time);
-		prev_time = curr_time;
-		// routines
-		while (get_next_trial_hand_2_neural_net_msg_buffer_item(msgs_trial_hand_2_neural_net, &msg_item))
-		{
-			switch (msg_item->msg_type)
-			{
-				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_STATUS_CHANGED:
-					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item->additional_data_0, msg_item->additional_data_1) ; 
-					break;	
-				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   // not implemeted yet, for RL it will be required.
-					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
-					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
-					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:  // not implemeted yet, for RL it will be required.
-					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
-					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
-					break;
-				default: 
-					get_trial_hand_2_neural_net_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
-					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
-					rt_make_soft_real_time();
-        				rt_task_delete(handler);
-					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "rt_task_delete().");	
-				        return 0;
-			}
-		}
-		// routines	
-		evaluate_and_save_period_run_time(rt_tasks_data, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_CPU_THREAD_TASK_ID, curr_time, rt_get_cpu_time_ns());		
-        }
-	rt_make_soft_real_time();
-        rt_task_delete(handler);
-	print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "rt_task_delete().");	
-
-        return 0;
-}

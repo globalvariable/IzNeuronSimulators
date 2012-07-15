@@ -5,12 +5,12 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 
 	unsigned int i;
 	NeuronAxonList	*ptr_neuron_axon_list;
-	NeuronSynapseList	*ptr_post_neuron_synapse_list;   // post synaptic neurons synapses
+	SynapseList		*ptr_post_neuron_synapse_list;   // post synaptic neurons synapses
 	Neuron				**to = NULL;
 	AxonalDelay			*delay = NULL;
 	SynapseIndex			*syn_idx = NULL;
-	SynapticWeight		*weight = NULL;
-	SynapseType			*type = NULL;
+	Synapse				*synapses = NULL;
+
 	*did_connection = FALSE;
 	if (EPSP_delay_min>EPSP_delay_max)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "EPSP_delay_min>EPSP_delay_max.");	 
@@ -40,7 +40,7 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 
 	if (this_neuron->inhibitory)
 	{
-		if (   ( rand() /  ((double) RAND_MAX))  <= inhibitory_connection_probability )
+		if (   ( get_rand_number())  <= inhibitory_connection_probability )
 		{	
 			ptr_neuron_axon_list = this_neuron->axon_list;
 			ptr_post_neuron_synapse_list = target_neuron->syn_list;
@@ -49,8 +49,7 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
 			syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
 
-			weight = g_new0(SynapticWeight, ptr_post_neuron_synapse_list->num_of_synapses+1);	
-			type = g_new0(SynapseType, ptr_post_neuron_synapse_list->num_of_synapses+1);	
+			synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
 
 			for (i = 0; i < ptr_neuron_axon_list->num_of_axons; i++)
 			{
@@ -73,30 +72,29 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 
 			for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
 			{
-				weight[i] = ptr_post_neuron_synapse_list->weight[i];
-				type[i] = ptr_post_neuron_synapse_list->type[i];
+				synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
+				synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
+				synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
 			}
-			g_free(ptr_post_neuron_synapse_list->weight);
-			g_free(ptr_post_neuron_synapse_list->type);
+			g_free(ptr_post_neuron_synapse_list->synapses);
 		
-			ptr_post_neuron_synapse_list->weight = weight;
-			ptr_post_neuron_synapse_list->type = type;
-			ptr_post_neuron_synapse_list->weight[i] = -( (weight_inhibitory_max-weight_inhibitory_min) * get_rand_number() ) - weight_inhibitory_min;
-			ptr_post_neuron_synapse_list->type[i] = INHIBITORY_SYNAPSE;
+			ptr_post_neuron_synapse_list->synapses = synapses;
+			ptr_post_neuron_synapse_list->synapses[i].weight = -( (weight_inhibitory_max-weight_inhibitory_min) * get_rand_number() ) - weight_inhibitory_min;
+			ptr_post_neuron_synapse_list->synapses[i].type = INHIBITORY_SYNAPSE;
+			ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
 	
 			ptr_neuron_axon_list->num_of_axons++;
 			ptr_post_neuron_synapse_list->num_of_synapses++;
 
-			if (!increase_neuron_event_buffer_size(target_neuron, (ptr_neuron_axon_list->delay[i]/1000000)+1))		// assuming neuron cannot fire more than 1000 Hz
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "! increment_neuron_event_buffer_size().");
-			*did_connection = TRUE;		
+			if (! update_neuron_sorted_event_buffer_size(target_neuron))		
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "! update_neuron_sorted_event_buffer_size().");
 
-			printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
+			*did_connection = TRUE;		
 		}
 	}
 	else
 	{
-		if (   ( rand() /  ((double) RAND_MAX))  <= excitatory_connection_probability )
+		if (   ( get_rand_number())  <= excitatory_connection_probability )
 		{	
 			ptr_neuron_axon_list = this_neuron->axon_list;
 			ptr_post_neuron_synapse_list = target_neuron->syn_list;
@@ -105,8 +103,7 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
 			syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
 
-			weight = g_new0(SynapticWeight, ptr_post_neuron_synapse_list->num_of_synapses+1);	
-			type = g_new0(SynapseType, ptr_post_neuron_synapse_list->num_of_synapses+1);	
+			synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
 
 			for (i = 0; i < ptr_neuron_axon_list->num_of_axons; i++)
 			{
@@ -129,22 +126,23 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 
 			for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
 			{
-				weight[i] = ptr_post_neuron_synapse_list->weight[i];
-				type[i] = ptr_post_neuron_synapse_list->type[i];
+				synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
+				synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
+				synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
 			}
-			g_free(ptr_post_neuron_synapse_list->weight);
-			g_free(ptr_post_neuron_synapse_list->type);
+			g_free(ptr_post_neuron_synapse_list->synapses);
 		
-			ptr_post_neuron_synapse_list->weight = weight;
-			ptr_post_neuron_synapse_list->type = type;
-			ptr_post_neuron_synapse_list->weight[i] = ( (weight_excitatory_max-weight_excitatory_min) * get_rand_number() ) + weight_excitatory_min;
-			ptr_post_neuron_synapse_list->type[i] = EXCITATORY_SYNAPSE;
-	
+			ptr_post_neuron_synapse_list->synapses = synapses;
+			ptr_post_neuron_synapse_list->synapses[i].weight = ( (weight_excitatory_max-weight_excitatory_min) * get_rand_number() ) + weight_excitatory_min;
+			ptr_post_neuron_synapse_list->synapses[i].type = EXCITATORY_SYNAPSE;
+			ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+
 			ptr_neuron_axon_list->num_of_axons++;
 			ptr_post_neuron_synapse_list->num_of_synapses++;
 
-			if (!increase_neuron_event_buffer_size(target_neuron, (ptr_neuron_axon_list->delay[i]/1000000)+1))		// assuming neuron cannot fire more than 1000 Hz
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "! increment_neuron_event_buffer_size().");
+			if (! update_neuron_sorted_event_buffer_size(target_neuron))		
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "! update_neuron_sorted_event_buffer_size().");
+
 			*did_connection = TRUE;	
 		}
 	}

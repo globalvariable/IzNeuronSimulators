@@ -22,7 +22,7 @@ bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer,
 
 bool create_ps_eligiblity_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min);
 
-
+void clear_eligibility_for_neuron(Neuron *neuron);
 
 
 #endif

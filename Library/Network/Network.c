@@ -27,7 +27,9 @@ Network* deallocate_network(Network *network)
 
 	if (network == NULL)
 		return (Network*)print_message(BUG_MSG ,"IzNeuronSimulators", "Network", "deallocate_network", "network == NULL.");	
-	
+
+	print_message(BUG_MSG ,"IzNeuronSimulators", "Network", "deallocate_network", "Re-handle this function. Too old and neuron has new elements..");	
+
 	for (i=0; i<network->layer_count; i++)
 	{
 		ptr_layer = network->layers[i];
@@ -38,7 +40,7 @@ Network* deallocate_network(Network *network)
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
 				g_free(ptr_neuron->iz_params);
-				destroy_neuron_event_buffer(ptr_neuron);
+//				destroy_neuron_event_buffer(ptr_neuron);
 				destroy_neuron_axon_list(ptr_neuron);	
 				destroy_neuron_parker_sochacki_pol_vals(ptr_neuron);		
 			}
@@ -401,7 +403,7 @@ void reset_all_network_iz_neuron_dynamics (Network *network)
 				ptr_neuron->iz_params->u = 0;
 				ptr_neuron->iz_params->conductance_excitatory = 0;
 				ptr_neuron->iz_params->conductance_inhibitory = 0;	
-				clear_neuron_event_buffer(ptr_neuron);		
+				reset_neuron_event_buffer(ptr_neuron);		
 			}					
 		}
 	}	

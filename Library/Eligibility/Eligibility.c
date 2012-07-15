@@ -58,3 +58,16 @@ bool create_ps_eligiblity_for_neuron(Neuron* neuron , unsigned int parker_sochac
 	}
 	return TRUE;
 }
+
+void clear_eligibility_for_neuron(Neuron *neuron)
+{
+	unsigned int i, num_of_synapses;
+	double		*eligibility;
+
+	eligibility = neuron->eligibility_list->eligibility;
+	num_of_synapses = neuron->syn_list->num_of_synapses;
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		eligibility[i] = 0;
+	}		
+}

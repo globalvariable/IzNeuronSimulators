@@ -96,52 +96,63 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Net
 
 bool evaluate_neuron_dyn(Neuron *nrn, TimeStamp start_time, TimeStamp end_time, bool *spike_generated, TimeStamp *spike_time)	// Assume that only once a spike can be generated per step (0.25 ms).
 {			
-	NeuronEventBuffer		*neuron_event_buffer = nrn->event_buff;
-	TimeStamp			*event_times = neuron_event_buffer->time;			
-	SynapseIndex			*syn_idx = neuron_event_buffer->syn_idx;
+	NeuronSortedEventBuffer		*sorted_event_buffer = nrn->sorted_event_buffer;
+	NeuronSortedEventBufferItem	*event_item;	
 	SynapseIndex			event_from_syn_idx;
-	NeuronSynapseList	*syn_list = nrn->syn_list;
-	SynapticWeight		*weight = syn_list->weight;
-	SynapseType			*type = syn_list->type;  
-	unsigned int			event_buff_size = neuron_event_buffer->buff_size;			
-	unsigned int			*ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);  		
-	unsigned int			*ptr_event_buffer_read_idx = &(neuron_event_buffer->read_idx); 		
-	unsigned int			idx, end_idx;	
-	TimeStamp			integration_start_ns, event_time;	
-	
+	Synapse				*synapses = nrn->syn_list->synapses;
+	Synapse				*synapse;
+	TimeStamp 			integration_start_ns, event_time;
+	unsigned int			*read_idx, write_idx;
+
 	integration_start_ns = start_time;   // required to know it to schedule events for outputs  (parker_sochacki_step_start_time+ dt_part)
 
-	idx = *ptr_event_buffer_read_idx;
-	end_idx = *ptr_event_buffer_write_idx;
-	// spikes times were already sorted during scheduling.
-	while (idx != end_idx)		// There is a check for event buffer overflow in schedule_events()
+	if (! sort_neuron_events(nrn))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! sort_neuron_events().");
+
+	read_idx = &(sorted_event_buffer->read_idx);
+	write_idx = sorted_event_buffer->write_idx;
+	while ((*read_idx) != write_idx)			
 	{
-		event_time = event_times[idx];
+		event_item = &(sorted_event_buffer->buff[*read_idx]);
+		event_time = event_item->time;
 		if (event_time >= end_time)	// Do not handle if it is at start of next step or later than that
 			break;
 		if (event_time < integration_start_ns)	// this function handles sorted synaptic events. the events are sorted during buffering
 		{
 			printf ("Simulate: BUG: evaluate_neuron_dyn - Simulate.c\n");
-			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);		
+			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);	
+			printf ("Simulate: BUG: event_time:%llu event_type: %u synapse idx: %u.\n", event_time, event_item->event_type,  event_item->syn_idx);	
 			printf ("Simulate: BUG: There must be a problem at event sorting\n");	
 			return 0;
 		}
-		if (!parker_sochacki_integration(nrn, integration_start_ns, event_time, spike_generated, spike_time))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
+//		printf("event: %llu syn: %u weight: %f type: %u\n", event_time, event_item->syn_idx, synapses[event_item->syn_idx].weight, event_item->event_type); 	
+		if (event_item->event_type == NEURON_EVENT_TYPE_SYNAPTIC_EVENT)
+		{
+			if (!parker_sochacki_integration(nrn, integration_start_ns, event_time, spike_generated, spike_time))
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
 			
-		event_from_syn_idx = syn_idx[idx];
-		if (type[event_from_syn_idx] == EXCITATORY_SYNAPSE)		
-			nrn->iz_params->conductance_excitatory += weight[event_from_syn_idx];
-		else if (type[event_from_syn_idx] == INHIBITORY_SYNAPSE)
-			nrn->iz_params->conductance_inhibitory -= weight[event_from_syn_idx];
+			event_from_syn_idx = event_item->syn_idx;
+			synapse = &(synapses[event_from_syn_idx]);
+			if (synapse->type == EXCITATORY_SYNAPSE)		
+				nrn->iz_params->conductance_excitatory += synapse->weight;
+			else if (synapse->type == INHIBITORY_SYNAPSE)
+				nrn->iz_params->conductance_inhibitory -= synapse->weight;
+			else
+				return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron type(excitatory/inhibitory).");
+		}
+		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_START_EVENT)
+		{
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "event_item.event_type == NEURON_EVENT_TYPE_TRIAL_START_EVENT.");	
+		}
 		else
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron type(excitatory/inhibitory).");
-//		printf ("%llu %f\n", event_time, event_weights[idx]);
+		{
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron event type.");	
+		}
 		integration_start_ns = event_time;
-		idx++;
-		if (idx == event_buff_size)
-			idx = 0;
-		*ptr_event_buffer_read_idx = idx;		// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
+		if ((*read_idx + 1) == sorted_event_buffer->buff_size)
+			*read_idx = 0;
+		else
+			(*read_idx)++;
 	}
 	if (!parker_sochacki_integration(nrn, integration_start_ns, end_time, spike_generated, spike_time))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
@@ -198,7 +209,7 @@ bool parker_sochacki_integration(Neuron *nrn, TimeStamp integration_start_time, 
 		*spike_generated = TRUE;
 		*spike_time = integration_start_time+((TimeStamp)((dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+0.5)); // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
 //		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
-		if (!schedule_event(nrn, *spike_time))
+		if (!schedule_synaptic_event(nrn, *spike_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 
 		parker_sochacki_update(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, dt_part, p);
@@ -419,19 +430,14 @@ bool evaluate_neuron_dyn_stdp_elig(Neuron *nrn, TimeStamp start_time, TimeStamp 
 {
 	ParkerSochackiPolynomialVals	*ps_vals = nrn->ps_vals;
 	IzNeuronParams				*iz_params = nrn->iz_params;
-	NeuronSynapseList			*syn_list = nrn->syn_list;
+	Synapse						*synapses = nrn->syn_list->synapses;
+	Synapse						*synapse;
 	STDPList					*stdp_list = nrn->stdp_list;
 	EligibilityList					*eligibility_list = nrn->eligibility_list;
-	NeuronEventBuffer				*neuron_event_buffer = nrn->event_buff ;		
-	unsigned int					event_buff_size = neuron_event_buffer->buff_size;			
-	TimeStamp					*event_times = neuron_event_buffer->time;			
-	SynapseIndex					*syn_idx = neuron_event_buffer->syn_idx;
-	SynapseIndex					num_of_synapses = syn_list->num_of_synapses;	
+	NeuronSortedEventBuffer		*sorted_event_buffer = nrn->sorted_event_buffer;
+	NeuronSortedEventBufferItem	*event_item;		
+	SynapseIndex					num_of_synapses =  nrn->syn_list->num_of_synapses;	
 	SynapseIndex					event_from_syn_idx;
-	SynapticWeight				*weight = syn_list->weight;
-	SynapseType					*type = syn_list->type;  
-	unsigned int					*ptr_event_buffer_write_idx = &(neuron_event_buffer->write_idx);  		
-	unsigned int					*ptr_event_buffer_read_idx = &(neuron_event_buffer->read_idx);  		
 
 	double *v_pol_vals = ps_vals->v_pol_vals;			
 	double *u_pol_vals = ps_vals->u_pol_vals;
@@ -462,48 +468,62 @@ bool evaluate_neuron_dyn_stdp_elig(Neuron *nrn, TimeStamp start_time, TimeStamp 
 	double	**eligibility_pol_vals = eligibility_list->eligibility_pol_vals;			
 	double	**eligibility_decay_rate_pol_vals = eligibility_list->eligibility_decay_rate_pol_vals;
 
-	unsigned int			idx, end_idx;	
 	TimeStamp 			integration_start_ns, event_time;
+	unsigned int			*read_idx, write_idx;
 
 	integration_start_ns = start_time;   // required to know it to schedule events for outputs  (parker_sochacki_step_start_time+ dt_part)
 
-	idx = *ptr_event_buffer_read_idx;
-	end_idx = *ptr_event_buffer_write_idx;
-	// spikes times were already sorted during scheduling.
-	while (idx != end_idx)		// There is a check for event buffer overflow in schedule_events()
+	if (! sort_neuron_events(nrn))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! sort_neuron_events().");
+
+	read_idx = &(sorted_event_buffer->read_idx);
+	write_idx = sorted_event_buffer->write_idx;
+	while ((*read_idx) != write_idx)		
 	{
-		event_time = event_times[idx];
+		event_item = &(sorted_event_buffer->buff[*read_idx]);
+		event_time = event_item->time;
 		if (event_time >= end_time)	// Do not handle if it is at start of next step or later than that
 			break;
 		if (event_time < integration_start_ns)	// this function handles sorted synaptic events. the events are sorted during buffering
 		{
 			printf ("Simulate: BUG: evaluate_neuron_dyn - Simulate.c\n");
-			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);		
+			printf ("Simulate: BUG: event_time is %llu but the step start time is %llu\n", event_time, start_time);	
+			printf ("Simulate: BUG: event_time:%llu event_type: %u synapse idx: %u.\n", event_time, event_item->event_type,  event_item->syn_idx);		
 			printf ("Simulate: BUG: There must be a problem at event sorting\n");	
 			return 0;
 		}
-		if (! parker_sochacki_integration_stdp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
-
-		event_from_syn_idx = syn_idx[idx];
-		if (type[event_from_syn_idx] == EXCITATORY_SYNAPSE)		
-			iz_params->conductance_excitatory += weight[event_from_syn_idx];
-		else if (type[event_from_syn_idx] == INHIBITORY_SYNAPSE)
-			iz_params->conductance_inhibitory -= weight[event_from_syn_idx];
+//		printf("event: %llu syn: %u weight: %f type: %u\n", event_time, event_item->syn_idx, synapses[event_item->syn_idx].weight, event_item->event_type); 	
+		if (event_item->event_type == NEURON_EVENT_TYPE_SYNAPTIC_EVENT)
+		{
+			if (! parker_sochacki_integration_stdp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_elig().");
+			event_from_syn_idx = event_item->syn_idx;
+			synapse = &(synapses[event_from_syn_idx]);
+			if (synapse->type == EXCITATORY_SYNAPSE)		
+				iz_params->conductance_excitatory += synapse->weight;
+			else if (synapse->type == INHIBITORY_SYNAPSE)
+				iz_params->conductance_inhibitory -= synapse->weight;
+			else
+				return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "Unknown neuron type(excitatory/inhibitory).");
+			stdp_pre_post[event_from_syn_idx] += change_stdp_pre_post[event_from_syn_idx];	// increment pre_post
+			eligibility_list->eligibility[event_from_syn_idx] += stdp_post_pre[event_from_syn_idx];  /// it is already negative. update eligibility according to post pre event
+		}
+		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_START_EVENT)
+		{
+			clear_eligibility_for_neuron(nrn);
+		}
 		else
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron type(excitatory/inhibitory).");
-		stdp_pre_post[event_from_syn_idx] += change_stdp_pre_post[event_from_syn_idx];	// increment pre_post
-		eligibility_list->eligibility[event_from_syn_idx] += stdp_post_pre[event_from_syn_idx];  /// it is already negative. update eligibility according to post pre event
-//		printf ("%llu %f\n", event_time, event_weights[idx]);
+		{
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron event type.");	
+		}
 		integration_start_ns = event_time;
-		idx++;
-		if (idx == event_buff_size)
-			idx = 0;
-		*ptr_event_buffer_read_idx = idx;		// Finally set event_buffer_read_idx,	event_buffer_write_idx will be set by  insert_synaptic_event at the end of function so that no corruption will appear even with multithreading
+		if ((*read_idx + 1) == sorted_event_buffer->buff_size)
+			*read_idx = 0;
+		else
+			(*read_idx)++;
 	}
 	if (! parker_sochacki_integration_stdp_elig(nrn, integration_start_ns, end_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");
-
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_elig().");
 	return TRUE ;	
 }
 
@@ -541,7 +561,7 @@ bool parker_sochacki_integration_stdp_elig(Neuron *nrn, TimeStamp integration_st
 		*spike_generated = TRUE;
 		*spike_time = integration_start_time+((TimeStamp)((dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+0.5)); // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
 //		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
-		if (!schedule_event(nrn, *spike_time))
+		if (!schedule_synaptic_event(nrn, *spike_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 
 		parker_sochacki_update_stdp_elig(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post, stdp_post_pre, eligibility, num_of_synapses, dt_part, p, iz_params);

@@ -11,7 +11,6 @@ typedef struct 	__Network 		Network;
 #include "../Synapse/Synapse.h"
 struct __Network
 {
-	long long unsigned int num_of_spikes;
 	Neuron			**all_neurons;
 	unsigned int 		num_of_neurons;
 	Layer			**layers;

@@ -50,16 +50,16 @@ SpikeGenData* get_bmi_simulation_spike_generator_data(void)
 
 static bool connect_to_trial_hand(void )
 {
-	TrialHand2SpikeGenMsgItem *msg_item;
+	TrialHand2SpikeGenMsgItem msg_item;
 	char str_trial_hand_2_spike_gen_msg[TRIAL_HAND_2_SPIKE_GEN_MSG_STRING_LENGTH];
 
 	while (1) 
 	{ 
 		while (get_next_trial_hand_2_spike_gen_msg_buffer_item(bmi_simulation_spike_gen_data->msgs_trial_hand_2_spike_gen, &msg_item))
 		{
-			get_trial_hand_2_spike_gen_msg_type_string(msg_item->msg_type, str_trial_hand_2_spike_gen_msg);
+			get_trial_hand_2_spike_gen_msg_type_string(msg_item.msg_type, str_trial_hand_2_spike_gen_msg);
 			print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "connect_to_trial_hand", str_trial_hand_2_spike_gen_msg);	
-			switch (msg_item->msg_type)
+			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_ARE_YOU_ALIVE:
 					bmi_simulation_spike_gen_data->msgs_spike_gen_2_trial_hand = allocate_shm_client_spike_gen_2_trial_hand_msg_buffer(bmi_simulation_spike_gen_data->msgs_spike_gen_2_trial_hand);
@@ -88,7 +88,7 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 	char str_trial_hand_msg[TRIAL_HAND_2_SPIKE_GEN_MSG_STRING_LENGTH];
 
 	TrialHand2SpikeGenMsg *msgs_trial_hand_2_spike_gen = NULL;
-	TrialHand2SpikeGenMsgItem *msg_item = NULL;
+	TrialHand2SpikeGenMsgItem msg_item;
 	TrialStatusEvents* trial_status_events = NULL;
 	RtTasksData *rt_tasks_data = NULL;
 
@@ -109,6 +109,8 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
 
+	msgs_trial_hand_2_spike_gen->buff_read_idx = msgs_trial_hand_2_spike_gen->buff_write_idx; // to reset message buffer. previously written messages and reading of them now might lead to inconvenience.,
+
         while (1) 
 	{
         	rt_task_wait_period();
@@ -118,13 +120,13 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 		// routines
 		while (get_next_trial_hand_2_spike_gen_msg_buffer_item(msgs_trial_hand_2_spike_gen, &msg_item))
 		{
-			switch (msg_item->msg_type)
+			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_TRIAL_STATUS_CHANGED:
-					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item->additional_data_0, msg_item->additional_data_1) ; 
+					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data_0, msg_item.additional_data_1) ; 
 					break;	
 				default: 
-					get_trial_hand_2_spike_gen_msg_type_string(msg_item->msg_type, str_trial_hand_msg);  
+					get_trial_hand_2_spike_gen_msg_type_string(msg_item.msg_type, str_trial_hand_msg);  
 					print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "trial_hand_2_spike_gen_msgs_handler", str_trial_hand_msg);
 					rt_make_soft_real_time();
         				rt_task_delete(handler);

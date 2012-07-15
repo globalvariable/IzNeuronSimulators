@@ -133,13 +133,18 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 	return TRUE;
 }
 
-bool get_next_spike_data_item(SpikeData* spike_data, SpikeTimeStampItem **data_item)
+bool get_next_spike_data_item(SpikeData* spike_data, SpikeTimeStampItem *data_item)
 {
 	unsigned int *idx;
+	SpikeTimeStampItem *buff_data_item;
 	idx = &(spike_data->buff_idx_read);
 	if (*idx == spike_data->buff_idx_write)
 		return FALSE;
-	*data_item = &(spike_data->buff[*idx]);	
+	buff_data_item = &(spike_data->buff[*idx]);	
+	data_item->peak_time = buff_data_item->peak_time;
+	data_item->mwa_or_layer = buff_data_item->mwa_or_layer;
+	data_item->channel_or_neuron_group = buff_data_item->channel_or_neuron_group;
+	data_item->unit_or_neuron = buff_data_item->unit_or_neuron;
 	if ((*idx + 1) == spike_data->buffer_size)
 		*idx = 0;
 	else

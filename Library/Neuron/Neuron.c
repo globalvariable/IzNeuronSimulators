@@ -12,7 +12,7 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;
 	if (nrn->iz_params != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->iz_params was allocated before. Re-use of initialize_neuron_params");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->iz_params was allocated before. Re-use of initialize_neuron_params");	
 	nrn->iz_params = g_new0(IzNeuronParams,1);
 	nrn->iz_params->a = a;
 	nrn->iz_params->b = b;
@@ -32,22 +32,28 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	nrn->iz_params->k_v_threshold = k * nrn->iz_params->v_threshold;
 	nrn->inhibitory = inhibitory;
 	if (nrn->axon_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->axon_list = g_new0(NeuronAxonList,1);
-	if (nrn->event_buff != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
-	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
-	pthread_mutex_init(&(nrn->event_buff->mutex), NULL);
 	if (nrn->ps_vals != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
-	nrn->syn_list = g_new0(NeuronSynapseList,1);
+	nrn->syn_list = g_new0(SynapseList,1);
 	if (nrn->stdp_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->stdp_list was allocated before. Re-use of initialize_neuron_params");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->stdp_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->stdp_list = g_new0(STDPList, 1);
 	if (nrn->eligibility_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->eligibility_list was allocated before. Re-use of initialize_neuron_params");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->eligibility_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->eligibility_list = g_new0(EligibilityList, 1);
+	if (nrn->trial_event_buffer != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
+	nrn->trial_event_buffer = allocate_neuron_trial_event_buffer(MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY);
+	if (nrn->trial_event_buffer == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer couldn' t be allocated.");	
+	nrn->trial_event_buffer->buff = g_new0(NeuronTrialEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);
+	if (nrn->sorted_event_buffer != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->sorted_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
+	nrn->sorted_event_buffer = g_new0(NeuronSortedEventBuffer, 1);
+	nrn->sorted_event_buffer->buff = g_new0(NeuronSortedEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);  // It is on purpose, allocate buffer for trial eventsn ow.
 	return TRUE;
 }
 
@@ -58,14 +64,10 @@ bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron
 	nrn->neuron_num = neuron_num;
 	nrn->inhibitory = inhibitory;
 	if (nrn->axon_list != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->axon_list = g_new0(NeuronAxonList,1);
-	if (nrn->event_buff != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->event_buff was allocated before. Re-use of initialize_neuron_params");		
-	nrn->event_buff = g_new0(NeuronEventBuffer,1);	
-	pthread_mutex_init(&(nrn->event_buff->mutex), NULL);
 	if (nrn->ps_vals != NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 	return TRUE;
 }
@@ -74,7 +76,6 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 {
 	Neuron		*ptr_neuron = NULL;
 	IzNeuronParams				*ptr_iz_params;
-	NeuronEventBuffer *ptr_neuron_event_buffer;
 	NeuronAxonList	*ptr_neuron_axon_list;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
 	int i;
@@ -87,7 +88,6 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		return FALSE;
 	}
 	ptr_iz_params = ptr_neuron->iz_params;
-	ptr_neuron_event_buffer = ptr_neuron->event_buff;		
 	ptr_neuron_axon_list = ptr_neuron->axon_list;
 	ptr_ps_vals = ptr_neuron->ps_vals;
 
@@ -123,7 +123,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	printf ("--------------Interrogating Neuron Dynamics...Complete---------\n");
 	
 	printf ("--------------Interrogating Event Buffer ---------\n");		
-	if (ptr_neuron_event_buffer != NULL)
+/*	if (ptr_neuron_event_buffer != NULL)
 	{ 
 		printf ("Event buffer size: %d\n", ptr_neuron_event_buffer->buff_size);
 		printf ("Write Index: %d\n", ptr_neuron_event_buffer->write_idx);		
@@ -141,7 +141,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	{
 		printf ("Event buffer is not allocated yet\n");			
 	}		
-	printf ("--------------Interrogating Event Buffer...Complete ---------\n");							
+*/	printf ("--------------Interrogating Event Buffer...Complete ---------\n");							
 
 	printf ("--------------Interrogating Axon List ---------\n");				
 	if (ptr_neuron_axon_list != NULL)
@@ -226,7 +226,7 @@ bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double a, double
 bool inject_current_to_neuron(Neuron *nrn, double I_inject)
 {
 	if (nrn == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "inject_current_to_neuron", "neuron was not allocated.");
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "inject_current_to_neuron", "neuron was not allocated.");
 	nrn->iz_params->I_inject = I_inject;
 	return TRUE;
 }
@@ -235,10 +235,10 @@ bool get_iz_neuron_parameters(Neuron *neuron, double *a, double *b, double *c, d
 {
 	IzNeuronParams	*ptr_iz_params;			
 	if (neuron == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "get_iz_neuron_parameters", "neuron == NULL.");
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "get_iz_neuron_parameters", "neuron == NULL.");
 	ptr_iz_params = neuron->iz_params;
 	if (ptr_iz_params == NULL)
-		return print_message(ERROR_MSG ,"NeuroSim", "Neuron", "get_iz_neuron_parameters", "iz_params == NULL.");
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "get_iz_neuron_parameters", "iz_params == NULL.");
 	*inhibitory = neuron->inhibitory;
 	*a = ptr_iz_params->a;
 	*b = ptr_iz_params->b;

@@ -9,16 +9,23 @@
 
 typedef unsigned int SynapseIndex;   
 
-typedef struct 	__NeuronSynapseList		NeuronSynapseList;
+typedef struct 	__Synapse		Synapse;
+typedef struct 	__SynapseList		SynapseList;
 typedef double SynapticWeight;
 typedef bool SynapseType;   // excitatory = 1, inhibitory = 0;
 
 #include "../Network/Network.h"
 
-struct __NeuronSynapseList
+struct __Synapse
 {
-	SynapticWeight	*weight;
-	SynapseType		*type;    // save the list of the synapse type. Do not let excitatory synapses be negative or inhibitory synapses be positive during learning.
+	SynapticWeight	weight;
+	SynapseType		type;    // save the list of the synapse type. Do not let excitatory synapses be negative or inhibitory synapses be positive during learning.
+	NeuronSynapticEventBuffer	*event_buffer;
+};
+
+struct __SynapseList
+{
+	Synapse			*synapses;
 	SynapseIndex		num_of_synapses; 
 };
 
