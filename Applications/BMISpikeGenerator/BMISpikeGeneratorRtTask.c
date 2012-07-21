@@ -1,4 +1,4 @@
-#include "BMISimulationSpikeGeneratorRtTask.h"
+#include "BMISpikeGeneratorRtTask.h"
 
 static int bmi_simulation_spike_generator_rt_thread = 0;
 static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;

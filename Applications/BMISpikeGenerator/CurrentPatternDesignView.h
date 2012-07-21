@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
-#include "BMISimulationSpikeGenerator.h"
+#include "BMISpikeGenerator.h"
 #include "BufferViewHandler.h"
-#include "SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.h"
+#include "FileHandler.h"
 #include "../../Library/Network/Network.h"
 #include "../../Library/Neuron/Neuron.h"
 #include "../../Library/Neuron/NeuronTypes.h"

@@ -1,9 +1,6 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
-#define MOTOR_OUTPUT_BIN_SIZE	50000000 // 50 ms
-
-
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
 #include "Gui.h"

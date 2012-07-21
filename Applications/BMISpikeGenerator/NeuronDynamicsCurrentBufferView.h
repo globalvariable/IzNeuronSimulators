@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "BMISimulationSpikeGenerator.h"
+#include "BMISpikeGenerator.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
 

@@ -31,13 +31,11 @@ int main( int argc, char *argv[])
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
 
-
-
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
 	{
 		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
 		{
-			if (!add_neuron_nodes_to_layer(hybrid_net_rl_bmi_data->blue_spike_network, MAX_NUM_OF_UNIT_PER_CHAN - 2 ,i, FALSE)) {
+			if (!add_neuron_nodes_to_layer(hybrid_net_rl_bmi_data->blue_spike_network, MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE ,i, FALSE)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "add_neuron_nodes_to_layer()."); return -1; }				
 		}
 	}

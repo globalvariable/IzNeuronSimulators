@@ -1,12 +1,12 @@
-#ifndef BMI_SIMULATION_SPIKE_GENERATOR_H
-#define BMI_SIMULATION_SPIKE_GENERATOR_H
+#ifndef BMI_SPIKE_GENERATOR_H
+#define BMI_SPIKE_GENERATOR_H
 
 
 
 typedef struct __SpikeGenData SpikeGenData;
 
 #include "Gui.h"
-#include "BMISimulationSpikeGeneratorRtTask.h"
+#include "BMISpikeGeneratorRtTask.h"
 #include "../../../BlueSpike/SpikeTimeStamp.h"
 #include "../../../BlueSpike/KernelSpike/KernelSpikeSharedMem.h"
 #include "../../../BlueSpike/RtTasksData.h"

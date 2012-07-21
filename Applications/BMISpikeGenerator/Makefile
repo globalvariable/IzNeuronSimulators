@@ -10,13 +10,13 @@ LXRT_LDFLAGS = $(shell rtai-config --lxrt-ldflags)
 MATH_FLAGS = -lm
 GTK_FLAGS = $(shell pkg-config --cflags --libs gtk+-2.0 gtkdatabox)
 
-all: BMISimulationSpikeGenerator
+all: BMISpikeGenerator
 
-BMISimulationSpikeGenerator: BMISimulationSpikeGenerator.c ../../Library/Network/Network.o ../../../ExperimentHandlers/Library/Messages/TrialHand2SpikeGen.o ../../../ExperimentHandlers/Library/Messages/SpikeGen2TrialHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../../BlueSpike/Library/Misc/Misc.o Gui.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/ParkerSochacki/ParkerSochacki.o CurrentPatternDesignView.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.o SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.o SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0.o BMISimulationSpikeGeneratorRtTask.o ../../Library/Graphs/CurrentPatternGraph.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o ../../Library/SpikeData/SpikeData.o BufferViewHandler.o NeuronDynamicsCurrentBufferView.o ../../../ExperimentHandlers/Library/TrialsData/TrialTypes.o ../../../BlueSpike/Library/SpikeGen/SpikeGen.o ../../Library/Graphs/StatusMarker.o ../../../BlueSpike/Library/Misc/Randn.o SpikePatternBufferView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Eligibility/Eligibility.o
-	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $<  ../../Library/Network/Network.o ../../../ExperimentHandlers/Library/Messages/TrialHand2SpikeGen.o ../../../ExperimentHandlers/Library/Messages/SpikeGen2TrialHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../../BlueSpike/Library/Misc/Misc.o Gui.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/ParkerSochacki/ParkerSochacki.o CurrentPatternDesignView.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.o SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.o SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0.o BMISimulationSpikeGeneratorRtTask.o ../../Library/Graphs/CurrentPatternGraph.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o ../../Library/SpikeData/SpikeData.o BufferViewHandler.o NeuronDynamicsCurrentBufferView.o ../../../ExperimentHandlers/Library/TrialsData/TrialTypes.o ../../../BlueSpike/Library/SpikeGen/SpikeGen.o ../../Library/Graphs/StatusMarker.o ../../../BlueSpike/Library/Misc/Randn.o SpikePatternBufferView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Eligibility/Eligibility.o ### BMISimulationSpikeGenerator
+BMISpikeGenerator: BMISpikeGenerator.c ../../Library/Network/Network.o ../../../ExperimentHandlers/Library/Messages/TrialHand2SpikeGen.o ../../../ExperimentHandlers/Library/Messages/SpikeGen2TrialHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../../BlueSpike/Library/Misc/Misc.o Gui.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/ParkerSochacki/ParkerSochacki.o CurrentPatternDesignView.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.o BMISpikeGeneratorRtTask.o ../../Library/Graphs/CurrentPatternGraph.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o ../../Library/SpikeData/SpikeData.o BufferViewHandler.o NeuronDynamicsCurrentBufferView.o ../../../ExperimentHandlers/Library/TrialsData/TrialTypes.o ../../../BlueSpike/Library/SpikeGen/SpikeGen.o ../../Library/Graphs/StatusMarker.o ../../../BlueSpike/Library/Misc/Randn.o SpikePatternBufferView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Eligibility/Eligibility.o FileHandler.o FileHandler_v0.o
+	$(CC) $(LXRT_CFLAGS) $(LXRT_LDFLAGS) $(MATH_FLAGS) $(GTK_FLAGS) -o $@ $<  ../../Library/Network/Network.o ../../../ExperimentHandlers/Library/Messages/TrialHand2SpikeGen.o ../../../ExperimentHandlers/Library/Messages/SpikeGen2TrialHand.o ../../../ExperimentHandlers/Library/Status/TrialStatus.o ../../../BlueSpike/Library/Misc/Misc.o Gui.o ../../../BlueSpike/Library/RtTaskStats/RtTaskStats.o ../../Library/Neuron/NeuronTypes.o ../../Library/Neuron/Neuron.o ../../Library/Event/Event.o ../../Library/Axon/Axon.o ../../Library/ParkerSochacki/ParkerSochacki.o CurrentPatternDesignView.o ../../Library/Combos/LayerNrnGrpNeuronCombo.o ../../Library/Combos/NeuronDynamicsCombo.o ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.o BMISpikeGeneratorRtTask.o ../../Library/Graphs/CurrentPatternGraph.o ../../Library/Graphs/NeuronDynamicsGraph.o ../../Library/InjectionCurrentData/InjectionCurrentData.o ../../Library/NeuronDynamicsData/NeuronDynamicsData.o ../../Library/SpikeData/SpikeData.o BufferViewHandler.o NeuronDynamicsCurrentBufferView.o ../../../ExperimentHandlers/Library/TrialsData/TrialTypes.o ../../../BlueSpike/Library/SpikeGen/SpikeGen.o ../../Library/Graphs/StatusMarker.o ../../../BlueSpike/Library/Misc/Randn.o SpikePatternBufferView.o ../../Library/Graphs/SpikePatternGraph.o ../../Library/Eligibility/Eligibility.o FileHandler.o FileHandler_v0.o ### BMISpikeGenerator
 
-BMISimulationSpikeGeneratorRtTask.o: BMISimulationSpikeGeneratorRtTask.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### BMISimulationSpikeGeneratorRtTask
+BMISpikeGeneratorRtTask.o: BMISpikeGeneratorRtTask.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### BMISpikeGeneratorRtTask
 
 Gui.o: Gui.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### Gui
@@ -90,12 +90,6 @@ SpikePatternBufferView.o: SpikePatternBufferView.c
 ../../Library/Eligibility/Eligibility.o: ../../Library/Eligibility/Eligibility.c 
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../Library/Eligibility/Eligibility
 
-SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.o: SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	SpikeGenDataSaveLoad/SpikeGenDataSaveLoad.o
-
-SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0.o: SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0.c
-	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0
-
 ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.o: ../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../../ExperimentControllers/TrialControllers/Library/Combos/TrialTypesCombo
 
@@ -114,8 +108,14 @@ SpikeGenDataSaveLoad/v0/SpikeGenDataSaveLoad_v0.o: SpikeGenDataSaveLoad/v0/Spike
 ../../../BlueSpike/Library/SpikeGen/SpikeGen.o: ../../../BlueSpike/Library/SpikeGen/SpikeGen.c
 	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)		###	../../../BlueSpike/Library/SpikeGen/SpikeGen
 
+FileHandler.o: FileHandler.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### FileHandler
+
+FileHandler_v0.o: FileHandler_v0.c
+	$(CC) $(LXRT_CFLAGS) -c -o $@ $< $(LXRT_LDFLAGS) $(GTK_FLAGS)			### FileHandler_v0
+
 clean:
-	rm -f BMISimulationSpikeGenerator *.o  ../../Library/Network/*.o ../../../ExperimentHandlers/Library/Messages/*.o ../../../ExperimentHandlers/Library/Status/*.o ../../../BlueSpike/Library/Misc/*.o ../../../BlueSpike/Library/RtTaskStats/*.o ../../Library/Neuron/*.o ../../Library/Neuron/*.o ../../Library/Event/*.o ../../Library/Axon/*.o ../../Library/ParkerSochacki/*.o ../../Library/Combos/*.o ../../../ExperimentHandlers/Library/Combos/*.o  SpikeGenDataSaveLoad/*.o SpikeGenDataSaveLoad/v0/*.o ../../Library/Graphs/*.o ../../Library/InjectionCurrentData/*.o ../../Library/NeuronDynamicsData/*.o ../../Library/SpikeData/*.o ../../../ExperimentHandlers/Library/TrialsData/*.o ../../../BlueSpike/Library/SpikeGen/*.o ../../Library/Eligibility/*.o
+	rm -f BMISpikeGenerator *.o  ../../Library/Network/*.o ../../../ExperimentHandlers/Library/Messages/*.o ../../../ExperimentHandlers/Library/Status/*.o ../../../BlueSpike/Library/Misc/*.o ../../../BlueSpike/Library/RtTaskStats/*.o ../../Library/Neuron/*.o ../../Library/Neuron/*.o ../../Library/Event/*.o ../../Library/Axon/*.o ../../Library/ParkerSochacki/*.o ../../Library/Combos/*.o ../../../ExperimentHandlers/Library/Combos/*.o ../../Library/Graphs/*.o ../../Library/InjectionCurrentData/*.o ../../Library/NeuronDynamicsData/*.o ../../Library/SpikeData/*.o ../../../ExperimentHandlers/Library/TrialsData/*.o ../../../BlueSpike/Library/SpikeGen/*.o ../../Library/Eligibility/*.o
 
 .PHONY: clean
 

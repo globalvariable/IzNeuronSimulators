@@ -89,8 +89,8 @@ static GtkWidget *btn_start_spike_generation;
 
 /// LAST COLUMN
 static GtkWidget *txv_notes;
-static GtkWidget *btn_select_directory;
-static GtkWidget *btn_create_directory;
+static GtkWidget *btn_select_directory_to_save;
+static GtkWidget *btn_select_file_to_load;
 static GtkWidget *btn_save;
 static GtkWidget *btn_load;
 static GtkWidget *btn_quit;
@@ -124,7 +124,6 @@ static void add_noise_in_trial_button_func(void);
 static void add_noise_trial_available_button_func(void);
 static void add_noise_in_refractory_button_func(void);
 
-static void create_directory_button_func(void);
 static void save_button_func(void);
 static void load_button_func(void);
 
@@ -137,6 +136,8 @@ static void set_directory_btn_select_directory(void);
 bool create_current_pattern_view_gui(void)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
+
+	initialize_spike_gen_config_data_read_write_handlers();
 
         frame = gtk_frame_new ("");
         frame_label = gtk_label_new ("     Design Current Pattern    ");      
@@ -680,22 +681,27 @@ bool create_current_pattern_view_gui(void)
 	lbl = gtk_label_new("Folder:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
 
-	btn_select_directory = gtk_file_chooser_button_new ("Select Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
-        gtk_box_pack_start(GTK_BOX(hbox),btn_select_directory, TRUE,TRUE,0);
- 	gtk_widget_set_size_request(btn_select_directory, 50, 30);
+	btn_select_directory_to_save = gtk_file_chooser_button_new ("Select Save Folder", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+        gtk_box_pack_start(GTK_BOX(hbox),btn_select_directory_to_save, TRUE,TRUE,0);
+ 	gtk_widget_set_size_request(btn_select_directory_to_save, 50, 30);
 	set_directory_btn_select_directory();
-	
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_create_directory = gtk_button_new_with_label("Create Data Directory");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_create_directory, TRUE, TRUE, 0);
 	
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
 	btn_save= gtk_button_new_with_label("Save");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_save, TRUE, TRUE, 0);	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("Folder:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+
+	btn_select_file_to_load = gtk_file_chooser_button_new ("Select Load File", GTK_FILE_CHOOSER_ACTION_OPEN);
+        gtk_box_pack_start(GTK_BOX(hbox),btn_select_file_to_load, TRUE,TRUE,0);
+ 	gtk_widget_set_size_request(btn_select_file_to_load, 50, 30);
+	set_directory_btn_select_directory();
 	
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -744,7 +750,6 @@ bool create_current_pattern_view_gui(void)
 
 	g_signal_connect(G_OBJECT(btn_quit), "clicked", G_CALLBACK(quit_button_func), NULL);	
 	
-	g_signal_connect(G_OBJECT(btn_create_directory), "clicked", G_CALLBACK(create_directory_button_func), NULL);
 	g_signal_connect(G_OBJECT(btn_save), "clicked", G_CALLBACK(save_button_func), NULL);		
 	g_signal_connect(G_OBJECT(btn_load), "clicked", G_CALLBACK(load_button_func), NULL);	
 	
@@ -1506,44 +1511,63 @@ void interrogate_neuron_button_func(void)
 
 }
 
-void create_directory_button_func(void)
-{
-	char *path_temp = NULL, *path = NULL;
-	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
-	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
-	path = &path_temp[7];   // since     uri returns file:///home/....	
-	if (!(*create_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data))		// record in last format version
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "create_directory_button_func", "! (*create_spike_gen_data_directory)().");
-	return;
-}
-
 void save_button_func(void)
 {
 	char *path_temp = NULL, *path = NULL;
-	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
+	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_save));
 	path = &path_temp[7];   // since     uri returns file:///home/....
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
-	if (! is_spike_gen_data(path)) 		// First check if data directory was created previously
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "save_button_func", "! is_spike_pattern_generator_data().");			
-	if (!(*save_spike_gen_data_directory[SPIKE_GEN_DATA_MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data, txv_notes))		// record in last format version
+
+	if (!(*write_spike_gen_config_data[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(2, path, spike_gen_data, txv_notes))		// record in last format version
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "save_button_func", "! (*save_spike_pattern_generator_data_directory)().");
 	return;
 }
 
 void load_button_func(void)
 {
+	TimeStamp max_num_of_samples = 0;
+	unsigned int i, j;
 	char *path_temp = NULL, *path = NULL;
 	int version;
-	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory));
+	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_file_to_load));
 	path = &path_temp[7];   // since     uri returns file:///home/....
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();	
-	
-	if (!get_spike_gen_data_format_version(&version, path))
+	TrialTypesData *trial_types_data = get_bmi_simulation_spike_generator_data()->trial_types_data;
+	if (!get_format_version(&version, path))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "load_button_func", "! get_spike_pattern_generator_data_format_version().");
-	if (!(*load_spike_gen_data_directory[version])(3, path, spike_gen_data, txv_notes))
+	if (!(*read_spike_gen_config_data[version])(3, path, spike_gen_data, txv_notes))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "load_button_func", "! (*load_spike_pattern_generator_data_directory)().");
 	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, spike_gen_data->network))
 		return;
+
+
+	for (i = 0;  i < spike_gen_data->current_templates->num_of_trial_start_available_currents; i++)
+	{	
+		if (spike_gen_data->current_templates->trial_start_available_currents[i].num_of_template_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->current_templates->trial_start_available_currents[i].num_of_template_samples;
+	}
+	for (i = 0;  i < spike_gen_data->current_templates->num_of_in_refractory_currents; i++)
+	{	
+		if (spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples > max_num_of_samples)
+			max_num_of_samples = spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples;
+	}
+	for (i = 0; i < trial_types_data->num_of_trial_types; i++)
+	{
+		for (j = 0; j < spike_gen_data->current_templates->num_of_in_trial_currents; j++)  // actually unnecessary, just to be straightforward
+		{	
+			if (spike_gen_data->current_templates->in_trial_currents[i][j].num_of_template_samples > max_num_of_samples)
+				max_num_of_samples = spike_gen_data->current_templates->in_trial_currents[i][j].num_of_template_samples;
+		}
+	}
+	current_pattern_graph = allocate_current_pattern_graph(current_pattern_graph_hbox, current_pattern_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+	spike_gen_data->limited_current_pattern_buffer = allocate_current_pattern_buffer_limited(spike_gen_data->network, spike_gen_data->limited_current_pattern_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_CURRENT_PATTERN_GRAPHS); // 3 second buffer
+	spike_gen_data->limited_neuron_dynamics_buffer = allocate_neuron_dynamics_buffer_limited(spike_gen_data->network, spike_gen_data->limited_neuron_dynamics_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS); // 3 second buffer for 1 second graph refresh rate. 
+	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+
+	if (! buffer_view_handler())
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	
+
 	gtk_widget_set_sensitive(btn_add_neurons_to_layer, FALSE);		
 	gtk_widget_set_sensitive(btn_generate_current_injection_graphs, TRUE);
 	gtk_widget_set_sensitive(btn_draw_template, TRUE);
@@ -1559,6 +1583,9 @@ void load_button_func(void)
 	gtk_widget_set_sensitive(btn_add_noise_in_refractory, TRUE);
 	gtk_widget_set_sensitive(btn_start_spike_generation, TRUE);	
 	gtk_widget_set_sensitive(btn_load, FALSE);	
+
+
+
 	return;
 }
 
@@ -1570,7 +1597,7 @@ void set_directory_btn_select_directory(void)
        	{ 
        		printf ("ERROR: SpikePatternGenerator: Couldn't find file: ./path_initial_directory\n"); 
        		printf ("ERROR: SpikePatternGenerator: /home is loaded as initial direcoty to create data folder\n");
-		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory),"/home");
+		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),"/home");
        	}
        	else
        	{
@@ -1578,11 +1605,11 @@ void set_directory_btn_select_directory(void)
 		{ 
 			printf("ERROR: SpikePatternGenerator: Couldn' t read ./path_initial_directory\n"); 
        			printf ("ERROR: SpikePatternGenerator: /home is loaded as initial direcoty to create data folder\n");
-			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory),"/home");
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),"/home");
 		}
 		else
 		{
-			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory),line);
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),line);
 		}
 		fclose(fp); 		
 	}  	 

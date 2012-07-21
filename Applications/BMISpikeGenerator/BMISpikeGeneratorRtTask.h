@@ -1,11 +1,11 @@
-#ifndef BMI_SIMULATION_SPIKE_GENERATOR_RT_TASK_H
-#define BMI_SIMULATION_SPIKE_GENERATOR_RT_TASK_H
+#ifndef BMI_SPIKE_GENERATOR_RT_TASK_H
+#define BMI_SPIKE_GENERATOR_RT_TASK_H
 
 #include <rtai_shm.h>
 #include <rtai_nam2num.h>
 #include "../../../BlueSpike/Library/RtTaskStats/RtTaskStats.h"
 #include "../../../BlueSpike/Library/SpikeGen/SpikeGen.h"
-#include "BMISimulationSpikeGenerator.h"
+#include "BMISpikeGenerator.h"
 
 
 
