@@ -512,10 +512,18 @@ bool evaluate_neuron_dyn_stdp_elig(Neuron *nrn, TimeStamp start_time, TimeStamp 
 		{
 			clear_eligibility_for_neuron(nrn);
 		}
+		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)
+		{
+			save_eligibility_for_neuron(nrn);		
+		}
+		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)
+		{
+			save_eligibility_for_neuron(nrn);					
+		}
 		else
 		{
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron event type.");	
-		}
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "Unknown neuron event type.");				
+		}		
 		integration_start_ns = event_time;
 		if ((*read_idx + 1) == sorted_event_buffer->buff_size)
 			*read_idx = 0;

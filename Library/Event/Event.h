@@ -18,11 +18,11 @@ typedef TimeStamp NeuronSynapticEventBufferItem;
 
 #define MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY TRIAL_HANDLER_PERIOD + TRIAL_HAND_2_NEURAL_NET_MSGS_HANDLER_PERIOD + IZ_PS_NETWORK_SIM_PERIOD + 1000000 // 1 MS jitter buffer
 
-#define NEURON_EVENT_TYPE_NULL_EVENT			0
-#define NEURON_EVENT_TYPE_SYNAPTIC_EVENT		1
-#define NEURON_EVENT_TYPE_TRIAL_START_EVENT	2
-
-
+#define NEURON_EVENT_TYPE_NULL_EVENT						0
+#define NEURON_EVENT_TYPE_SYNAPTIC_EVENT					1
+#define NEURON_EVENT_TYPE_TRIAL_START_EVENT				2
+#define NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD			3	// it is sent to neurons when the mov obj reaches threshold.
+#define NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT		4	// it is sent to neurons when the mov obj reaches target led.
 
 #include "../Neuron/Neuron.h"
 #include "../Network/Network.h"

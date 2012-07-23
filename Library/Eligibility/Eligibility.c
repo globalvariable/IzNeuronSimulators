@@ -40,6 +40,7 @@ bool create_ps_eligiblity_for_neuron(Neuron* neuron , unsigned int parker_sochac
 	num_of_synapses = neuron->syn_list->num_of_synapses;
 
 	eligibility_list->eligibility = g_new0(double, num_of_synapses);
+	eligibility_list->eligibility_saved = g_new0(double, num_of_synapses);
 	eligibility_list->eligibility_decay_rate = g_new0(double, num_of_synapses);
 	eligibility_list->eligibility_iter_prev = g_new0(double, num_of_synapses);
 	eligibility_list->eligibility_iter_curr = g_new0(double, num_of_synapses);
@@ -71,3 +72,17 @@ void clear_eligibility_for_neuron(Neuron *neuron)
 		eligibility[i] = 0;
 	}		
 }
+
+void save_eligibility_for_neuron(Neuron *neuron)
+{
+	unsigned int i, num_of_synapses;
+	double		*eligibility;
+	double		*eligibility_saved;
+	eligibility = neuron->eligibility_list->eligibility;
+	eligibility_saved = neuron->eligibility_list->eligibility_saved;
+	num_of_synapses = neuron->syn_list->num_of_synapses;
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		eligibility_saved[i] = eligibility[i];
+	}
+}	

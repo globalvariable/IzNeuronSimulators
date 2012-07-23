@@ -22,6 +22,7 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
 	hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread = g_new0(NeuralNet2MovObjHandMsgMultiThread, 1); 
 	hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread = allocate_shm_server_mov_obj_hand_2_neural_net_multi_thread_msg_buffer(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread); 
+	hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand = allocate_neural_net_2_post_trial_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand);
 	hybrid_net_rl_bmi_data->trial_status_events = allocate_trial_status_events_buffer(hybrid_net_rl_bmi_data->trial_status_events, 100, 3000000);  //  3 ms latency
 	hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
 

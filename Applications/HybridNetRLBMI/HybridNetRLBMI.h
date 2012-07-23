@@ -17,6 +17,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.h"
+#include "../../../ExperimentHandlers/Library/Messages/NeuralNet2PostTrialHand.h"
 #include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 
 struct __HybridNetRLBMIData		
@@ -34,6 +35,7 @@ struct __HybridNetRLBMIData
 	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
 	MovObjHand2NeuralNetMsgMultiThread		*msgs_mov_obj_hand_2_neural_net_multi_thread;
 	NeuralNet2MovObjHandMsgMultiThread		*msgs_neural_net_2_mov_obj_hand_multi_thread;
+	NeuralNet2PostTrialHandMsg	*msgs_neural_net_2_post_trial_hand;
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
 	FiringCount					*num_of_firing_of_neurons_in_trial;   // num_of_neurons_in_network
 	unsigned int					num_of_dedicated_cpu_threads;

@@ -9,6 +9,7 @@ typedef struct 	__EligibilityList	EligibilityList;
 struct __EligibilityList
 {
 	double		*eligibility;					// num_of_synapses
+	double		*eligibility_saved;				// num_of_synapses   // to be handled at the end of trial
 	double		*eligibility_decay_rate;			// num_of_synapses
 	double 		*eligibility_iter_prev;			// num_of_synapses 
 	double 		*eligibility_iter_curr;			// num_of_synapses 
@@ -23,6 +24,6 @@ bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer,
 bool create_ps_eligiblity_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min);
 
 void clear_eligibility_for_neuron(Neuron *neuron);
-
+void save_eligibility_for_neuron(Neuron *neuron);
 
 #endif
