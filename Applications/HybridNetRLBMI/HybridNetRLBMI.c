@@ -8,7 +8,6 @@ static bool connect_to_mov_obj_hand(void);
 int main( int argc, char *argv[])
 {
 	unsigned int i, j;
-
 	hybrid_net_rl_bmi_data = g_new0(HybridNetRLBMIData, 1);
 
 	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(nam2num(KERNEL_SPIKE_SPIKE_TIME_STAMP_SHM_NAME), 0);

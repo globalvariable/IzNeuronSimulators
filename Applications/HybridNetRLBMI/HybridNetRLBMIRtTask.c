@@ -234,7 +234,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 	TrialStatusEvents* trial_status_events = NULL;
 	RtTasksData *rt_tasks_data = NULL;
 	TimeStamp current_sys_time;
-	double reward_magnitude = 0;	// provide this value from mov_obj_hand
+	double trajectory_success_ratio = 0;
 	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
 	msgs_neural_net_2_post_trial_hand = hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand;
 	msgs_trial_hand_2_neural_net = hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net;
@@ -289,20 +289,25 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, reward_magnitude)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, trajectory_success_ratio)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:  
+				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_TIMEOUT_BEFORE_THRESHOLD_REACH:
 					current_sys_time = rt_tasks_data->current_system_time;
 					for (i = 0; i < num_of_neurons; i++)
 					{
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, reward_magnitude)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, trajectory_success_ratio)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_TRAJECTORY_SUCCESS_RATIO:  // this message is received before 
+					trajectory_success_ratio = msg_item.additional_data_0;
+					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   // it is sent here just before trial ends.   // since threshold reached before this message, the neurons handles NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD previously. then, this message is useless and it is not sent. it is here just to be template for future applicaitons.
+					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   // it is sent here just before trial ends.   // since trial timed out before this message, the neurons handles NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT previously. then, this message is useless and it is not sent. it is here just to be template for future applicaitons.
 					break;
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
@@ -335,10 +340,11 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 		{
 			get_neural_net_2_post_trial_hand_msg_type_string(msg_item.msg_type, str_neural_net_msg);  
 			print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);
-			sleep(1);	// wait one second to ensure trial is really ended.
 			switch (msg_item.msg_type)
 			{
 				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
+					sleep(1);	// wait one second to ensure trial is really ended.
+					printf ("trajectory success: %f\n", msg_item.additional_data);
 					break;	
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);
