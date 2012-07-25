@@ -78,6 +78,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	IzNeuronParams				*ptr_iz_params;
 	NeuronAxonList	*ptr_neuron_axon_list;
 	ParkerSochackiPolynomialVals	*ptr_ps_vals;	
+	SynapseList					*ptr_syn_list;
 	int i;
 	
 	
@@ -90,7 +91,7 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 	ptr_iz_params = ptr_neuron->iz_params;
 	ptr_neuron_axon_list = ptr_neuron->axon_list;
 	ptr_ps_vals = ptr_neuron->ps_vals;
-
+	ptr_syn_list = ptr_neuron->syn_list;
 					
 
 	printf ("address:%llu\n",  (NeuronAddress)ptr_neuron);	
@@ -142,6 +143,27 @@ bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuro
 		printf ("Event buffer is not allocated yet\n");			
 	}		
 */	printf ("--------------Interrogating Event Buffer...Complete ---------\n");							
+	printf ("--------------Interrogating Synapse List ---------\n");		
+	if (ptr_syn_list != NULL)
+	{
+		printf ("Number of Synapses: %d\n", ptr_syn_list->num_of_synapses);
+		printf ("Synapse Type / Weight\n");
+		for (i = 0; i < ptr_syn_list->num_of_synapses; i++)
+		{
+			if (ptr_syn_list->synapses[i].type == EXCITATORY_SYNAPSE)
+				printf ("EXCI\t");
+			else if (ptr_syn_list->synapses[i].type == INHIBITORY_SYNAPSE)
+				printf ("INHI\t");
+			else
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "interrogate_neuron", "Invalid synapse type.");	
+			printf ("%f\n", ptr_syn_list->synapses[i].weight);		
+		}		
+	}
+	else
+	{
+		printf ("Synapse list is not allocated yet\n");					
+	}
+	printf ("--------------Interrogating Synapse List... Complete ---------\n");				
 
 	printf ("--------------Interrogating Axon List ---------\n");				
 	if (ptr_neuron_axon_list != NULL)

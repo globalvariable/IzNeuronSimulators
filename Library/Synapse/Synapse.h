@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 
+#define SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE	200
 
 typedef unsigned int SynapseIndex;   
 
@@ -21,6 +22,8 @@ struct __Synapse
 	SynapticWeight	weight;
 	SynapseType		type;    // save the list of the synapse type. Do not let excitatory synapses be negative or inhibitory synapses be positive during learning.
 	NeuronSynapticEventBuffer	*event_buffer;
+	SynapticWeight	weight_history[SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE];
+	unsigned int		weight_history_write_idx;
 };
 
 struct __SynapseList
@@ -31,6 +34,9 @@ struct __SynapseList
 
 
 bool get_num_of_synapses_in_neuron(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int nrn_num, unsigned int *num_of_synapses);
-
+bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate);
+bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_rate);
+bool set_neuron_synaptic_weights(Neuron *neuron, double lower_limit, double upper_limit);
+void write_to_synapse_history_buffer(Synapse *synapse);
 
 #endif

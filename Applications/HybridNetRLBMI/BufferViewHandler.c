@@ -46,15 +46,17 @@ bool buffer_view_handler(void)
 	in_silico_spike_data = bmi_data->in_silico_spike_data;
 	rt_tasks_data = bmi_data->rt_tasks_data;
 	if (!create_neuron_dynamics_view_gui())
-		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_neuron_dynamics_view_gui().");
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_neuron_dynamics_view_gui().");
 	if (!create_stdp_view_gui())
-		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_stdp_view_gui().");
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_stdp_view_gui().");
 	if (!create_eligibility_view_gui())
-		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_eligibility_view_gui().");
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_eligibility_view_gui().");
 	if (!create_blue_spike_spike_pattern_view_gui())
-		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_blue_spike_spike_pattern_view_gui().");
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_blue_spike_spike_pattern_view_gui().");
 	if (!create_in_silico_spike_pattern_view_gui())
-		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "submit_parker_sochacki_params_button_func","! create_in_silico_spike_pattern_view_gui().");
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_in_silico_spike_pattern_view_gui().");
+	if (!create_synaptic_wegiht_history_view_gui())
+		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_synaptic_wegiht_history_view_gui().");
 
 	neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	num_of_neuron_dynamics_graphs = get_num_neuron_dynamics_graphs_w_scroll();

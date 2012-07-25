@@ -350,7 +350,7 @@ bool create_current_pattern_view_gui(void)
         entry_parker_sochacki_err_tol= gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox),entry_parker_sochacki_err_tol, FALSE,FALSE,0);
 	char temp_str[40];
-      	sprintf(temp_str, "%.1E", 0.0);	
+      	sprintf(temp_str, "%.1E", 0.001);	
 	gtk_entry_set_text(GTK_ENTRY(entry_parker_sochacki_err_tol), temp_str);
 	gtk_widget_set_size_request(entry_parker_sochacki_err_tol, 65, 25) ;
 	lbl = gtk_label_new("Max Order:");

@@ -332,7 +332,11 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 	char str_neural_net_msg[NEURAL_NET_2_POST_TRIAL_HAND_MSG_STRING_LENGTH];
 	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
 	NeuralNet2PostTrialHandMsgItem msg_item;
+	HybridNetRLBMIData *hybrid_net_rl_bmi_data = get_hybrid_net_rl_bmi_data(); 
+	Neuron		**all_neurons = hybrid_net_rl_bmi_data->in_silico_network->all_neurons;
+	unsigned int 		i, num_of_neurons = hybrid_net_rl_bmi_data->in_silico_network->num_of_neurons;
 	msgs_neural_net_2_post_trial_hand = get_hybrid_net_rl_bmi_data()->msgs_neural_net_2_post_trial_hand;
+	double change_rate;
         while (1) 
 	{
 		sleep(1);
@@ -344,7 +348,13 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 			{
 				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
 					sleep(1);	// wait one second to ensure trial is really ended.
-					printf ("trajectory success: %f\n", msg_item.additional_data);
+					change_rate = msg_item.additional_data;
+					printf ("trajectory success: %f\n", change_rate);
+					for (i = 0; i < num_of_neurons; i++)
+					{
+						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], change_rate)) {
+							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
+					}
 					break;	
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);

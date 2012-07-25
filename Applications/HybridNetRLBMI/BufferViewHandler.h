@@ -14,7 +14,7 @@
 #include "InSilicoSpikePatternView.h"
 #include "STDPView.h"
 #include "EligibilityView.h"
-
+#include "WeightHistoryView.h"
 
 
 bool buffer_view_handler(void);

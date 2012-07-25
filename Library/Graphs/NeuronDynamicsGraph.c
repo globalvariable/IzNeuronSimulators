@@ -6,7 +6,7 @@ NeuronDynamicsGraph* allocate_neuron_dynamics_graph(GtkWidget *hbox, NeuronDynam
 	unsigned int i;
 	if (graph != NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
+		print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
 		return graph;
 	}
 	
@@ -108,7 +108,7 @@ bool change_length_of_neuron_dynamics_graph(NeuronDynamicsGraph *graph, TimeStam
 		return TRUE;
 	
 	if (log_request)
-		print_message(INFO_MSG ,"NeuroSim", "NeuronDynamicsGraph", "change_length_of_neuron_dynamics_graph", "Changing graph length");		
+		print_message(INFO_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "change_length_of_neuron_dynamics_graph", "Changing graph length");		
 
 	gtk_databox_graph_remove (GTK_DATABOX (graph->databox), graph->graph);
 	g_object_unref(graph->graph);
@@ -127,7 +127,7 @@ NeuronDynamicsGraphScroll* allocate_neuron_dynamics_graph_scroll(GtkWidget *hbox
 	unsigned int i;
 	if (graph != NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
+		print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "allocate_neuron_dynamics_box_and_graph", "graph != NULL");	
 		return graph;
 	}
 	
@@ -400,7 +400,7 @@ NeuronDynamicsGraphScrollLimited* allocate_neuron_dynamics_graph_scroll_limited(
 	unsigned int i;
 	if (graph != NULL)
 	{
-		print_message(ERROR_MSG ,"NeuroSim", "NeuronDynamicsGraph", "allocate_neuron_dynamics_graph_scroll_limited", "graph != NULL");	
+		print_message(ERROR_MSG ,"IzNeuronSimulators", "NeuronDynamicsGraph", "allocate_neuron_dynamics_graph_scroll_limited", "graph != NULL");	
 		return graph;
 	}
 	

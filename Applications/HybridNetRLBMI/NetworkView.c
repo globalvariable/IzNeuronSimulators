@@ -79,6 +79,9 @@ static LayerNrnGrpNeuronCombo *combos_select_neuron;
 static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
 static GtkWidget *entry_I_inject;
 static GtkWidget *btn_submit_injection_current;
+static GtkWidget *btn_submit_synaptic_weight;
+static GtkWidget *entry_weight_lower_limit;
+static GtkWidget *entry_weight_upper_limit;
 
 static GtkWidget *entry_simulation_length;
 
@@ -112,6 +115,8 @@ static void submit_stdp_and_eligibility_button_func(void);
 
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void submit_injection_current_button_func(void);
+static void submit_synaptic_weight_button_func(void);
+
 static void simulate_with_no_reward_button_func(void);
 
 static void ready_for_simulation_button_func(void);
@@ -823,6 +828,22 @@ bool create_network_view_gui(void)
 	gtk_widget_set_size_request(entry_I_inject, 40, 25);	
 	gtk_entry_set_text(GTK_ENTRY(entry_I_inject), "0");	
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_synaptic_weight = gtk_button_new_with_label("Submit Weight");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_synaptic_weight, FALSE, FALSE, 0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	entry_weight_lower_limit=  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_weight_lower_limit, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_weight_lower_limit, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_weight_lower_limit), "0.001");	
+	entry_weight_upper_limit=  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_weight_upper_limit, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_weight_upper_limit, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_weight_upper_limit), "1");	
+
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -910,6 +931,8 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
 
       	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_submit_synaptic_weight), "clicked", G_CALLBACK(submit_synaptic_weight_button_func), NULL);
+
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_ready_for_simulation), "clicked", G_CALLBACK(ready_for_simulation_button_func), NULL);
@@ -1166,6 +1189,20 @@ static void submit_injection_current_button_func(void)
 	neuron->iz_params->I_inject = atof(gtk_entry_get_text(GTK_ENTRY(entry_I_inject)));
 }
 
+static void submit_synaptic_weight_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	Neuron *neuron;
+	unsigned int layer_num, nrn_grp_num, nrn_num;
+	double lower_limit, upper_limit;
+	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! layer_neuron_group_neuron_get_selected().");
+	neuron = get_neuron_address(bmi_data->in_silico_network, layer_num, nrn_grp_num, nrn_num);					
+	lower_limit = atof(gtk_entry_get_text(GTK_ENTRY(entry_weight_lower_limit)));
+	upper_limit = atof(gtk_entry_get_text(GTK_ENTRY(entry_weight_upper_limit)));
+	if (! set_neuron_synaptic_weights(neuron, lower_limit, upper_limit))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
+}
 
 static void simulate_with_no_reward_button_func(void)
 {
