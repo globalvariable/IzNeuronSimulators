@@ -44,6 +44,9 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	if (nrn->eligibility_list != NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->eligibility_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->eligibility_list = g_new0(EligibilityList, 1);
+	if (nrn->depol_eligibility_list != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->depol_eligibility_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->depol_eligibility_list = g_new0(DepolEligibilityList, 1);
 	if (nrn->trial_event_buffer != NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
 	nrn->trial_event_buffer = allocate_neuron_trial_event_buffer(MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY);

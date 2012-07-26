@@ -765,7 +765,7 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
- 	lbl = gtk_label_new("Eligiblity ---------");
+ 	lbl = gtk_label_new("Eligibility ---------");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);  
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -791,7 +791,7 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
- 	lbl = gtk_label_new("DepolEligiblity ---------");
+ 	lbl = gtk_label_new("DepolEligibility ---------");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);  
 
   	hbox = gtk_hbox_new(FALSE, 0);
