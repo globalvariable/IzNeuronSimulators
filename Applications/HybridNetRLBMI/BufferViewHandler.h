@@ -14,6 +14,7 @@
 #include "InSilicoSpikePatternView.h"
 #include "STDPView.h"
 #include "EligibilityView.h"
+#include "DepolEligibilityView.h"
 #include "WeightHistoryView.h"
 
 
@@ -23,6 +24,7 @@ void send_global_pause_request_to_buffer_view_handler(void);
 bool send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
 bool send_stdp_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
 bool send_eligibility_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
+bool send_depol_eligibility_graph_resume_request_to_buffer_view_handler(unsigned int graph_idx);
 bool send_blue_spike_spike_graph_resume_request_to_buffer_view_handler(void);
 bool send_in_silico_spike_graph_resume_request_to_buffer_view_handler(void);
 bool is_buffer_view_handler_paused(void);

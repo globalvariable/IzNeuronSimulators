@@ -2,19 +2,19 @@
 
 
 
-bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min)
+bool create_ps_eligibility_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min)
 {
 	unsigned int i, num_of_neurons = 0;
 	char msg[200];
 	Neuron *neuron = NULL;
 	if (is_neuron_group_free (network, layer, nrn_grp))
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligiblity_for_neuron_group", "is_neuron_group_free ().");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligibility_for_neuron_group", "is_neuron_group_free ().");
 	if (! get_num_of_neurons_in_neuron_group(network, layer, nrn_grp, &num_of_neurons))
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligiblity_for_neuron_group", "! get_num_of_neurons_in_neuron_group().");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligibility_for_neuron_group", "! get_num_of_neurons_in_neuron_group().");
 	for (i = 0; i < num_of_neurons; i++)
 	{
 		neuron = get_neuron_address(network, layer, nrn_grp, i);
-		if (! create_ps_eligiblity_for_neuron(neuron , parker_sochacki_max_order, eligibility_tau_max, eligibility_tau_min))
+		if (! create_ps_eligibility_for_neuron(neuron , parker_sochacki_max_order, eligibility_tau_max, eligibility_tau_min))
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "create_ps_eligibility_for_neuron_group", "! create_ps_eligibility_for_neuron().");					
 	}
 	sprintf(msg, "Created Eligibility data for %u neurons in Layer: %u NeuronGroup: %u.", num_of_neurons, layer, nrn_grp);
@@ -22,7 +22,7 @@ bool create_ps_eligiblity_for_neuron_group(Network *network, unsigned int layer,
 	return TRUE;
 }
 
-bool create_ps_eligiblity_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double eligibility_tau_max, double  eligibility_tau_min)
+bool create_ps_eligibility_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double eligibility_tau_max, double  eligibility_tau_min)
 {
 	unsigned int i, j, num_of_synapses;
 	EligibilityList		*eligibility_list;

@@ -15,6 +15,7 @@ typedef unsigned int LayerType;
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../STDP/STDP.h"
 #include "../Eligibility/Eligibility.h"
+#include "../Eligibility/DepolEligibility.h"
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
@@ -73,6 +74,7 @@ struct __Neuron
 	SynapseList					*syn_list;
 	STDPList					*stdp_list;
 	EligibilityList					*eligibility_list;
+	DepolEligibilityList				*depol_eligibility_list;
 	NeuronTrialEventBuffer			*trial_event_buffer;
 	NeuronSortedEventBuffer		*sorted_event_buffer;
 };

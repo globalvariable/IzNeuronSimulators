@@ -64,6 +64,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	STDPBufferLimited *stdp_buffer_limited = bmi_data->stdp_limited_buffer;
 	EligibilityBufferLimited *eligibility_buffer_limited = bmi_data->eligibility_limited_buffer;
+	DepolEligibilityBufferLimited *depol_eligibility_buffer_limited = bmi_data->depol_eligibility_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	FiringCount	*num_of_firing =  bmi_data->num_of_firing_of_neurons_in_trial;
 	unsigned int i, neurons_start_idx, neurons_end_idx; 
@@ -128,8 +129,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			{
 				nrn = all_neurons[i];
 				//nrn->iz_params->I_inject = 21;
-				if (!evaluate_neuron_dyn_stdp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
-					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dynevaluate_neuron_dyn()."); exit(1); }	
+				if (!evaluate_neuron_dyn_stdp_elig_depol_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
+					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
 				if (spike_generated)
 				{
 //					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
@@ -144,6 +145,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 			push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 			push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
+			push_depol_eligibility_to_depol_eligibility_buffer_limited(in_silico_network, depol_eligibility_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
 		}
 		integration_start_time = integration_end_time;
 		// routines	
