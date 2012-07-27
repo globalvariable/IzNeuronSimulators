@@ -75,6 +75,12 @@ static GtkWidget *entry_eligibility_tau_min;
 static GtkWidget *entry_eligibility_tau_max;
 static GtkWidget *entry_depol_eligibility_tau_min;
 static GtkWidget *entry_depol_eligibility_tau_max;
+static GtkWidget *entry_depol_eligibility_memb_v_coeff_min;
+static GtkWidget *entry_depol_eligibility_memb_v_coeff_max;
+static GtkWidget *entry_depol_eligibility_memo_change_min;
+static GtkWidget *entry_depol_eligibility_memo_change_max;
+static GtkWidget *entry_depol_eligibility_memo_tau_min;
+static GtkWidget *entry_depol_eligibility_memo_tau_max;
 static GtkWidget *btn_submit_stdp_and_eligibility;
 
 
@@ -817,6 +823,72 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
+	lbl = gtk_label_new("V Coeff:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	lbl = gtk_label_new("Min:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memb_v_coeff_min = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memb_v_coeff_min , FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_min), "1.0");
+	gtk_widget_set_size_request(entry_depol_eligibility_memb_v_coeff_min, 50, 25) ;
+	lbl = gtk_label_new("Max:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memb_v_coeff_max = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memb_v_coeff_max, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_max), "1.0");	
+	gtk_widget_set_size_request(entry_depol_eligibility_memb_v_coeff_max, 50, 25) ;
+
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+ 	lbl = gtk_label_new("DepolEligibility Memo ---------");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);  
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	lbl = gtk_label_new("Change:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	lbl = gtk_label_new("Min:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memo_change_min = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memo_change_min , FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memo_change_min), "0.1");
+	gtk_widget_set_size_request(entry_depol_eligibility_memo_change_min, 50, 25) ;
+	lbl = gtk_label_new("Max:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+       entry_depol_eligibility_memo_change_max = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memo_change_max, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memo_change_max), "1.0");	
+	gtk_widget_set_size_request(entry_depol_eligibility_memo_change_max, 50, 25) ;
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("Tau(ms):");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	lbl = gtk_label_new("Min:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memo_tau_min = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memo_tau_min , FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_min), "1");
+	gtk_widget_set_size_request(entry_depol_eligibility_memo_tau_min, 50, 25) ;
+	lbl = gtk_label_new("Max:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memo_tau_max = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memo_tau_max, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_max), "5");	
+	gtk_widget_set_size_request(entry_depol_eligibility_memo_tau_max, 50, 25) ;
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
 	btn_submit_stdp_and_eligibility = gtk_button_new_with_label("Submit");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_stdp_and_eligibility, FALSE, FALSE, 0);
 	lbl = gtk_label_new("");
@@ -1191,12 +1263,19 @@ static void submit_stdp_and_eligibility_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double depol_eligibility_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_min)));
 	double depol_eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_max)));
+	double depol_eligibility_memb_v_coeff_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_min)));
+	double depol_eligibility_memb_v_coeff_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_max)));
+	double depol_eligibility_memo_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_min)));
+	double depol_eligibility_memo_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_max)));
+	double depol_eligibility_memo_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_min)));
+	double depol_eligibility_memo_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_max)));
+
 
 	if (! create_ps_stdp_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_stdp_for_neuron_group().");	
 	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_eligibility_for_neuron_group().");	
-	if (! create_ps_depol_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  depol_eligibility_tau_max, depol_eligibility_tau_min))
+	if (! create_ps_depol_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  depol_eligibility_tau_max, depol_eligibility_tau_min, depol_eligibility_memb_v_coeff_max, depol_eligibility_memb_v_coeff_min, depol_eligibility_memo_change_max, depol_eligibility_memo_change_min, depol_eligibility_memo_tau_max, depol_eligibility_memo_tau_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_depol_eligibility_button_func", "! create_ps_depol_eligibility_for_neuron_group().");
 	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
 	return;
