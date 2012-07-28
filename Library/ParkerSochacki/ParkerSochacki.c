@@ -999,7 +999,7 @@ int parker_sochacki_step_stdp_elig_depol_elig (Neuron *nrn, double *v_pol_vals, 
  		stdp_post_pre_pol_vals[s][1] = stdp_post_pre_decay_rate_pol_vals[s][0] * stdp_post_pre_pol_vals[s][0];	
 		eligibility_pol_vals[s][1] = eligibility_decay_rate_pol_vals[s][0] * eligibility_pol_vals[s][0];  
 		memo_depol_eligibility_pol_vals[s][1] = memo_depol_eligibility_decay_rate_pol_vals[s][0] * memo_depol_eligibility_pol_vals[s][0];  
-		depol_eligibility_pol_vals[s][1] = depol_eligibility_v_coeff_pol_vals[s][0] * (depol_eligibility_decay_rate[s] * depol_eligibility_pol_vals[s][0] + v_pol_vals[0] * stdp_pre_post_pol_vals[s][0]);  
+		depol_eligibility_pol_vals[s][1] = depol_eligibility_v_coeff_pol_vals[s][0] * (depol_eligibility_decay_rate[s] * depol_eligibility_pol_vals[s][0] + v_pol_vals[0] * memo_depol_eligibility_pol_vals[s][0]);  
 	}
 
 	v_prev_for_iter = v_pol_vals[0] + v_pol_vals[1] * dt;

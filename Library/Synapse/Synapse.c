@@ -20,6 +20,7 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate)
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
 	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
+	double	*depol_eligibility_saved = neuron->depol_eligibility_list->depol_eligibility_saved;
 	double weight_change;
 	for (i = 0; i < num_of_synapses; i++)
 	{
@@ -28,10 +29,7 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate)
 		{
 			change_rate = -0.01;
 		}
-		if ((eligibility_saved[i] == 0) && (change_rate <= 0))
-			weight_change = 0.1;
-		else
-			weight_change = eligibility_saved[i]*change_rate;
+		weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*change_rate;
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
 			if ((synapse->weight - weight_change) < 0)
@@ -60,6 +58,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
 	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
+	double	*depol_eligibility_saved = neuron->depol_eligibility_list->depol_eligibility_saved;
 	double weight_change;
 	for (i = 0; i < num_of_synapses; i++)
 	{
@@ -68,10 +67,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 		{
 			change_rate = -0.01;
 		}
-		if ((eligibility_saved[i] < 0.001) && (eligibility_saved[i] > -0.001) && (change_rate <= 0))
-			weight_change = 0.5;
-		else
-			weight_change = eligibility_saved[i]*change_rate;
+		weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*change_rate;
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
 			if ((synapse->weight + weight_change) < 0)

@@ -352,12 +352,12 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 					sleep(1);	// wait one second to ensure trial is really ended.
 					change_rate = msg_item.additional_data;
 					printf ("trajectory success: %f\n", change_rate);
-			/*		for (i = 0; i < num_of_neurons; i++)
+					for (i = 0; i < num_of_neurons; i++)
 					{
 						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], change_rate)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
 					}
-			*/		break;	
+					break;	
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);
 				        exit(1); 
