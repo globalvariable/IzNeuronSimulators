@@ -67,7 +67,10 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 		{
 			change_rate = -0.01;
 		}
-		weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*change_rate;
+		if (neuron->fired_saved)
+			weight_change = eligibility_saved[i]*change_rate;
+		else
+			weight_change = (-depol_eligibility_saved[i])*change_rate;			
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
 			if ((synapse->weight + weight_change) < 0)
@@ -75,9 +78,9 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 				synapse->weight = 0;
 				write_to_synapse_history_buffer(synapse);
 			}
-			else if ((synapse->weight + weight_change) > 15)
+			else if ((synapse->weight + weight_change) > 20)
 			{			
-				synapse->weight = 15;
+				synapse->weight = 20;
 				write_to_synapse_history_buffer(synapse);
 			}
 			else

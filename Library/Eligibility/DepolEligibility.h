@@ -32,6 +32,7 @@ bool create_ps_depol_eligibility_for_neuron_group(Network *network, unsigned int
 bool create_ps_depol_eligibility_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double depol_eligibility_tau_max, double  depol_eligibility_tau_min, double depol_eligibility_memb_v_coeff_max, double  depol_eligibility_memb_v_coeff_min, double depol_eligibility_memo_change_max, double depol_eligibility_memo_change_min, double depol_eligibility_memo_tau_max, double depol_eligibility_memo_tau_min);
 
 void clear_depol_eligibility_for_neuron(Neuron *neuron);
+void clear_memo_depol_eligibility_for_neuron(Neuron *neuron);
 void save_depol_eligibility_for_neuron(Neuron *neuron);
 
 #endif

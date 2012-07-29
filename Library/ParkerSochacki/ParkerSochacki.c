@@ -879,16 +879,30 @@ bool evaluate_neuron_dyn_stdp_elig_depol_elig(Neuron *nrn, TimeStamp start_time,
 		{
 			clear_eligibility_for_neuron(nrn);
 			clear_depol_eligibility_for_neuron(nrn);
+			clear_memo_depol_eligibility_for_neuron(nrn);
+			nrn->fired = FALSE;
 		}
 		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)
 		{
 			save_eligibility_for_neuron(nrn);	
+			if (nrn->fired)
+			{
+				clear_depol_eligibility_for_neuron(nrn);
+				clear_memo_depol_eligibility_for_neuron(nrn);			
+			}
 			save_depol_eligibility_for_neuron(nrn);	
+			nrn->fired_saved = nrn->fired;
 		}
 		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)
 		{
 			save_eligibility_for_neuron(nrn);	
-			save_depol_eligibility_for_neuron(nrn);					
+			if (nrn->fired)
+			{
+				clear_depol_eligibility_for_neuron(nrn);
+				clear_memo_depol_eligibility_for_neuron(nrn);			
+			}
+			save_depol_eligibility_for_neuron(nrn);				
+			nrn->fired_saved = nrn->fired;	
 		}
 		else
 		{
@@ -939,6 +953,7 @@ bool parker_sochacki_integration_stdp_elig_depol_elig(Neuron *nrn, TimeStamp int
 	{
 		dt_part = newton_raphson_peak_detection(iz_params->v_peak, v_pol_vals, p, dt);
 		*spike_generated = TRUE;
+		nrn->fired = TRUE;
 		*spike_time = integration_start_time+((TimeStamp)((dt_part*PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+0.5)); // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
 //		printf("---------------->  Spike time %.15f %llu\n", ((integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE)+dt_part, *spike_time);		
 		if (!schedule_synaptic_event(nrn, *spike_time))
@@ -953,7 +968,6 @@ bool parker_sochacki_integration_stdp_elig_depol_elig(Neuron *nrn, TimeStamp int
 			depol_eligibility[s] = 0; 
 			memo_depol_eligibility[s] = 0; // for depol_eligibility & memo_depol_eligibility, it is unnecessary to parker_sochacki_update_stdp_elig_depol_elig since below they are zero' d after a spike generation .
 		}
-
 		v_pol_vals[0] = iz_params->c;    ///   v = c
 		u_pol_vals[0] = iz_params->u + iz_params->d;  ///  u = u + d
 		conductance_excitatory_pol_vals[0] =   iz_params->conductance_excitatory;

@@ -282,7 +282,8 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					{
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_START_EVENT)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
-					}
+						all_neurons[i]->fired = FALSE;
+					}					
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_MOV_OBJ_REACHED_THRESHOLD:  
 					current_sys_time = rt_tasks_data->current_system_time;
