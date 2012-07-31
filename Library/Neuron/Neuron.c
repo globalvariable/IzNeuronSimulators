@@ -57,6 +57,8 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->sorted_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
 	nrn->sorted_event_buffer = g_new0(NeuronSortedEventBuffer, 1);
 	nrn->sorted_event_buffer->buff = g_new0(NeuronSortedEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);  // It is on purpose, allocate buffer for trial eventsn ow.
+	nrn->sorted_event_buffer->buff_size = NEURON_TRIAL_EVENT_BUFFER_SIZE;
+
 	return TRUE;
 }
 

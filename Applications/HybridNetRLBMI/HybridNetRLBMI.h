@@ -14,6 +14,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../Library/EligibilityData/DepolEligibilityData.h"
 #include "../../Library/SpikeData/SpikeData.h"
 #include "../../Library/Stats/FiringStats.h"
+#include "../../Library/InjectionCurrentData/InjectionCurrentData.h"
 #include "../../../ExperimentHandlers/Library/Messages/TrialHand2NeuralNet.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2TrialHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
@@ -39,6 +40,8 @@ struct __HybridNetRLBMIData
 	NeuralNet2MovObjHandMsgMultiThread		*msgs_neural_net_2_mov_obj_hand_multi_thread;
 	NeuralNet2PostTrialHandMsg	*msgs_neural_net_2_post_trial_hand;
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
+	ConstantCurrent				*location_injection_current;
+	ConstantCurrent				*baseline_injection_current;
 	FiringCount					*num_of_firing_of_neurons_in_trial;   // num_of_neurons_in_network
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress

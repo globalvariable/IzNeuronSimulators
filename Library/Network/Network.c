@@ -559,18 +559,16 @@ bool set_layer_type_of_the_neurons_in_layer(Network *network, unsigned int layer
 	Layer		*ptr_layer;
 	NeuronGroup	*ptr_neuron_group;
 	Neuron		*ptr_neuron;
-	unsigned int i, j, k;
-	for (i = 0; i < network->layer_count; i++)
+	unsigned int j, k;
+
+	ptr_layer = network->layers[layer_num];	
+	for (j=0; j<ptr_layer->neuron_group_count; j++)
 	{
-		ptr_layer = network->layers[i];	
-		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		ptr_neuron_group = ptr_layer->neuron_groups[j];
+		for (k=0; k<ptr_neuron_group->neuron_count; k++)
 		{
-			ptr_neuron_group = ptr_layer->neuron_groups[j];
-			for (k=0; k<ptr_neuron_group->neuron_count; k++)
-			{
-				ptr_neuron = &(ptr_neuron_group->neurons[k]);
-				ptr_neuron->layer_type = layer_type;
-			}
+			ptr_neuron = &(ptr_neuron_group->neurons[k]);
+			ptr_neuron->layer_type = layer_type;
 		}
 	}
 	return TRUE;			
