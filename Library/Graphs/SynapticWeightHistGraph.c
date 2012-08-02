@@ -39,7 +39,7 @@ SynapticWeightHistGraph* allocate_synaptic_weight_history_graph(GtkWidget *hbox,
 		graph->x[i] = (float)i;
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 15, -15);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 25, -25);	
 
 	gtk_widget_show_all(hbox);	
 
@@ -65,6 +65,6 @@ bool update_synapse_history_graph(SynapticWeightHistGraph *graph, Network *netwo
 		if (read_idx < 0)
 			read_idx = SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE -1;  
 	}
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 15, -15);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 25, -25);	
 	return TRUE;				
 }

@@ -64,18 +64,21 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 	{
 		synapse = &(synapses[i]);
 		if (change_rate == 0)
-		{
-			change_rate = -0.01;
-		}
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights_with_history", "change_rate == 0.");		
 		if (neuron->fired_saved)
+		{
 			weight_change = eligibility_saved[i]*change_rate;
+		}
 		else
-			weight_change = (-depol_eligibility_saved[i])*change_rate;			
+		{
+			if (change_rate < 0)
+				weight_change = (-depol_eligibility_saved[i])*change_rate;		
+		}	
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
-			if ((synapse->weight + weight_change) < 0)
+			if ((synapse->weight + weight_change) < 0.01)
 			{
-				synapse->weight = 0;
+				synapse->weight = 0.01;
 				write_to_synapse_history_buffer(synapse);
 			}
 			else if ((synapse->weight + weight_change) > 20)

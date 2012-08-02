@@ -93,6 +93,8 @@ static GtkWidget *btn_submit_synaptic_weight;
 static GtkWidget *entry_weight_lower_limit;
 static GtkWidget *entry_weight_upper_limit;
 
+static GtkWidget *btn_submit_new_stdp_and_eligibility_for_neuron;
+
 static GtkWidget *entry_simulation_length;
 
 static GtkWidget *btn_simulate_with_no_reward;
@@ -126,7 +128,7 @@ static void submit_stdp_and_eligibility_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void submit_injection_current_button_func(void);
 static void submit_synaptic_weight_button_func(void);
-
+static void submit_new_stdp_and_eligibility_for_neuron_button_func(void);
 static void simulate_with_no_reward_button_func(void);
 
 static void ready_for_simulation_button_func(void);
@@ -168,6 +170,7 @@ bool create_network_view_gui(void)
 	{
 		gtk_combo_box_append_text(GTK_COMBO_BOX(combo_neuron_type), get_neuron_type_string(i, neuron_type_str));
 	}
+
 
  	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -300,8 +303,8 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),entry_tau_inhibitory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_tau_inhibitory, 50, 25) ;	
 
- 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), 1);	
-	set_neuron_param_entries(1);			
+ 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), 2);	
+	set_neuron_param_entries(2);			
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -960,6 +963,12 @@ bool create_network_view_gui(void)
 	gtk_widget_set_size_request(entry_weight_upper_limit, 50, 25);	
 	gtk_entry_set_text(GTK_ENTRY(entry_weight_upper_limit), "1");	
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_new_stdp_and_eligibility_for_neuron = gtk_button_new_with_label("Submit New STDP-Elig for Neuron");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_new_stdp_and_eligibility_for_neuron, TRUE, TRUE, 0);
+
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -1041,7 +1050,7 @@ bool create_network_view_gui(void)
 
       	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_submit_synaptic_weight), "clicked", G_CALLBACK(submit_synaptic_weight_button_func), NULL);
-
+      	g_signal_connect(G_OBJECT(btn_submit_new_stdp_and_eligibility_for_neuron), "clicked", G_CALLBACK(submit_new_stdp_and_eligibility_for_neuron_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_ready_for_simulation), "clicked", G_CALLBACK(ready_for_simulation_button_func), NULL);
@@ -1055,7 +1064,8 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
 	gtk_widget_set_sensitive(btn_submit_injection_current, FALSE);
-	gtk_widget_set_sensitive(btn_submit_synaptic_weight, FALSE);		
+	gtk_widget_set_sensitive(btn_submit_synaptic_weight, FALSE);	
+	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, FALSE);		
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
@@ -1323,6 +1333,43 @@ static void submit_synaptic_weight_button_func(void)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
 }
 
+static void submit_new_stdp_and_eligibility_for_neuron_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	Neuron *neuron;
+	unsigned int layer_num, nrn_grp_num, nrn_num;
+	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! layer_neuron_group_neuron_get_selected().");
+	neuron = get_neuron_address(bmi_data->in_silico_network, layer_num, nrn_grp_num, nrn_num);		
+	double STDP_pre_post_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_min)));
+	double STDP_pre_post_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_max)));
+	double STDP_pre_post_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_tau_min)));
+	double STDP_pre_post_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_tau_max)));
+	double STDP_post_pre_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_change_min)));
+	double STDP_post_pre_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_change_max)));
+	double STDP_post_pre_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_tau_min)));
+	double STDP_post_pre_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_tau_max)));
+	double eligibility_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_min)));
+	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
+	double depol_eligibility_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_min)));
+	double depol_eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_max)));
+	double depol_eligibility_memb_v_coeff_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_min)));
+	double depol_eligibility_memb_v_coeff_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_max)));
+	double depol_eligibility_memo_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_min)));
+	double depol_eligibility_memo_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_max)));
+	double depol_eligibility_memo_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_min)));
+	double depol_eligibility_memo_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_max)));
+
+	if (! submit_new_ps_stdp_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_stdp_vals_for_neuron().");	
+	if (! submit_new_ps_eligibility_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");	
+	if (! submit_new_ps_depol_eligibility_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(),  depol_eligibility_tau_max, depol_eligibility_tau_min, depol_eligibility_memb_v_coeff_max, depol_eligibility_memb_v_coeff_min, depol_eligibility_memo_change_max, depol_eligibility_memo_change_min, depol_eligibility_memo_tau_max, depol_eligibility_memo_tau_min))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! ubmit_new_ps_depol_eligibility_vals_for_neuron().");
+	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
+	return;
+}
+
 static void simulate_with_no_reward_button_func(void)
 {
 	char *end_ptr;
@@ -1421,4 +1468,5 @@ static void ready_for_simulation_button_func(void)
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, TRUE);	
 }

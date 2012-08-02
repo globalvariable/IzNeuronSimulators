@@ -59,7 +59,33 @@ bool create_ps_eligibility_for_neuron(Neuron* neuron , unsigned int parker_socha
 	}
 	return TRUE;
 }
+bool submit_new_ps_eligibility_vals_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min)
+{
+	unsigned int i, j, num_of_synapses;
+	EligibilityList		*eligibility_list;
 
+	if (parker_sochacki_max_order <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "submit_new_ps_eligibility_vals_for_neuron", "parker_sochacki_max_order <= 0.");
+	if (eligibility_tau_max < eligibility_tau_min)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "submit_new_ps_eligibility_vals_for_neuron", "eligibility_tau_max < eligibility_tau_min.");
+	if (eligibility_tau_max <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "submit_new_ps_eligibility_vals_for_neuron", "eligibility_tau_max <= 0.");
+	if (eligibility_tau_min <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "submit_new_ps_eligibility_vals_for_neuron", "eligibility_tau_min <= 0.");
+
+	eligibility_list = neuron->eligibility_list;
+	num_of_synapses = neuron->syn_list->num_of_synapses;
+
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		eligibility_list->eligibility_decay_rate[i] = -1.0 / ( ( (eligibility_tau_max-eligibility_tau_min) * get_rand_number() ) + eligibility_tau_min );
+		for (j = 0; j < parker_sochacki_max_order + 1; j++)
+		{
+			eligibility_list->eligibility_decay_rate_pol_vals[i][j] = eligibility_list->eligibility_decay_rate[i]/(j+1);	
+		}
+	}
+	return TRUE;
+}
 void clear_eligibility_for_neuron(Neuron *neuron)
 {
 	unsigned int i, num_of_synapses;
