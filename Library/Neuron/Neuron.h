@@ -66,8 +66,6 @@ struct __Neuron
 	unsigned int					neuron_group;
 	unsigned int					neuron_num;	
 	bool						inhibitory;	
-	bool 						fired;
-	bool 						fired_saved;
 	LayerType					layer_type;
 	IzNeuronParams				*iz_params;
 	NeuronAxonList				*axon_list;

@@ -170,19 +170,6 @@ void clear_depol_eligibility_for_neuron(Neuron *neuron)
 	}		
 }
 
-void clear_memo_depol_eligibility_for_neuron(Neuron *neuron)
-{
-	unsigned int i, num_of_synapses;
-	double		*memo_depol_eligibility;
-
-	memo_depol_eligibility = neuron->depol_eligibility_list->memo_depol_eligibility;
-	num_of_synapses = neuron->syn_list->num_of_synapses;
-	for (i = 0; i < num_of_synapses; i++)
-	{
-		memo_depol_eligibility[i] = 0;
-	}		
-}
-
 void save_depol_eligibility_for_neuron(Neuron *neuron)
 {
 	unsigned int i, num_of_synapses;
