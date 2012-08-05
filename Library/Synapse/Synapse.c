@@ -66,9 +66,9 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 		if (change_rate == 0)
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights_with_history", "change_rate == 0.");		
 		if (change_rate < 0)
-			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(-1+change_rate);
+			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(-1+change_rate);   // major change in weight due to incomplete trial.
 		else if (change_rate > 0)
-			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(1-change_rate);
+			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(1-change_rate);  // slight change in weight, if the reward(change_rate) is close to 1, so little change in weight. 
 		else
 			weight_change = 0;
 
