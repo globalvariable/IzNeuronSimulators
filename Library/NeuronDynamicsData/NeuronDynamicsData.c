@@ -137,7 +137,7 @@ bool submit_selected_neuron_to_neuron_dynamics_buffer_limited(Network *network, 
 	return TRUE;
 }
 
-bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx) 
+bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int arg_neuron_id) 
 {
 	unsigned int i;
 	unsigned int neuron_id;
@@ -147,9 +147,7 @@ bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, Ne
 	for (i = 0; i < buffer->num_of_selected_neurons; i++)
 	{
 		neuron_id = buffer->selected_dyns[i].neuron_id;
-		if (neuron_start_idx > neuron_id)	
-			continue;
- 		if (neuron_id >= neuron_end_idx )	// selected_neuron is not in neuron indexes of calling thread.
+		if (arg_neuron_id != neuron_id)	
 			continue;
 		selected_dyns = &(buffer->selected_dyns[i]);
 		iz_params = network->all_neurons[neuron_id]->iz_params;

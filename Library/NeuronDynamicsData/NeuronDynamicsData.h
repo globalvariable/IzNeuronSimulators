@@ -56,6 +56,6 @@ bool get_neuron_dynamics_last_sample_time_and_write_idx(NeuronDynamicsBuffer *bu
 NeuronDynamicsBufferLimited* allocate_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, unsigned int buffer_size, unsigned int num_of_selected_neurons);
 NeuronDynamicsBufferLimited* deallocate_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer);
 bool submit_selected_neuron_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num,  int dynamics_type, unsigned int list_idx);
-bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx);
+bool push_neuron_dynamics_to_neuron_dynamics_buffer_limited(Network *network, NeuronDynamicsBufferLimited* buffer, TimeStamp sampling_time, unsigned int arg_neuron_id);
 bool get_neuron_dynamics_limited_last_sample_time_and_write_idx(NeuronDynamicsBufferLimited *buffer, unsigned int selected_neuron_list_idx, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

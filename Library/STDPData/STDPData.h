@@ -28,6 +28,6 @@ struct __STDPBufferLimited		// For faster handling of stdp buffer.
 STDPBufferLimited* allocate_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, unsigned int buffer_size, unsigned int num_of_selected_synapses);
 STDPBufferLimited* deallocate_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer);
 bool submit_selected_synapse_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, unsigned int synapse_num, int stdp_type, unsigned int list_idx);
-bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx);
+bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, TimeStamp sampling_time, unsigned int arg_neuron_id);
 bool get_stdp_limited_last_sample_time_and_write_idx(STDPBufferLimited *buffer, unsigned int selected_synapse_list_idx, TimeStamp *last_sample_time, unsigned int *write_idx);
 #endif

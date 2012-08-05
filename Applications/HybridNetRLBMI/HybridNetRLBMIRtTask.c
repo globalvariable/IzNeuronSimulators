@@ -62,6 +62,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	NeuralNet2MovObjHandMsgMultiThread *msgs_neural_net_2_mov_obj_hand_multi_thread = bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread;
 	MovObjHand2NeuralNetMsgMultiThread *msgs_mov_obj_hand_2_neural_net_multi_thread = bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
 	Neuron		**all_neurons = in_silico_network->all_neurons;
+	unsigned int	num_of_all_neurons =  in_silico_network->num_of_neurons;
 	Neuron 		*nrn;
 
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
@@ -70,7 +71,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	DepolEligibilityBufferLimited *depol_eligibility_buffer_limited = bmi_data->depol_eligibility_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
 	FiringCount	*num_of_firing =  bmi_data->num_of_firing_of_neurons_in_trial;
-	unsigned int i, neurons_start_idx, neurons_end_idx; 
+	unsigned int i; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
 	char task_name[10];
@@ -82,12 +83,9 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "num_of_dedicated_cpu_threads != (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS."); exit(1); }	
 	if (num_of_dedicated_cpu_threads != (NUM_OF_MOV_OBJ_HAND_2_NEURAL_NET_MSG_BUFFERS)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "num_of_dedicated_cpu_threads != (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS."); exit(1); }	
-	neurons_start_idx = (((unsigned int)(in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads))+1) * ( task_num );
-	neurons_end_idx = (((unsigned int)(in_silico_network->num_of_neurons/num_of_dedicated_cpu_threads))+1)  * (task_num + 1);
-	if (neurons_end_idx >  in_silico_network->num_of_neurons)		/// when CPU_NUM 4 and num_of_all_neuons = 5    neurons_start_idx will be 6 and neurons_end_idx will be 5
-		neurons_end_idx = in_silico_network->num_of_neurons;		/// for (i = 6; i < 5; i++) { printf ("hit")}      it does not hit !!!  SO this code is OK. 
 
-	printf("neurons_start_idx = %u neurons_end_idx = %u\n", neurons_start_idx, neurons_end_idx);
+	for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
+		printf ("Task Num: %u\t Neuron: %u\n", task_num, i);
 
 	sprintf(task_num_name, "%u", task_num );
 	strcpy(task_name, IZ_PS_NETWORK_SIM_TASK_NAME);
@@ -111,7 +109,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 
         mlockall(MCL_CURRENT | MCL_FUTURE);
 	rt_make_hard_real_time();		// do not forget this // check the task by nano /proc/rtai/scheduler (HD/SF) 
-	for (i = neurons_start_idx; i < neurons_end_idx; i++)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
+	for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // blue spike buffer handler might schedule events earlier.  // only handle the neurons this thread is responsible for
 		reset_neuron_event_buffer(all_neurons[i]);
 
 	for (i = 0; i < num_of_dedicated_cpu_threads; i++)
@@ -128,7 +126,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 		integration_end_time =  ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 		for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 		{
-			for (i = neurons_start_idx; i < neurons_end_idx; i++)  // simulate the neurons for which this thread is responsible
+			for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
 			{
 				nrn = all_neurons[i];
 				if (!evaluate_neuron_dyn_stdp_elig_depol_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
@@ -143,11 +141,12 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					}
 					num_of_firing[i]++;
 				}	
+				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, i);
+				push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, i);
+				push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, i);
+				push_depol_eligibility_to_depol_eligibility_buffer_limited(in_silico_network, depol_eligibility_buffer_limited, time_ns, i);
 			}
-			push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
-			push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
-			push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
-			push_depol_eligibility_to_depol_eligibility_buffer_limited(in_silico_network, depol_eligibility_buffer_limited, time_ns, neurons_start_idx, neurons_end_idx);
+
 		}
 		integration_start_time = integration_end_time;
 		// routines	

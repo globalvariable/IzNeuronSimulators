@@ -53,7 +53,7 @@ bool submit_selected_synapse_to_stdp_buffer_limited(Network *network, STDPBuffer
 	return TRUE;
 }
 
-bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, TimeStamp sampling_time, unsigned int neuron_start_idx, unsigned int neuron_end_idx)
+bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffer, TimeStamp sampling_time, unsigned int arg_neuron_id)
 {
 	unsigned int i;
 	unsigned int neuron_id;
@@ -62,9 +62,7 @@ bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffe
 	for (i = 0; i < buffer->num_of_selected_synapses; i++)
 	{
 		neuron_id = buffer->selected_stdp[i].neuron_id;   // re-get neuron id for writing into buffer. invalid synapse id due to simulatenous submit_selected_synapse_to_stdp_buffer_limited leads to TRAP.
-		if (neuron_start_idx > neuron_id)	
-			continue;
- 		if (neuron_id >= neuron_end_idx )	// selected_neuron is not in neuron indexes of calling thread.
+		if (arg_neuron_id != neuron_id)	
 			continue;
 		selected_stdp = &(buffer->selected_stdp[i]);
 		pthread_mutex_lock(&(selected_stdp->mutex));   //  // it is within mutex for getting valid synapse_num for the specified neuron_id  // re-get neuron_id for simultaneous submit_selected_synapse_to_stdp_buffer_limited
