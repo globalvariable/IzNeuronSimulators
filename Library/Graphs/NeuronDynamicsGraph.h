@@ -12,7 +12,7 @@ typedef struct 	__NeuronDynamicsGraphScrollLimited 	NeuronDynamicsGraphScrollLim
 #include <gtkdatabox_ruler.h>
 #include <gtkdatabox_lines.h>
 #include <gtkdatabox_grid.h>
-#include "../../../BlueSpike/TimeStamp.h"
+#include "../../../BlueSpike/System/TimeStamp/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../Network/Network.h"
 #include "../NeuronDynamicsData/NeuronDynamicsData.h"

@@ -13,7 +13,6 @@
 #include "../../Library/Neuron/Neuron.h"
 #include "../../Library/Neuron/NeuronTypes.h"
 #include "../../../BlueSpike/Library/Misc/Randn.h"
-#include "../../../ExperimentHandlers/Library/Combos/TrialTypesCombo.h"
 #include "../../Library/Combos/LayerNrnGrpNeuronCombo.h"
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"

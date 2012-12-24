@@ -1,18 +1,18 @@
 #include "InjectionCurrentData.h"
 
 
-CurrentTemplate* allocate_current_templates(Network *network, TrialTypesData *trial_types_data, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents)
+CurrentTemplate* allocate_current_templates(Network *network, TrialHandParadigmRobotReach *paradigm, CurrentTemplate* current_data, unsigned int num_of_trial_start_available_currents, unsigned int num_of_in_refractory_currents, unsigned int num_of_in_trial_currents)
 {
 	unsigned int i, j, k, m, n;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
 	if (network == NULL)
 		return (CurrentTemplate*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_templates", "network == NULL.");
-	if (trial_types_data == NULL)
+	if (paradigm == NULL)
 		return (CurrentTemplate*)print_message(ERROR_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "allocate_current_templates", "trial_types_data == NULL.");
 	if (current_data != NULL)
 	{
-		current_data = deallocate_current_templates(network, trial_types_data, current_data);
-		current_data = allocate_current_templates(network, trial_types_data, current_data, num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+		current_data = deallocate_current_templates(network, paradigm, current_data);
+		current_data = allocate_current_templates(network, paradigm, current_data, num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
 		return current_data;
 	}
 	current_data = g_new0(CurrentTemplate,1);
@@ -59,16 +59,16 @@ CurrentTemplate* allocate_current_templates(Network *network, TrialTypesData *tr
 		}		
 	}
 
-	current_data->in_trial_currents = g_new0(CurrentPatternTemplate*, trial_types_data->num_of_trial_types);
+	current_data->in_trial_currents = g_new0(CurrentPatternTemplate*, paradigm->num_of_robot_target_positions);
 	current_data->num_of_in_trial_currents = num_of_in_trial_currents;
-	for (n = 0; n < trial_types_data->num_of_trial_types; n++)
+	for (n = 0; n < paradigm->num_of_robot_target_positions; n++)
 	{
 		current_data->in_trial_currents[n] = g_new0(CurrentPatternTemplate, num_of_in_trial_currents);
 		for (m = 0; m < num_of_in_trial_currents; m++)
 		{
-			current_data->in_trial_currents[n][m].template_samples = g_new0(NeuronCurrentSample, trial_types_data->types[n].constraints.max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
-			current_data->in_trial_currents[n][m].num_of_template_samples = trial_types_data->types[n].constraints.max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
-			current_data->in_trial_currents[n][m].template_length = trial_types_data->types[n].constraints.max_trial_length;
+			current_data->in_trial_currents[n][m].template_samples = g_new0(NeuronCurrentSample,  paradigm->max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
+			current_data->in_trial_currents[n][m].num_of_template_samples = paradigm->max_trial_length/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+			current_data->in_trial_currents[n][m].template_length = paradigm->max_trial_length;
 			for (k = 0; k < current_data->in_trial_currents[n][m].num_of_template_samples ; k++)
 			{
 				if (!get_num_of_layers_in_network(network, &num_of_layers))
@@ -90,7 +90,7 @@ CurrentTemplate* allocate_current_templates(Network *network, TrialTypesData *tr
 		}
 	}
 
-	for (n = 0; n < trial_types_data->num_of_trial_types; n++)
+	for (n = 0; n < paradigm->num_of_robot_target_positions; n++)
 	{
 		for (m = 0; m < num_of_in_trial_currents; m++)
 		{
@@ -115,7 +115,7 @@ CurrentTemplate* allocate_current_templates(Network *network, TrialTypesData *tr
 	return current_data;
 
 }
-CurrentTemplate* deallocate_current_templates(Network *network, TrialTypesData *trial_types_data, CurrentTemplate* current_data)
+CurrentTemplate* deallocate_current_templates(Network *network, TrialHandParadigmRobotReach *paradigm, CurrentTemplate* current_data)
 {
 	print_message(BUG_MSG ,"IzNeuronSimulators", "InjectionCurrentData", "deallocate_current_templates", "Not implemented.");
 	return NULL;

@@ -52,7 +52,7 @@ static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
 // SECOND COLUMN
 static LayerNrnGrpNeuronCombo *combos_select_neuron;
-static TrialTypesCombo *combo_trial_type;
+static GtkWidget *combo_target_num;
 static GtkWidget *entry_current_pattern_number;
 
 static GtkWidget *entry_init_current;
@@ -535,10 +535,11 @@ bool create_current_pattern_view_gui(void)
   	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	combo_trial_type = allocate_trial_types_combo();
-        gtk_box_pack_start(GTK_BOX(hbox), combo_trial_type->combo, TRUE,TRUE,0);
-	if (! update_trial_types_combo(get_bmi_simulation_spike_generator_data()->trial_types_data, combo_trial_type))
-		return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternView", "create_current_pattern_view_gui", "! update_trial_types_combo().");
+	combo_target_num = gtk_combo_box_new_text();
+        gtk_box_pack_start(GTK_BOX(hbox), combo_target_num, TRUE,TRUE,0);
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_target_num), "Left");    // ignore uncessary string part
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_target_num), "Right");    // ignore uncessary string part
+	gtk_combo_box_set_active (GTK_COMBO_BOX(combo_target_num), 0);
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -847,17 +848,17 @@ static void submit_parker_sochacki_params_button_func(void)
 static void submit_num_of_currents_button_func(void)
 {
 	char *end_ptr;
-	TrialTypesData *trial_types_data = get_bmi_simulation_spike_generator_data()->trial_types_data;
+	TrialHandParadigmRobotReach	*trial_hand_paradigm = get_bmi_simulation_spike_generator_data()->trial_hand_paradigm;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
 	unsigned int num_of_trial_start_available_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_trial_start_available_currents)), &end_ptr, 10);
 	unsigned int num_of_in_refractory_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_refractory_currents)), &end_ptr, 10);
 	unsigned int num_of_in_trial_currents =  strtoull(gtk_entry_get_text(GTK_ENTRY(entry_num_of_in_trial_currents)), &end_ptr, 10);
-	if (trial_types_data == NULL)
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_num_of_currents_button_func", "trials_data == NULL.");
+	if (trial_hand_paradigm == NULL)
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_num_of_currents_button_func", "trial_hand_paradigm == NULL.");
 	if (spike_gen_data == NULL)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "submit_num_of_currents_button_func", "spike_gen_data == NULL.");
 
-	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, trial_types_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, trial_hand_paradigm, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
 
 	gtk_widget_set_sensitive(btn_submit_num_of_currents, FALSE);			
 	gtk_widget_set_sensitive(btn_submit_current_lengths, TRUE);	
@@ -888,7 +889,7 @@ static void generate_current_injection_graphs_button_func(void)
 {
 	TimeStamp max_num_of_samples = 0;
 	unsigned int i, j;
-	TrialTypesData *trial_types_data = get_bmi_simulation_spike_generator_data()->trial_types_data;
+	TrialHandParadigmRobotReach	*trial_hand_paradigm = get_bmi_simulation_spike_generator_data()->trial_hand_paradigm;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
 	for (i = 0;  i < spike_gen_data->current_templates->num_of_trial_start_available_currents; i++)
 	{	
@@ -900,7 +901,7 @@ static void generate_current_injection_graphs_button_func(void)
 		if (spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples > max_num_of_samples)
 			max_num_of_samples = spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples;
 	}
-	for (i = 0; i < trial_types_data->num_of_trial_types; i++)
+	for (i = 0; i < trial_hand_paradigm->num_of_robot_target_positions; i++)
 	{
 		for (j = 0; j < spike_gen_data->current_templates->num_of_in_trial_currents; j++)  // actually unnecessary, just to be straightforward
 		{	
@@ -1025,15 +1026,15 @@ static void copy_drawn_to_template_in_trial_button_func(void)
 	unsigned int layer_num;
 	unsigned int nrn_grp_num;
 	unsigned int nrn_num;
-	unsigned int trial_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_trial_type->combo));
+	unsigned int target_num_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_target_num));
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
-	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
-		current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
+	for (i = 0; i < current_templates->in_trial_currents[target_num_idx][current_num].num_of_template_samples; i++)
+		current_templates->in_trial_currents[target_num_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
 }
 static void copy_drawn_to_template_trial_available_button_func(void)
 {
@@ -1079,7 +1080,7 @@ static void display_currents_in_trial_button_func(void)
 	unsigned int layer_num;
 	unsigned int nrn_grp_num;
 	unsigned int nrn_num;
-	unsigned int trial_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_trial_type->combo));
+	unsigned target_num_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_target_num));
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	float *y;
@@ -1095,16 +1096,16 @@ static void display_currents_in_trial_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_in_trial_button_func", "!clear_neuron_dynamics_graph().");
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
-	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
+	for (i = 0; i < current_templates->in_trial_currents[target_num_idx][current_num].num_of_template_samples; i++)
 	{
-		y[i] = current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
+		y[i] = current_templates->in_trial_currents[target_num_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_in_trial_button_func", "!update_current_pattern_graph().");	
 
-	sprintf(str, "%.2f", current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance);
+	sprintf(str, "%.2f", current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance);
 	gtk_entry_set_text(GTK_ENTRY(entry_noise_variance), str);
-	sprintf(str, "%llu", current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval/1000000);
+	sprintf(str, "%llu", current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval/1000000);
 	gtk_entry_set_text(GTK_ENTRY(entry_noise_period), str);
 }
 static void display_currents_trial_available_button_func(void)
@@ -1196,7 +1197,7 @@ static void display_dynamics_in_trial_button_func(void)
 	unsigned int layer_num;
 	unsigned int nrn_grp_num;
 	unsigned int nrn_num;
-	unsigned int trial_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_trial_type->combo));
+	unsigned int target_num_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_target_num));
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	unsigned int i;
 	float *y;
@@ -1216,9 +1217,9 @@ static void display_dynamics_in_trial_button_func(void)
 	sampling_interval = current_pattern_graph->sampling_interval;
 	y = current_pattern_graph->y;
 	y_dynamics = neuron_dynamics_graph->y;
-	for (i = 0; i < current_templates->in_trial_currents[trial_type_idx][current_num].num_of_template_samples; i++)
+	for (i = 0; i < current_templates->in_trial_currents[target_num_idx][current_num].num_of_template_samples; i++)
 	{
-		y[i] = current_templates->in_trial_currents[trial_type_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
+		y[i] = current_templates->in_trial_currents[target_num_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num];
 		neuron->iz_params->I_inject = y[i];
 		time_ns = i*sampling_interval;
 		if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+sampling_interval, &spike_generated, &spike_time))
@@ -1246,9 +1247,9 @@ static void display_dynamics_in_trial_button_func(void)
 	if (!update_neuron_dynamics_graph(neuron_dynamics_graph))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "display_currents_in_trial_button_func", "!update_neuron_dynamics_graph().");	
 
-	sprintf(str, "%.2f", current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance);
+	sprintf(str, "%.2f", current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance);
 	gtk_entry_set_text(GTK_ENTRY(entry_noise_variance), str);
-	sprintf(str, "%llu", current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval/1000000);
+	sprintf(str, "%llu", current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval/1000000);
 	gtk_entry_set_text(GTK_ENTRY(entry_noise_period), str);
 }
 static void display_dynamics_trial_available_button_func(void)
@@ -1393,14 +1394,14 @@ static void add_noise_in_trial_button_func(void)
 	unsigned int layer_num;
 	unsigned int nrn_grp_num;
 	unsigned int nrn_num;
-	unsigned int trial_type_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_trial_type->combo));
+	unsigned int target_num_idx = gtk_combo_box_get_active (GTK_COMBO_BOX(combo_target_num));
 	unsigned int current_num = strtoull(gtk_entry_get_text(GTK_ENTRY(entry_current_pattern_number)), &end_ptr, 10);
 	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "add_noise_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
-	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
-	current_templates->in_trial_currents[trial_type_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
+	current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_variance = atof(gtk_entry_get_text(GTK_ENTRY(entry_noise_variance)));
+	current_templates->in_trial_currents[target_num_idx][current_num].noise_params[layer_num][nrn_grp_num][nrn_num].noise_addition_interval = 1000000*strtoull(gtk_entry_get_text(GTK_ENTRY(entry_noise_period)), &end_ptr, 10);
 }
 static void add_noise_trial_available_button_func(void)
 {
@@ -1532,7 +1533,7 @@ void load_button_func(void)
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_file_to_load));
 	path = &path_temp[7];   // since     uri returns file:///home/....
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();	
-	TrialTypesData *trial_types_data = get_bmi_simulation_spike_generator_data()->trial_types_data;
+	TrialHandParadigmRobotReach	*trial_hand_paradigm = get_bmi_simulation_spike_generator_data()->trial_hand_paradigm;
 	if (!get_format_version(&version, path))
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "load_button_func", "! get_spike_pattern_generator_data_format_version().");
 	if (!(*read_spike_gen_config_data[version])(3, path, spike_gen_data, txv_notes))
@@ -1551,7 +1552,7 @@ void load_button_func(void)
 		if (spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples > max_num_of_samples)
 			max_num_of_samples = spike_gen_data->current_templates->in_refractory_currents[i].num_of_template_samples;
 	}
-	for (i = 0; i < trial_types_data->num_of_trial_types; i++)
+	for (i = 0; i < trial_hand_paradigm->num_of_robot_target_positions; i++)
 	{
 		for (j = 0; j < spike_gen_data->current_templates->num_of_in_trial_currents; j++)  // actually unnecessary, just to be straightforward
 		{	

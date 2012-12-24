@@ -9,7 +9,7 @@ int write_spike_gen_config_data_v0(int num, ...)
 	char  *path_folder;
 	char  path[600];
 	SpikeGenData *spike_gen_data = NULL;
-	TrialTypesData *trial_types_data = NULL;
+	TrialHandParadigmRobotReach	*paradigm = NULL;
 	GtkWidget *text_view = NULL;
 	GtkTextBuffer *buffer = NULL;
 	Network *network = NULL;
@@ -31,7 +31,7 @@ int write_spike_gen_config_data_v0(int num, ...)
       	spike_gen_data = va_arg ( arguments, SpikeGenData*); 	
 	text_view = va_arg ( arguments, GtkWidget*); 	
 	va_end ( arguments );
-	trial_types_data = spike_gen_data->trial_types_data;
+	paradigm = spike_gen_data->trial_hand_paradigm;
 	network = spike_gen_data->network;
 	current_templates = spike_gen_data->current_templates;
 	trial_start_available_currents = current_templates->trial_start_available_currents;
@@ -52,9 +52,9 @@ int write_spike_gen_config_data_v0(int num, ...)
 	fprintf(fp,"MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE\t%u\n",MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE);
 	fprintf(fp,"NUM_OF_TRIAL_START_AVAILABLE_CURRENTS\t%u\n", spike_gen_data->current_templates->num_of_trial_start_available_currents);
 	fprintf(fp,"NUM_OF_IN_REFRACTORY_CURRENTS\t%u\n", spike_gen_data->current_templates->num_of_in_refractory_currents);
-	fprintf(fp,"NUM_OF_TRIAL_TYPES\t%u\n", trial_types_data->num_of_trial_types);
-	for (i = 0; i < trial_types_data->num_of_trial_types; i ++)
-		fprintf(fp,"NUM_OF_IN_TRIAL_CURRENTS_FOR_TRIAL_TYPE_%u\t%u\n", trial_types_data->types[i].type, spike_gen_data->current_templates->num_of_in_trial_currents);  // should be equal for each trialk type, no problem. ( see comment in CurrentTemplate strucy: use OKEK of number of currents for each trial having different numbers of trial currents (for random trial current selection))
+	fprintf(fp,"NUM_OF_TRIAL_TYPES\t%u\n", paradigm->num_of_robot_target_positions);
+	for (i = 0; i < paradigm->num_of_robot_target_positions; i ++)
+		fprintf(fp,"NUM_OF_IN_TRIAL_CURRENTS_FOR_TRIAL_TYPE_%u\t%u\n", i, spike_gen_data->current_templates->num_of_in_trial_currents);  // should be equal for each trialk type, no problem. ( see comment in CurrentTemplate strucy: use OKEK of number of currents for each trial having different numbers of trial currents (for random trial current selection))
 	fprintf(fp,"INJECTED_CURRENT_PATTERN_SAMPLING_INTERVAL\t%llu\n", PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	fprintf(fp,"PARKER_SOCHACKI_ERROR_TOLERANCE\t%.16E\n", get_maximum_parker_sochacki_error_tolerance() );
 	fprintf(fp,"PARKER_SOCHACKI_MAX_ORDER\t%d\n", get_maximum_parker_sochacki_order());	
@@ -136,7 +136,7 @@ int write_spike_gen_config_data_v0(int num, ...)
 	}	
 	fprintf(fp, "------------------End of InRefractoryCurrents---------------------\n");
 	fprintf(fp, "------------------InTrialCurrents---------------------\n");
-	for (p = 0; p < trial_types_data->num_of_trial_types; p++)
+	for (p = 0; p < paradigm->num_of_robot_target_positions; p++)
 	{
 		for (m = 0; m < current_templates->num_of_in_trial_currents; m++)
 		{
@@ -222,7 +222,7 @@ int read_spike_gen_config_data_v0(int num, ...)
 	GtkTextIter start, end;
 	CurrentTemplate *current_templates;
 	CurrentPatternTemplate	*trial_start_available_currents, *in_refractory_currents, **in_trial_currents;
-	TrialTypesData *trial_types_data;
+	TrialHandParadigmRobotReach *paradigm;
 	Network *network;
 	Layer		*ptr_layer;
 	NeuronGroup	*ptr_neuron_group;
@@ -244,7 +244,7 @@ int read_spike_gen_config_data_v0(int num, ...)
 
 	current_templates = spike_gen_data->current_templates;
 	network = spike_gen_data->network;
-	trial_types_data = spike_gen_data->trial_types_data;
+	paradigm = spike_gen_data->trial_hand_paradigm;
 
 	if ((fp = fopen(path, "r")) == NULL)  { sprintf(message, "Couldn' t read %s.", path); print_message(ERROR_MSG ,"ConfigDaq", "FileHandler_v0", "read_config_daq_data_v0", message); return 0; }
 	if (fgets(line, sizeof line, fp ) == NULL)   { sprintf(message, "Couldn' t read %d th line of %s.", line_cntr, path); print_message(ERROR_MSG ,"ConfigDaq", "FileHandler_v0", "read_config_daq_data_v0", message);  fclose(fp); return 0; } else {line_cntr++;}   //  ----------SpikeGenConfig Data----------
@@ -331,17 +331,17 @@ int read_spike_gen_config_data_v0(int num, ...)
 	num_of_in_refractory_currents = (int)atof(word);	
 	if (fgets(line, sizeof line, fp ) == NULL)   {  printf("ERROR: Couldn' t read %d th line of %s\n", line_cntr, path);  fclose(fp); return 0; } else {line_cntr++;}    //NUM_OF_TRIAL_TYPES
 	if (!(get_word_in_line('\t', 1, word, line, TRUE))) {	fclose(fp); return 0; }
-	if (spike_gen_data->trial_types_data->num_of_trial_types != strtoull(word, &end_ptr, 10)) {  printf("ERROR: Inconvenient num of trial types %u.\n", line_cntr);  fclose(fp); return 0; } else {line_cntr++;}    //NUM_OF_TRIAL_TYPES
-	for (i = 0; i < spike_gen_data->trial_types_data->num_of_trial_types; i++)
+	if (spike_gen_data->trial_hand_paradigm->num_of_robot_target_positions != strtoull(word, &end_ptr, 10)) {  printf("ERROR: Inconvenient num of trial types %u.\n", line_cntr);  fclose(fp); return 0; } else {line_cntr++;}    //NUM_OF_TRIAL_TYPES
+	for (i = 0; i < spike_gen_data->trial_hand_paradigm->num_of_robot_target_positions; i++)
 	{
 		if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); }   //NUM_OF_IN_TRIAL_CURRENTS",
 		if(!get_word_in_line('_', 8, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }	
-		if (spike_gen_data->trial_types_data->types[i].type != strtoull(word, &end_ptr, 10))
+		if (i != strtoull(word, &end_ptr, 10))
 			{ fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "trial type in shared memory trials data does not match the one read from meta."); }
 		if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "!get_word_in_line."); }	
 		num_of_in_trial_currents = strtoull(word, &end_ptr, 10);
 	}
-	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, spike_gen_data->trial_types_data, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
+	spike_gen_data->current_templates = allocate_current_templates(spike_gen_data->network, spike_gen_data->trial_hand_paradigm, spike_gen_data->current_templates , num_of_trial_start_available_currents, num_of_in_refractory_currents, num_of_in_trial_currents);
 	current_templates = spike_gen_data->current_templates;
 	trial_start_available_currents = current_templates->trial_start_available_currents;
 	in_refractory_currents = current_templates->in_refractory_currents;
@@ -539,7 +539,7 @@ int read_spike_gen_config_data_v0(int num, ...)
 		fclose(fp);
 		return print_message(ERROR_MSG ,"ConfigDaq", "FileHandler_v0", "read_config_daq_data_v0", "strcmp(line, ------------------InTrialCurrents---------------------) != 0.");	
 	}  	
-	for (p = 0; p < trial_types_data->num_of_trial_types; p++)
+	for (p = 0; p < paradigm->num_of_robot_target_positions; p++)
 	{
 		for (m = 0; m < current_templates->num_of_in_trial_currents; m++)
 		{

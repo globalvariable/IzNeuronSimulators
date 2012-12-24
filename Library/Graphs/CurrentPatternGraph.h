@@ -11,7 +11,7 @@ typedef struct 	__CurrentPatternGraphScrollLimited CurrentPatternGraphScrollLimi
 #include <gtkdatabox_lines.h>
 #include <gtkdatabox_grid.h>
 #include <pthread.h>
-#include "../../../BlueSpike/TimeStamp.h"
+#include "../../../BlueSpike/System/TimeStamp/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../InjectionCurrentData/InjectionCurrentData.h"
 #include "StatusMarker.h"

@@ -10,10 +10,10 @@ int main( int argc, char *argv[])
 	unsigned int i, j;
 	hybrid_net_rl_bmi_data = g_new0(HybridNetRLBMIData, 1);
 
-	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(nam2num(KERNEL_SPIKE_SPIKE_TIME_STAMP_SHM_NAME), 0);
+	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_KERNEL_SPIKE_SPIKE_TIME_STAMP, 0);
 	if (hybrid_net_rl_bmi_data->sorted_spike_time_stamp == NULL) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->sorted_spike_time_stamp == NULL."); return -1; }
-	hybrid_net_rl_bmi_data->rt_tasks_data = rtai_malloc(nam2num(RT_TASKS_DATA_SHM_NAME), 0);
+	hybrid_net_rl_bmi_data->rt_tasks_data = rtai_malloc(SHM_NUM_RT_TASKS_DATA, 0);
 	if (hybrid_net_rl_bmi_data->rt_tasks_data == NULL) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->rt_tasks_data == NULL."); return -1; }
 	hybrid_net_rl_bmi_data->blue_spike_network = allocate_network(hybrid_net_rl_bmi_data->blue_spike_network);

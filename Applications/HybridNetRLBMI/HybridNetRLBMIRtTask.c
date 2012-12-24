@@ -133,7 +133,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
 				if (spike_generated)
 				{
-//					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
+					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
 					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 					{
 						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
@@ -275,7 +275,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_STATUS_CHANGED:   // current system time might be different from the one TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_START. it can change during processing the message buffer but would not lead to problem.  TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_STATUS_CHANGED is used by the graphs.
-					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data_0, msg_item.additional_data_1) ; 
+					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data.trial_status_change_msg_add) ; 
 					break;	
 				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_START:   // not implemeted yet, for RL it will be required.
 					current_sys_time = rt_tasks_data->current_system_time;
@@ -306,7 +306,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_TRAJECTORY_SUCCESS_RATIO:  // this message is received before 
-					trajectory_success_ratio = msg_item.additional_data_0;
+					trajectory_success_ratio = msg_item.additional_data.trajectory_success_ratio;
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   // it is sent here just before trial ends.   // since threshold reached before this message, the neurons handles NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD previously. then, this message is useless and it is not sent. it is here just to be template for future applicaitons.
 					break;

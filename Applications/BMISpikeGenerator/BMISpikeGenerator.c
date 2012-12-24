@@ -13,19 +13,24 @@ int main( int argc, char *argv[])
 
 	bmi_simulation_spike_gen_data = g_new0(SpikeGenData, 1);
 
-	bmi_simulation_spike_gen_data->sorted_spike_time_stamp = rtai_malloc(nam2num(KERNEL_SPIKE_SPIKE_TIME_STAMP_SHM_NAME), 0);
+	bmi_simulation_spike_gen_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_KERNEL_SPIKE_SPIKE_TIME_STAMP, 0);
 	if (bmi_simulation_spike_gen_data->sorted_spike_time_stamp == NULL) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "bmi_simulation_spike_gen_data->blue_spike_data == NULL."); return -1; }
 
-	bmi_simulation_spike_gen_data->rt_tasks_data = rtai_malloc(nam2num(RT_TASKS_DATA_SHM_NAME), 0);
+	bmi_simulation_spike_gen_data->rt_tasks_data = rtai_malloc(SHM_NUM_RT_TASKS_DATA, 0);
 	if (bmi_simulation_spike_gen_data->rt_tasks_data == NULL) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "bmi_simulation_spike_gen_data->rt_tasks_data == NULL."); return -1; }
 
-	bmi_simulation_spike_gen_data->trial_types_data = allocate_trial_types_data(bmi_simulation_spike_gen_data->trial_types_data);
-	if (! add_trial_type_to_trial_types_data(bmi_simulation_spike_gen_data->trial_types_data, TRIAL_TYPE_IN_VIVO_BMI_LEFT_TARGET, 5000000000, 4000000000)) 
-		return print_message(ERROR_MSG ,"BMIExpController", "TrialHandler", "main", "! add_trial_type_to_trial_types_data().");
-	if (! add_trial_type_to_trial_types_data(bmi_simulation_spike_gen_data->trial_types_data, TRIAL_TYPE_IN_VIVO_BMI_RIGHT_TARGET, 5000000000, 4000000000)) 
-		return print_message(ERROR_MSG ,"BMIExpController", "TrialHandler", "main", "! add_trial_type_to_trial_types_data().");
+	bmi_simulation_spike_gen_data->trial_hand_paradigm = g_new0(TrialHandParadigmRobotReach, 1);
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->max_trial_length = 5000000000;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->trial_refractory = 4000000000;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->num_of_robot_start_positions = 1;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->num_of_robot_target_positions = 2;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->num_of_target_led_components = 2;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->target_led_component_indexes_list = g_new0(unsigned int, 2);
+//	paradigm->target_led_component_indexes_list[0] = LEFT_LED_IDX_IN_EXP_ENVI_DATA;   no need to init these data since spike generator do not need those.
+//	paradigm->target_led_component_indexes_list[1] = RIGHT_LED_IDX_IN_EXP_ENVI_DATA;
+
 	bmi_simulation_spike_gen_data->network = allocate_network(bmi_simulation_spike_gen_data->network);
 	bmi_simulation_spike_gen_data->msgs_trial_hand_2_spike_gen = allocate_shm_server_trial_hand_2_spike_gen_msg_buffer(bmi_simulation_spike_gen_data->msgs_trial_hand_2_spike_gen);
 	bmi_simulation_spike_gen_data->trial_status_events = allocate_trial_status_events_buffer(bmi_simulation_spike_gen_data->trial_status_events, 100, 3000000);  //  3 ms latency
@@ -123,7 +128,7 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_TRIAL_STATUS_CHANGED:
-					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data_0, msg_item.additional_data_1) ; 
+					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data.trial_status_change_msg_add) ; 
 					break;	
 				default: 
 					get_trial_hand_2_spike_gen_msg_type_string(msg_item.msg_type, str_trial_hand_msg);  

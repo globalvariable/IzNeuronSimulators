@@ -8,8 +8,8 @@ typedef struct 	__NeuronSynapticEventBuffer	NeuronSynapticEventBuffer;
 typedef struct 	__NeuronTrialEventBufferItem	NeuronTrialEventBufferItem;
 typedef struct 	__NeuronTrialEventBuffer	NeuronTrialEventBuffer;
 
-#include "../../../BlueSpike/TimeStamp.h"
-#include "../../../BlueSpike/RtTasksData.h"
+#include "../../../BlueSpike/System/TimeStamp/TimeStamp.h"
+#include "../../../BlueSpike/System/RtTasksData/RtTasksData.h"
 
 typedef unsigned int NeuronEventType;
 typedef TimeStamp NeuronSynapticEventBufferItem;

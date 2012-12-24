@@ -7,7 +7,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args);
 static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integration_start_time, TimeStamp integration_end_time, unsigned int num_of_neurons);
 
 static SpikeData *generated_spike_data;
-static TrialTypesData* trial_types_data = NULL;
+static TrialHandParadigmRobotReach *paradigm = NULL;
 static TrialStatusEvents *trial_status_events = NULL;
 static Network *network = NULL;
 static SpikeTimeStamp *spike_time_stamp = NULL;
@@ -39,7 +39,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 
 	TimeStamp integration_start_time, integration_end_time;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
-	trial_types_data = spike_gen_data->trial_types_data;
+	paradigm = spike_gen_data->trial_hand_paradigm;
 	trial_status_events = spike_gen_data->trial_status_events;
 	RtTasksData* rt_tasks_data = spike_gen_data->rt_tasks_data;
 	network = spike_gen_data->network;
@@ -94,7 +94,6 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 	static unsigned int current_template_read_idx;
 	unsigned int current_template_num_in_use;
 	unsigned int i;
-	unsigned int trial_type_idx;
 	Neuron		**all_neurons = network->all_neurons;
 	Neuron *neuron;
 	TimeStamp time_ns;
@@ -107,8 +106,6 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 		last_trial_status_event = get_last_trial_status_events_buffer_item(trial_status_events);
 		if (!get_trial_status_type_string(last_trial_status_event.trial_status, message))  
 			return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! get_trial_status_type_string()");	
-		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);								
-		get_trial_type_string(last_trial_status_event.trial_type, message);
 		print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);								
 		switch (last_trial_status_event.trial_status)
 		{
@@ -128,16 +125,15 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
-				switch (last_trial_status_event.trial_type)
+				switch (last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)
 				{
-					case TRIAL_TYPE_IN_VIVO_BMI_LEFT_TARGET:
+					case LEFT_ROBOT_TARGET:   // left target
 						determine_in_trial_current_number_randomly(current_templates, &current_template_num_in_use);
-						get_trial_type_idx_in_trial_types_data(trial_types_data, TRIAL_TYPE_IN_VIVO_BMI_LEFT_TARGET, &trial_type_idx);
-						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, trial_type_idx, current_template_num_in_use);
+						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, LEFT_ROBOT_TARGET , current_template_num_in_use);
 						current_template_read_idx = 0;
 						current_template_in_use->template_start_time = integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
@@ -159,13 +155,12 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;									
-					case TRIAL_TYPE_IN_VIVO_BMI_RIGHT_TARGET:	
+					case RIGHT_ROBOT_TARGET:	 // right target
 						determine_in_trial_current_number_randomly(current_templates, &current_template_num_in_use);
-						get_trial_type_idx_in_trial_types_data(trial_types_data, TRIAL_TYPE_IN_VIVO_BMI_RIGHT_TARGET, &trial_type_idx);
-						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, trial_type_idx, current_template_num_in_use);
+						get_in_trial_current_pattern_template(current_templates, &current_template_in_use, RIGHT_ROBOT_TARGET , current_template_num_in_use);
 						current_template_read_idx = 0;
 						current_template_in_use->template_start_time = integration_start_time;   // it is useless for in trial currents but used for out of trial currents to determine current injection duration.
 						reset_prev_noise_addition_times_for_current_template(network, current_template_in_use);
@@ -187,13 +182,11 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
-						get_trial_type_string(last_trial_status_event.trial_type, message);
-						print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);	
-						return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "default - switch.");
+						return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "switch 			(last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)");	
 				}				
 				break;	
 			case TRIAL_STATUS_IN_REFRACTORY:	
@@ -228,7 +221,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -263,13 +256,11 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 
-				get_trial_type_string(last_trial_status_event.trial_type, message);
-				print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_rt_handler", message);	
-				return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_rt_handler", "default - switch.");
+				return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_rt_handler", "switch (last_trial_status_event.trial_status) - default");	
 		}
 	}
 	else // no change in trial status
@@ -292,13 +283,13 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
-				switch (last_trial_status_event.trial_type)
+				switch (last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)
 				{
-					case TRIAL_TYPE_IN_VIVO_BMI_LEFT_TARGET:
+					case LEFT_ROBOT_TARGET:   // left target
 						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -317,11 +308,11 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+	//						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 
 						break;									
-					case TRIAL_TYPE_IN_VIVO_BMI_RIGHT_TARGET:	
+					case RIGHT_ROBOT_TARGET:	// right target
 						for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
 						{
 							load_current_template_sample_to_neurons_with_noise(network, current_template_in_use, current_template_read_idx, time_ns);
@@ -340,13 +331,11 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								}
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
-						get_trial_type_string(last_trial_status_event.trial_type, message);
-						print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", message);	
-						return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "default - switch.");
+						return print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "switch (last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)");	
 				}				
 				break;	
 			case TRIAL_STATUS_IN_REFRACTORY:	
@@ -376,7 +365,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -406,7 +395,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						}
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 
