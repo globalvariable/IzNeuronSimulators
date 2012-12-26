@@ -98,7 +98,7 @@ static bool connect_to_mov_obj_hand(void )
 				switch (msg_item.msg_type)
 				{
 					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_ARE_YOU_ALIVE:
-						(*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i] = allocate_shm_client_neural_net_2_mov_obj_hand_multi_thread_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread, i);
+						(*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i] = allocate_shm_client_neural_net_2_mov_obj_hand_multi_thread_msg_buffer_item(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread, i, MIN_NEURAL_NET_2_MOV_OBJ_HAND_EVENT_SCHEDULING_DELAY);
 						usleep(1000);
 						if (((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i]) == NULL)
 							return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "msgs_neural_net_2_mov_obj_hand == NULL.");	

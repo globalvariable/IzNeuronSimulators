@@ -86,9 +86,7 @@ static GtkWidget *btn_submit_stdp_and_eligibility;
 
 static LayerNrnGrpNeuronCombo *combos_select_neuron;
 static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
-static GtkWidget *entry_baseline_I_inject;
-static GtkWidget *entry_location_I_inject;
-static GtkWidget *btn_submit_injection_current;
+
 static GtkWidget *btn_submit_synaptic_weight;
 static GtkWidget *entry_weight_lower_limit;
 static GtkWidget *entry_weight_upper_limit;
@@ -126,7 +124,7 @@ static void connect_external_layer_to_internal_layer_button_func(void);
 static void submit_stdp_and_eligibility_button_func(void);
 
 static void combos_select_neuron_func(GtkWidget *changed_combo);
-static void submit_injection_current_button_func(void);
+
 static void submit_synaptic_weight_button_func(void);
 static void submit_new_stdp_and_eligibility_for_neuron_button_func(void);
 static void simulate_with_no_reward_button_func(void);
@@ -927,27 +925,7 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_neuron , TRUE,TRUE,0);
 	combo_neuron_dynamics = allocate_neuron_dynamics_combo(hbox, combo_neuron_dynamics);
 
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_submit_injection_current = gtk_button_new_with_label("Submit Curr");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_injection_current, FALSE, FALSE, 0);
-	lbl = gtk_label_new("");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
-        lbl = gtk_label_new("Base:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-	entry_baseline_I_inject =  gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_baseline_I_inject, FALSE,FALSE,0);
-	gtk_widget_set_size_request(entry_baseline_I_inject, 30, 25);	
-	gtk_entry_set_text(GTK_ENTRY(entry_baseline_I_inject), "0");	
-        lbl = gtk_label_new("Loc:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-	entry_location_I_inject =  gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_location_I_inject, FALSE,FALSE,0);
-	gtk_widget_set_size_request(entry_location_I_inject, 30, 25);	
-	gtk_entry_set_text(GTK_ENTRY(entry_location_I_inject), "0");	
-
-  	hbox = gtk_hbox_new(FALSE, 0);
+   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
 	btn_submit_synaptic_weight = gtk_button_new_with_label("Submit Weight");
@@ -1048,7 +1026,6 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
 
-      	g_signal_connect(G_OBJECT(btn_submit_injection_current), "clicked", G_CALLBACK(submit_injection_current_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_submit_synaptic_weight), "clicked", G_CALLBACK(submit_synaptic_weight_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_submit_new_stdp_and_eligibility_for_neuron), "clicked", G_CALLBACK(submit_new_stdp_and_eligibility_for_neuron_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
@@ -1063,7 +1040,6 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_make_output, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
-	gtk_widget_set_sensitive(btn_submit_injection_current, FALSE);
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight, FALSE);	
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, FALSE);		
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, FALSE);	
@@ -1308,16 +1284,6 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_neuron_func", "!update_texts_of_combos_when_change().");
 }
 
-static void submit_injection_current_button_func(void)
-{
-	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
-	unsigned int layer_num, nrn_grp_num, nrn_num;
-	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_injection_current_button_func", "! layer_neuron_group_neuron_get_selected().");
-	bmi_data->baseline_injection_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_baseline_I_inject)));
-	bmi_data->location_injection_current->current[layer_num][nrn_grp_num][nrn_num] = atof(gtk_entry_get_text(GTK_ENTRY(entry_location_I_inject)));
-}
-
 static void submit_synaptic_weight_button_func(void)
 {
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
@@ -1460,13 +1426,10 @@ static void ready_for_simulation_button_func(void)
 	bmi_data->depol_eligibility_limited_buffer = allocate_depol_eligibility_buffer_limited(bmi_data->in_silico_network, bmi_data->depol_eligibility_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_DEPOL_ELIGIBILITY_GRAPHS);  // 3 second buffer for 1 second graph refresh rate.
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
-	bmi_data->baseline_injection_current = allocate_constant_current(bmi_data->in_silico_network, bmi_data->baseline_injection_current);
-	bmi_data->location_injection_current = allocate_constant_current(bmi_data->in_silico_network, bmi_data->location_injection_current);
-	bmi_data->num_of_firing_of_neurons_in_trial = g_new0(FiringCount, bmi_data->in_silico_network->num_of_neurons);
+
 	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
-	gtk_widget_set_sensitive(btn_submit_injection_current, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, TRUE);	
 }

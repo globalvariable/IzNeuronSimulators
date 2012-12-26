@@ -70,7 +70,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	EligibilityBufferLimited *eligibility_buffer_limited = bmi_data->eligibility_limited_buffer;
 	DepolEligibilityBufferLimited *depol_eligibility_buffer_limited = bmi_data->depol_eligibility_limited_buffer;
 	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
-	FiringCount	*num_of_firing =  bmi_data->num_of_firing_of_neurons_in_trial;
 	unsigned int i; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
@@ -139,7 +138,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_to_neural_net_2_mov_obj_hand_msg_buffer()."); exit(1); }	
 					}
-					num_of_firing[i]++;
 				}	
 				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, i);
 				push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, i);
@@ -383,10 +381,6 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 	MovObjHand2NeuralNetMsgItem msg_item;
 	RtTasksData *rt_tasks_data = NULL;
 	Network *in_silico_network = hybrid_net_rl_bmi_data->in_silico_network;
-	Neuron *place_cell = get_neuron_address(in_silico_network, 2, 0, 0);   /// it holds the address of last place cell fired according to location. At startup location is 0
-	InjectionCurrent	***baseline_injection_current = hybrid_net_rl_bmi_data->baseline_injection_current->current;
-	InjectionCurrent	***location_injection_current = hybrid_net_rl_bmi_data->location_injection_current->current;
-	double location;
 
 	msgs_mov_obj_hand_2_neural_net_multi_thread = hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
 	rt_tasks_data = hybrid_net_rl_bmi_data->rt_tasks_data;
@@ -422,24 +416,8 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 			{
 				switch (msg_item.msg_type)
 				{
-					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_LOCATION:
-						place_cell->iz_params->I_inject = baseline_injection_current[place_cell->layer][place_cell->neuron_group][place_cell->neuron_num];
-						location = msg_item.additional_data;
-						if (location == 0)
-						{
-							place_cell = get_neuron_address(in_silico_network, 2, 0, 0);
-							place_cell->iz_params->I_inject = location_injection_current[place_cell->layer][place_cell->neuron_group][place_cell->neuron_num];
-						}			
-						else if (location > 0)   /// left locations
-						{
-							place_cell = get_neuron_address(in_silico_network, 3, 0, (unsigned int)(location/10));
-							place_cell->iz_params->I_inject = location_injection_current[place_cell->layer][place_cell->neuron_group][place_cell->neuron_num];
-						}
-						else ///  (location < 0)  /// right locations
-						{
-							place_cell = get_neuron_address(in_silico_network, 4, 0, (unsigned int)(-location/10));
-							place_cell->iz_params->I_inject = location_injection_current[place_cell->layer][place_cell->neuron_group][place_cell->neuron_num];
-						}
+					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_3_DOF_JOINT_ANGLE:
+//						location = msg_item.additional_data;
 						break;		
 					default:
 						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Invalid message.");	
