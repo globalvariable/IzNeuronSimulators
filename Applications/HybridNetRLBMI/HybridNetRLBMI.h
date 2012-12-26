@@ -1,6 +1,21 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
+#define LAYER_BASE_SERVO_EXTENSOR 				0		//   decreasing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR 					1		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR 			2		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR 			3		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR 				4		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR 				5		//   incresing pulse width for servo)
+
+#define LAYER_EXTENSOR_SECONDARY_SPINDLES		6		// increasing firing rate for increasing servo pulse width(or joint angle)		--> NrnGrp0:  BaseServo --> NrnGrp1: ShoulderServo --> NrnGrp2: ElbowServo
+#define LAYER_FLEXOR_SECONDARY_SPINDLES		7		// decreasing firing rate for increasing servo pulse width(or joint angle)		--> NrnGrp0:  BaseServo --> NrnGrp1: ShoulderServo --> NrnGrp2: ElbowServo
+
+#define NEURON_GROUP_BASE_SERVO		0
+#define NEURON_GROUP_SHOULDER_SERVO	1
+#define NEURON_GROUP_ELBOW_SERVO		2
+
+
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
 #include "Gui.h"
@@ -42,6 +57,8 @@ struct __HybridNetRLBMIData
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
+	double						secondary_spindle_current_min;
+	double						secondary_spindle_current_max;
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

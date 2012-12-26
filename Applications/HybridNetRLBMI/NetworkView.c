@@ -90,8 +90,11 @@ static NeuronDynamicsCombo *combo_neuron_dynamics = NULL;
 static GtkWidget *btn_submit_synaptic_weight;
 static GtkWidget *entry_weight_lower_limit;
 static GtkWidget *entry_weight_upper_limit;
-
 static GtkWidget *btn_submit_new_stdp_and_eligibility_for_neuron;
+
+static GtkWidget *entry_secondary_spindle_current_min;
+static GtkWidget *entry_secondary_spindle_current_max;
+static GtkWidget *btn_submit_secondary_spindle_current;
 
 static GtkWidget *entry_simulation_length;
 
@@ -126,6 +129,8 @@ static void submit_stdp_and_eligibility_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 
 static void submit_synaptic_weight_button_func(void);
+static void submit_secondary_spindle_current_button_func(void);
+
 static void submit_new_stdp_and_eligibility_for_neuron_button_func(void);
 static void simulate_with_no_reward_button_func(void);
 
@@ -943,12 +948,28 @@ bool create_network_view_gui(void)
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	
+	btn_submit_secondary_spindle_current = gtk_button_new_with_label("Submit Sp Current");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_secondary_spindle_current, TRUE, TRUE, 0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	entry_secondary_spindle_current_min =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_secondary_spindle_current_min, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_secondary_spindle_current_min, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_secondary_spindle_current_min), "70");	
+	entry_secondary_spindle_current_max =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_secondary_spindle_current_max, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_secondary_spindle_current_max, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_secondary_spindle_current_max), "1500");
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
 	btn_submit_new_stdp_and_eligibility_for_neuron = gtk_button_new_with_label("Submit New STDP-Elig for Neuron");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_new_stdp_and_eligibility_for_neuron, TRUE, TRUE, 0);
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
-
+	
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -1027,7 +1048,10 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
 
       	g_signal_connect(G_OBJECT(btn_submit_synaptic_weight), "clicked", G_CALLBACK(submit_synaptic_weight_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_submit_secondary_spindle_current), "clicked", G_CALLBACK(submit_secondary_spindle_current_button_func), NULL);
+
       	g_signal_connect(G_OBJECT(btn_submit_new_stdp_and_eligibility_for_neuron), "clicked", G_CALLBACK(submit_new_stdp_and_eligibility_for_neuron_button_func), NULL);
+
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_ready_for_simulation), "clicked", G_CALLBACK(ready_for_simulation_button_func), NULL);
@@ -1297,6 +1321,18 @@ static void submit_synaptic_weight_button_func(void)
 	upper_limit = atof(gtk_entry_get_text(GTK_ENTRY(entry_weight_upper_limit)));
 	if (! set_neuron_synaptic_weights(neuron, lower_limit, upper_limit))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
+}
+
+static void submit_secondary_spindle_current_button_func(void)
+{
+	double min, max;
+	min = atof(gtk_entry_get_text(GTK_ENTRY(entry_secondary_spindle_current_min)));
+	max = atof(gtk_entry_get_text(GTK_ENTRY(entry_secondary_spindle_current_max)));
+	if (min > max)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_secondary_spindle_current_button_func", "(min > max).");		
+	get_hybrid_net_rl_bmi_data()->secondary_spindle_current_min = min;
+	get_hybrid_net_rl_bmi_data()->secondary_spindle_current_max = max;
+	return;
 }
 
 static void submit_new_stdp_and_eligibility_for_neuron_button_func(void)
