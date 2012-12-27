@@ -52,7 +52,7 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate)
 	return TRUE;
 }
 
-bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_rate)
+bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 {
 	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
 	Synapse	*synapses = neuron->syn_list->synapses;
@@ -63,14 +63,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double change_r
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
-		if (change_rate == 0)
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights_with_history", "change_rate == 0.");		
-		if (change_rate < 0)
-			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(-1+change_rate);   // major change in weight due to incomplete trial.
-		else if (change_rate > 0)
-			weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*(1-change_rate);  // slight change in weight, if the reward(change_rate) is close to 1, so little change in weight. 
-		else
-			weight_change = 0;
+		weight_change = reward * (eligibility_saved[i]-depol_eligibility_saved[i]);  
 
 		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);

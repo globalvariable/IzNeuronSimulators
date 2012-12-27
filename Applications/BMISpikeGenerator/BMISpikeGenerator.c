@@ -35,9 +35,9 @@ int main( int argc, char *argv[])
 	bmi_simulation_spike_gen_data->msgs_trial_hand_2_spike_gen = allocate_shm_server_trial_hand_2_spike_gen_msg_buffer(bmi_simulation_spike_gen_data->msgs_trial_hand_2_spike_gen);
 	bmi_simulation_spike_gen_data->trial_status_events = allocate_trial_status_events_buffer(bmi_simulation_spike_gen_data->trial_status_events, 100, 3000000);  //  3 ms latency
 
-/*	if (! connect_to_trial_hand()) {
+	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "connect_to_trial_hand()."); return -1; }
-*/
+
 	trial_hand_2_spike_gen_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_spike_gen_msgs_handler, NULL, 10000);
 
 //	initialize_spike_gen_data_read_write_handlers();

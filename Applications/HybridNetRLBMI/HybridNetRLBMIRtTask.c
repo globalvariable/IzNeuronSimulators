@@ -237,7 +237,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 	TrialStatusEvents* trial_status_events = NULL;
 	RtTasksData *rt_tasks_data = NULL;
 	TimeStamp current_sys_time;
-	double trajectory_success_ratio = 0;
+
 	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
 	msgs_neural_net_2_post_trial_hand = hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand;
 	msgs_trial_hand_2_neural_net = hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net;
@@ -285,32 +285,25 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}					
 					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_MOV_OBJ_REACHED_THRESHOLD:  
+				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   
 					current_sys_time = rt_tasks_data->current_system_time;
 					for (i = 0; i < num_of_neurons; i++)
 					{
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, trajectory_success_ratio)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, 0)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_TIMEOUT_BEFORE_THRESHOLD_REACH:
+				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   
 					current_sys_time = rt_tasks_data->current_system_time;
 					for (i = 0; i < num_of_neurons; i++)
 					{
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, trajectory_success_ratio)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, 0)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
-					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_TRAJECTORY_SUCCESS_RATIO:  // this message is received before 
-					trajectory_success_ratio = msg_item.additional_data.trajectory_success_ratio;
-					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_REWARD_GIVEN:   // it is sent here just before trial ends.   // since threshold reached before this message, the neurons handles NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD previously. then, this message is useless and it is not sent. it is here just to be template for future applicaitons.
-					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   // it is sent here just before trial ends.   // since trial timed out before this message, the neurons handles NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT previously. then, this message is useless and it is not sent. it is here just to be template for future applicaitons.
 					break;
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
@@ -339,7 +332,7 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 	Neuron		**all_neurons = hybrid_net_rl_bmi_data->in_silico_network->all_neurons;
 	unsigned int 		i, num_of_neurons = hybrid_net_rl_bmi_data->in_silico_network->num_of_neurons;
 	msgs_neural_net_2_post_trial_hand = get_hybrid_net_rl_bmi_data()->msgs_neural_net_2_post_trial_hand;
-	double change_rate;
+	double reward;
         while (1) 
 	{
 		sleep(1);
@@ -350,12 +343,11 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
-					sleep(1);	// wait one second to ensure trial is really ended.
-					change_rate = msg_item.additional_data;
-					printf ("trajectory success: %f\n", change_rate);
+					reward = msg_item.additional_data;
+					sleep(1);	// wait one second to ensure trial is really ended and all neurons processed NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD and NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT messages. 
 					for (i = 0; i < num_of_neurons; i++)
 					{
-						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], change_rate)) {
+						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], reward)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
 					}
 					break;	
@@ -425,7 +417,7 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 						robot_shoulder_angle = msg_item.additional_data.three_dof_robot_joint_angles[SHOULDER_SERVO];
 						robot_elbow_angle = msg_item.additional_data.three_dof_robot_joint_angles[ELBOW_SERVO];
 
-						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_BASE_SERVO, 0);
+/*						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_BASE_SERVO, 0);
 						nrn->iz_params->I_inject = ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_base_angle / M_PI)) + hybrid_net_rl_bmi_data->secondary_spindle_current_min;
 						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_SHOULDER_SERVO, 0);
 						nrn->iz_params->I_inject = ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_shoulder_angle / M_PI)) + hybrid_net_rl_bmi_data->secondary_spindle_current_min;
@@ -438,7 +430,7 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 						nrn->iz_params->I_inject = hybrid_net_rl_bmi_data->secondary_spindle_current_max - ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_shoulder_angle / M_PI));
 						nrn = get_neuron_address(in_silico_network, LAYER_FLEXOR_SECONDARY_SPINDLES, NEURON_GROUP_ELBOW_SERVO, 0);
 						nrn->iz_params->I_inject = hybrid_net_rl_bmi_data->secondary_spindle_current_max - ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_elbow_angle / M_PI));
-
+*/
 						break;		
 					default:
 						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Invalid message.");	
