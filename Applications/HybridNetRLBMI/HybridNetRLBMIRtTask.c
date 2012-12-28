@@ -292,7 +292,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, 0)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, msg_item.additional_data.reward)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   
@@ -302,7 +302,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, 0)) {
+					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, msg_item.additional_data.reward)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
 				default: 
@@ -417,16 +417,16 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 						robot_shoulder_angle = msg_item.additional_data.three_dof_robot_joint_angles[SHOULDER_SERVO];
 						robot_elbow_angle = msg_item.additional_data.three_dof_robot_joint_angles[ELBOW_SERVO];
 
-/*						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_BASE_SERVO, 0);
+						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_BASE_SERVO, 0);
 						nrn->iz_params->I_inject = ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_base_angle / M_PI)) + hybrid_net_rl_bmi_data->secondary_spindle_current_min;
-						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_SHOULDER_SERVO, 0);
+/*						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_SHOULDER_SERVO, 0);
 						nrn->iz_params->I_inject = ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_shoulder_angle / M_PI)) + hybrid_net_rl_bmi_data->secondary_spindle_current_min;
 						nrn = get_neuron_address(in_silico_network, LAYER_EXTENSOR_SECONDARY_SPINDLES, NEURON_GROUP_ELBOW_SERVO, 0);
 						nrn->iz_params->I_inject = ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_elbow_angle / M_PI)) + hybrid_net_rl_bmi_data->secondary_spindle_current_min;
-
+*/
 						nrn = get_neuron_address(in_silico_network, LAYER_FLEXOR_SECONDARY_SPINDLES, NEURON_GROUP_BASE_SERVO, 0);
 						nrn->iz_params->I_inject = hybrid_net_rl_bmi_data->secondary_spindle_current_max - ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_base_angle / M_PI));
-						nrn = get_neuron_address(in_silico_network, LAYER_FLEXOR_SECONDARY_SPINDLES, NEURON_GROUP_SHOULDER_SERVO, 0);
+/*						nrn = get_neuron_address(in_silico_network, LAYER_FLEXOR_SECONDARY_SPINDLES, NEURON_GROUP_SHOULDER_SERVO, 0);
 						nrn->iz_params->I_inject = hybrid_net_rl_bmi_data->secondary_spindle_current_max - ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_shoulder_angle / M_PI));
 						nrn = get_neuron_address(in_silico_network, LAYER_FLEXOR_SECONDARY_SPINDLES, NEURON_GROUP_ELBOW_SERVO, 0);
 						nrn->iz_params->I_inject = hybrid_net_rl_bmi_data->secondary_spindle_current_max - ((hybrid_net_rl_bmi_data->secondary_spindle_current_max - hybrid_net_rl_bmi_data->secondary_spindle_current_min) * (robot_elbow_angle / M_PI));

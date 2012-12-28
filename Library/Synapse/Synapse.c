@@ -65,12 +65,12 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 		synapse = &(synapses[i]);
 		weight_change = reward * (eligibility_saved[i]-depol_eligibility_saved[i]);  
 
-		printf("Synapse: %u\t ", i);
+/*		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);
 		printf("Depol: %.8f\t", depol_eligibility_saved[i]);
 		printf("Weight: %.8f\t", synapse->weight);
 		printf("WeightChange: %.8f\n", weight_change);
-		if (synapse->type == EXCITATORY_SYNAPSE)
+*/		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
 			if ((synapse->weight + weight_change) < 0.01)
 			{
