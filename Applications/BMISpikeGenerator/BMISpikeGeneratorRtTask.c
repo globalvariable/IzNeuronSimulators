@@ -36,11 +36,11 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
         RTIME period;
 	unsigned int prev_time, curr_time;
 	unsigned int num_of_neurons;
+	TrialHand2NeuralNetTrialStatusMsgAdd trial_status_change_msg_add;
 
 	TimeStamp integration_start_time, integration_end_time;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
 	paradigm = spike_gen_data->trial_hand_paradigm;
-	trial_status_events = spike_gen_data->trial_status_events;
 	RtTasksData* rt_tasks_data = spike_gen_data->rt_tasks_data;
 	network = spike_gen_data->network;
 	current_templates =  spike_gen_data->current_templates;
@@ -48,6 +48,11 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 	limited_neuron_dynamics_buffer = spike_gen_data->limited_neuron_dynamics_buffer;
 	generated_spike_data = spike_gen_data->spike_data;
 	spike_time_stamp = spike_gen_data->sorted_spike_time_stamp;
+	trial_status_events = spike_gen_data->trial_status_events;
+	trial_status_change_msg_add.new_trial_status = TRIAL_STATUS_TRIALS_DISABLED;
+	trial_status_change_msg_add.new_robot_target_position_idx = 0;
+	schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, trial_status_change_msg_add) ; 
+
 
 	g_free(message);
 	message = g_new0(char, 200);
@@ -88,7 +93,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 
 static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integration_start_time, TimeStamp integration_end_time, unsigned int num_of_neurons)
 {
-	static unsigned int trial_status_events_write_idx_prev = -1;	// TrialController increments write idx at start up by sending trials_disabled message, and this proc read last status at first call due to invalid event buff idx. 
+	static unsigned int trial_status_events_write_idx_prev = 0;	// bmi_simulation_spike_generator_rt_handler writes trials disabled at the beginning. 
 	static TrialStatusEventItem last_trial_status_event;
 	static CurrentPatternTemplate* current_template_in_use;
 	static unsigned int current_template_read_idx;
@@ -110,23 +115,6 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 		switch (last_trial_status_event.trial_status)
 		{
 			case TRIAL_STATUS_TRIALS_DISABLED:	// ignore handling
-				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
-				{
-					for (i = 0; i < num_of_neurons; i++)
-					{	
-						neuron = all_neurons[i];
-						neuron->iz_params->I_inject = 0;
-						if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
-							return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
-						if (spike_generated)
-						{
-							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-	//						write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-						}
-					}
-					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
-				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
 				switch (last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)
@@ -153,9 +141,10 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
+								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
+
 						}
 						break;									
 					case RIGHT_ROBOT_TARGET:	 // right target
@@ -180,9 +169,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
+								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
@@ -219,9 +208,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
+						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -254,9 +243,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
+						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 
@@ -268,23 +257,6 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 		switch (last_trial_status_event.trial_status)
 		{
 			case TRIAL_STATUS_TRIALS_DISABLED:	// ignore handling
-				for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
-				{
-					for (i = 0; i < num_of_neurons; i++)
-					{	
-						neuron = all_neurons[i];
-						neuron->iz_params->I_inject = 0;
-						if (!evaluate_neuron_dyn(neuron, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time))
-							return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorRtTask", "bmi_simulation_spike_generator_integration_handler", "! evaluate_neuron_dyn().");
-						if (spike_generated)
-						{
-							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-						}
-					}
-					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
-				}
 				break;
 			case TRIAL_STATUS_IN_TRIAL:	
 				switch (last_trial_status_event.selected_robot_target_idx_in_trial_hand_paradigm)
@@ -306,9 +278,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
+								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-	//						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 
 						break;									
@@ -329,9 +301,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
+								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
 							push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//							push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 						}
 						break;	
 					default:
@@ -363,9 +335,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
+						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-//					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			case TRIAL_STATUS_START_TRIAL_AVAILABLE:  // ignore handling any duration.
@@ -393,9 +365,9 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 //							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
+						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
 					push_neuron_currents_to_neuron_current_buffer_limited(network, limited_current_pattern_buffer, time_ns);
-	//				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, 0, num_of_neurons);	
 				}
 				break;
 			default: 

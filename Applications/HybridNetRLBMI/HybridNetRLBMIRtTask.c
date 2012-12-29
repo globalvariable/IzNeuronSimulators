@@ -128,8 +128,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
 			{
 				nrn = all_neurons[i];
-				if (i == 4)
-					nrn->iz_params->I_inject = 400;
 				if (!evaluate_neuron_dyn_stdp_elig_depol_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
 				if (spike_generated)
