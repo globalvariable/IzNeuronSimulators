@@ -63,14 +63,16 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
-		weight_change = reward * (eligibility_saved[i]-depol_eligibility_saved[i]);  
-
-/*		printf("Synapse: %u\t ", i);
+		if ((depol_eligibility_saved[i]) < 2.0)
+			weight_change = reward * (eligibility_saved[i]);  
+		else
+			weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]-2.0));  
+		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);
 		printf("Depol: %.8f\t", depol_eligibility_saved[i]);
 		printf("Weight: %.8f\t", synapse->weight);
 		printf("WeightChange: %.8f\n", weight_change);
-*/		if (synapse->type == EXCITATORY_SYNAPSE)
+		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
 			if ((synapse->weight + weight_change) < 0.01)
 			{
@@ -90,7 +92,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 		}
 		else if (synapse->type == INHIBITORY_SYNAPSE)
 		{
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights_with_history", "No implementation for INHIBITORY_SYNAPSE currently supported.");
+			// no learning for inhibitory synapses.			
 		}
 		else
 		{		

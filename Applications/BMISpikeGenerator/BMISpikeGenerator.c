@@ -22,7 +22,7 @@ int main( int argc, char *argv[])
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "bmi_simulation_spike_gen_data->rt_tasks_data == NULL."); return -1; }
 
 	bmi_simulation_spike_gen_data->trial_hand_paradigm = g_new0(TrialHandParadigmRobotReach, 1);
-	bmi_simulation_spike_gen_data->trial_hand_paradigm->max_trial_length = 5000000000;
+	bmi_simulation_spike_gen_data->trial_hand_paradigm->max_trial_length = 4000000000;
 	bmi_simulation_spike_gen_data->trial_hand_paradigm->trial_refractory = 4000000000;
 	bmi_simulation_spike_gen_data->trial_hand_paradigm->num_of_robot_start_positions = 1;
 	bmi_simulation_spike_gen_data->trial_hand_paradigm->num_of_robot_target_positions = 2;

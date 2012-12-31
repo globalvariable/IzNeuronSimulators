@@ -157,6 +157,66 @@ bool submit_new_ps_depol_eligibility_vals_for_neuron(Neuron* neuron , unsigned i
 	}
 	return TRUE;
 }
+
+bool submit_new_ps_depol_eligibility_vals_for_synapse(Neuron* neuron , unsigned int parker_sochacki_max_order, double depol_eligibility_tau_max, double  depol_eligibility_tau_min, double depol_eligibility_memb_v_coeff_max, double  depol_eligibility_memb_v_coeff_min, double depol_eligibility_memo_change_max, double depol_eligibility_memo_change_min, double depol_eligibility_memo_tau_max, double depol_eligibility_memo_tau_min, unsigned int synapse)
+{
+	unsigned int i, j;
+	DepolEligibilityList		*depol_eligibility_list;
+
+	if (synapse >= neuron->syn_list->num_of_synapses)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "synapse >= neuron->syn_list->num_of_synapses.");
+
+	if (parker_sochacki_max_order <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "parker_sochacki_max_order <= 0.");
+	if (depol_eligibility_tau_max < depol_eligibility_tau_min)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_tau_max < depol_eligibility_tau_min.");
+	if (depol_eligibility_tau_max <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_tau_max <= 0.");
+	if (depol_eligibility_tau_min <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_tau_min <= 0.");
+
+	if (depol_eligibility_memb_v_coeff_max < depol_eligibility_memb_v_coeff_min)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memb_v_coeff_max < depol_eligibility_memb_v_coeff_min.");
+	if (depol_eligibility_memb_v_coeff_max <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memb_v_coeff_max <= 0.");
+	if (depol_eligibility_memb_v_coeff_min <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memb_v_coeff_min <= 0.");
+
+	if (depol_eligibility_memo_change_max < depol_eligibility_memo_change_min)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_change_max < depol_eligibility_memo_change_min.");
+	if (depol_eligibility_memo_change_max <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_change_max <= 0.");
+	if (depol_eligibility_memo_change_min <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_change_min <= 0.");
+
+	if (depol_eligibility_memo_tau_max < depol_eligibility_memo_tau_min)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_tau_max < depol_eligibility_memo_tau_min.");
+	if (depol_eligibility_memo_tau_max <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_tau_max <= 0.");
+	if (depol_eligibility_memo_tau_min <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memo_tau_min <= 0.");
+
+	depol_eligibility_list = neuron->depol_eligibility_list;
+
+	i = synapse;
+
+	depol_eligibility_list->depol_eligibility_decay_rate[i] = -1.0 / ( ( (depol_eligibility_tau_max-depol_eligibility_tau_min) * get_rand_number() ) + depol_eligibility_tau_min );
+	depol_eligibility_list->depol_eligibility_v_coeff[i] = ( ( (depol_eligibility_memb_v_coeff_max-depol_eligibility_memb_v_coeff_min) * get_rand_number() ) + depol_eligibility_memb_v_coeff_min );
+	depol_eligibility_list->depol_eligibility_decay_rate[i] = depol_eligibility_list->depol_eligibility_decay_rate[i] / depol_eligibility_list->depol_eligibility_v_coeff[i];
+	for (j = 0; j < parker_sochacki_max_order + 1; j++)
+	{
+		depol_eligibility_list->depol_eligibility_v_coeff_pol_vals[i][j] = depol_eligibility_list->depol_eligibility_v_coeff[i]/(j+1);	
+	}
+	depol_eligibility_list->memo_depol_eligibility_change[i] = ( (depol_eligibility_memo_change_max-depol_eligibility_memo_change_min) * get_rand_number() ) + depol_eligibility_memo_change_min;
+	depol_eligibility_list->memo_depol_eligibility_decay_rate[i] = -1.0 / ( ( (depol_eligibility_memo_tau_max-depol_eligibility_memo_tau_min) * get_rand_number() ) + depol_eligibility_memo_tau_min );
+	for (j = 0; j < parker_sochacki_max_order + 1; j++)
+	{
+		depol_eligibility_list->memo_depol_eligibility_decay_rate_pol_vals[i][j] = depol_eligibility_list->memo_depol_eligibility_decay_rate[i] / (j+1);	
+	}
+
+	return TRUE;
+}
+
 void clear_depol_eligibility_for_neuron(Neuron *neuron)
 {
 	unsigned int i, num_of_synapses;

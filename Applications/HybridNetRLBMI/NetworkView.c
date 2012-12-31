@@ -92,6 +92,9 @@ static GtkWidget *entry_weight_lower_limit;
 static GtkWidget *entry_weight_upper_limit;
 static GtkWidget *btn_submit_new_stdp_and_eligibility_for_neuron;
 
+static LayerNrnGrpNrnSynapseCombo *combos_select_synapse;
+static GtkWidget *btn_submit_new_stdp_and_eligibility_for_synapse;
+
 static GtkWidget *entry_secondary_spindle_current_min;
 static GtkWidget *entry_secondary_spindle_current_max;
 static GtkWidget *btn_submit_secondary_spindle_current;
@@ -127,11 +130,15 @@ static void connect_external_layer_to_internal_layer_button_func(void);
 static void submit_stdp_and_eligibility_button_func(void);
 
 static void combos_select_neuron_func(GtkWidget *changed_combo);
+static void combos_select_synapse_func(GtkWidget *changed_combo);
 
 static void submit_synaptic_weight_button_func(void);
 static void submit_secondary_spindle_current_button_func(void);
 
 static void submit_new_stdp_and_eligibility_for_neuron_button_func(void);
+
+static void submit_new_stdp_and_eligibility_for_synapse_button_func(void);
+
 static void simulate_with_no_reward_button_func(void);
 
 static void ready_for_simulation_button_func(void);
@@ -969,7 +976,26 @@ bool create_network_view_gui(void)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_new_stdp_and_eligibility_for_neuron, TRUE, TRUE, 0);
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
-	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	combos_select_synapse = allocate_layer_neuron_group_neuron_synapse_combos();
+       	gtk_box_pack_start(GTK_BOX(hbox), combos_select_synapse->combo_layer , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_synapse->combo_neuron_group, TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_synapse->combo_neuron , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_synapse->combo_synapse , TRUE,TRUE,0);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_new_stdp_and_eligibility_for_synapse = gtk_button_new_with_label("Submit New STDP-Elig for Synap");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_new_stdp_and_eligibility_for_synapse, TRUE, TRUE, 0);
+
+
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -1051,6 +1077,7 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_submit_secondary_spindle_current), "clicked", G_CALLBACK(submit_secondary_spindle_current_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_submit_new_stdp_and_eligibility_for_neuron), "clicked", G_CALLBACK(submit_new_stdp_and_eligibility_for_neuron_button_func), NULL);
+      	g_signal_connect(G_OBJECT(btn_submit_new_stdp_and_eligibility_for_synapse), "clicked", G_CALLBACK(submit_new_stdp_and_eligibility_for_synapse_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_simulate_with_no_reward), "clicked", G_CALLBACK(simulate_with_no_reward_button_func), NULL);
 
@@ -1060,12 +1087,19 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_clear_network_num_of_spike_events), "clicked", G_CALLBACK(clear_network_num_of_spike_events_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_print_network_num_of_spike_events), "clicked", G_CALLBACK(print_network_num_of_spike_events_button_func), NULL);
 
+	g_signal_connect(G_OBJECT(combos_select_synapse->combo_layer), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_layer);
+	g_signal_connect(G_OBJECT(combos_select_synapse->combo_neuron_group), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_select_synapse->combo_neuron), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_neuron);
+	g_signal_connect(G_OBJECT(combos_select_synapse->combo_synapse), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_synapse);
+
 	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_make_output, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight, FALSE);	
-	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, FALSE);		
+	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, FALSE);
+	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_synapse, FALSE);
+	gtk_widget_set_sensitive(btn_submit_secondary_spindle_current, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_no_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_reward, FALSE);	
 	gtk_widget_set_sensitive(btn_simulate_with_punishment, FALSE);	
@@ -1372,6 +1406,44 @@ static void submit_new_stdp_and_eligibility_for_neuron_button_func(void)
 	return;
 }
 
+static void submit_new_stdp_and_eligibility_for_synapse_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	Neuron *neuron;
+	unsigned int layer_num, nrn_grp_num, nrn_num, syn_num;
+	if (! layer_neuron_group_neuron_synapse_get_selected(combos_select_synapse, &layer_num, &nrn_grp_num, &nrn_num, &syn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_synapse_button_func", "! layer_neuron_group_neuron_synapse_get_selected().");	
+
+	neuron = get_neuron_address(bmi_data->in_silico_network, layer_num, nrn_grp_num, nrn_num);		
+	double STDP_pre_post_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_min)));
+	double STDP_pre_post_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_max)));
+	double STDP_pre_post_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_tau_min)));
+	double STDP_pre_post_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_tau_max)));
+	double STDP_post_pre_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_change_min)));
+	double STDP_post_pre_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_change_max)));
+	double STDP_post_pre_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_tau_min)));
+	double STDP_post_pre_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_post_pre_tau_max)));
+	double eligibility_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_min)));
+	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
+	double depol_eligibility_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_min)));
+	double depol_eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_tau_max)));
+	double depol_eligibility_memb_v_coeff_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_min)));
+	double depol_eligibility_memb_v_coeff_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_v_coeff_max)));
+	double depol_eligibility_memo_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_min)));
+	double depol_eligibility_memo_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_change_max)));
+	double depol_eligibility_memo_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_min)));
+	double depol_eligibility_memo_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memo_tau_max)));
+
+	if (! submit_new_ps_stdp_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min, syn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_stdp_vals_for_neuron().");	
+	if (! submit_new_ps_eligibility_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, syn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");	
+	if (! submit_new_ps_depol_eligibility_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(),  depol_eligibility_tau_max, depol_eligibility_tau_min, depol_eligibility_memb_v_coeff_max, depol_eligibility_memb_v_coeff_min, depol_eligibility_memo_change_max, depol_eligibility_memo_change_min, depol_eligibility_memo_tau_max, depol_eligibility_memo_tau_min, syn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! ubmit_new_ps_depol_eligibility_vals_for_neuron().");
+	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
+	return;	
+}
+
 static void simulate_with_no_reward_button_func(void)
 {
 	char *end_ptr;
@@ -1463,9 +1535,25 @@ static void ready_for_simulation_button_func(void)
 	bmi_data->blue_spike_spike_data = allocate_spike_data(bmi_data->blue_spike_spike_data, get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 	bmi_data->in_silico_spike_data = allocate_spike_data(bmi_data->in_silico_spike_data, get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 
+	if(!update_texts_of_synapse_combos_when_add_remove(combos_select_synapse, bmi_data->in_silico_network))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! update_texts_of_combos_when_add_remove().");	
+
 	if (!buffer_view_handler())
-		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "submit_parker_sochacki_params_button_func", "! create_buffers_view_gui().");	
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! create_buffers_view_gui().");	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_synapse, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_secondary_spindle_current, TRUE);
+}
+
+static void combos_select_synapse_func(GtkWidget *changed_combo)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+
+	if (bmi_data == NULL)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_synapse_func", "bmi_data == NULL.");
+
+	if(!update_texts_of_synapse_combos_when_change(combos_select_synapse, bmi_data->in_silico_network, changed_combo))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_synapse_func", "! update_texts_of_combos_when_change().");			
 }

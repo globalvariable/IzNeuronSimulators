@@ -23,6 +23,7 @@ bool create_ps_eligibility_for_neuron_group(Network *network, unsigned int layer
 
 bool create_ps_eligibility_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min);
 bool submit_new_ps_eligibility_vals_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min);
+bool submit_new_ps_eligibility_vals_for_synapse(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min, unsigned int synapse);
 void clear_eligibility_for_neuron(Neuron *neuron);
 void save_eligibility_for_neuron(Neuron *neuron);
 
