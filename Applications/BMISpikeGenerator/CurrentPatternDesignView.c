@@ -514,6 +514,7 @@ bool create_current_pattern_view_gui(void)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_signal_type), "Line");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_signal_type), "Sin");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_signal_type), "Cos");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_signal_type), "Exp");
  	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_signal_type), 0);
  	
 	btn_draw_template = gtk_button_new_with_label("Draw");
@@ -991,6 +992,13 @@ static void draw_template_button_func(void)
 		for (i = start_time; i < end_time; i+= sampling_interval)
 		{
 			current_pattern_graph->y[i/sampling_interval] = amplifier * cos (2*pi*freq* ((i-start_time)/1.0E+9) ) + starting_curr_val + init_current;
+		}
+	}
+	else if (combo_idx == EXP)
+	{
+		for (i = start_time; i < end_time; i+= sampling_interval)
+		{
+			current_pattern_graph->y[i/sampling_interval] =  init_current *exp (- amplifier * (i-start_time)/1.0E+9);
 		}
 	}
 	if (!update_current_pattern_graph(current_pattern_graph))

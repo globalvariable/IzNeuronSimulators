@@ -937,6 +937,9 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_neuron , TRUE,TRUE,0);
 	combo_neuron_dynamics = allocate_neuron_dynamics_combo(hbox, combo_neuron_dynamics);
 
+	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, get_hybrid_net_rl_bmi_data()->in_silico_network))  // it is put here since main() adds neurons to the layers previously
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "create_network_view_gui(", "! update_texts_of_combos_when_add_remove().");	
+
    	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -1092,7 +1095,7 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_neuron), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_neuron);
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_synapse), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_synapse);
 
-	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
+//	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_make_output, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_internal_layer_to_internal_layer, FALSE);	
 	gtk_widget_set_sensitive(btn_connect_external_layer_to_internal_layer, FALSE);

@@ -60,7 +60,8 @@ bool add_iz_neurons_to_layer(Network *network, unsigned int num_of_neuron, unsig
 {
 	if (network == NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_neurons_to_layer", "network == NULL.");	
-
+	if (randomize_params != 0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_neurons_to_layer", "(randomize_params != 0) / This has not been implemented yet.");	
 	if ((layer > network->layer_count) || (layer < 0) )
 	{
 		printf ("Network: ERROR: Couldn't add layer %d to network.\n", layer);

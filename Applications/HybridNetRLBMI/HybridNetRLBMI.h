@@ -1,19 +1,26 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
-#define LAYER_BASE_SERVO_EXTENSOR 				0		//   decreasing pulse width for servo)
-#define LAYER_BASE_SERVO_FLEXOR 					1		//   incresing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_EXTENSOR 			2		//   decreasing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_FLEXOR 			3		//   incresing pulse width for servo)
-#define LAYER_ELBOW_SERVO_EXTENSOR 				4		//   decreasing pulse width for servo)
-#define LAYER_ELBOW_SERVO_FLEXOR 				5		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
+#define LAYER_BASE_SERVO_EXTENSOR_INHI				1		
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				2		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR_INHI					3		
+#define LAYER_BASE_JOINT_ANGLE						4
 
-#define LAYER_EXTENSOR_SECONDARY_SPINDLES		6		// increasing firing rate for increasing servo pulse width(or joint angle)		--> NrnGrp0:  BaseServo --> NrnGrp1: ShoulderServo --> NrnGrp2: ElbowServo
-#define LAYER_FLEXOR_SECONDARY_SPINDLES		7		// decreasing firing rate for increasing servo pulse width(or joint angle)		--> NrnGrp0:  BaseServo --> NrnGrp1: ShoulderServo --> NrnGrp2: ElbowServo
+#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		5		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			6		
+#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			7		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			8		
+#define LAYER_SHOULDER_JOINT_ANGLE					9
 
-#define NEURON_GROUP_BASE_SERVO		0
-#define NEURON_GROUP_SHOULDER_SERVO	1
-#define NEURON_GROUP_ELBOW_SERVO		2
+
+#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			10		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			11		
+#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			12		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR_INHI				13		
+#define LAYER_ELBOW_JOINT_ANGLE						14
+
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				15
 
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
