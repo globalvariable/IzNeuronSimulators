@@ -129,6 +129,9 @@ static bool connect_to_mov_obj_hand(void )
 						hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[BASE_SERVO];
 						hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[SHOULDER_SERVO];
 						hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[ELBOW_SERVO];
+						printf ("angle mins %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].min);
+						printf ("angle mins %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].min);
+						printf ("angle mins %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].min);
 						goto GET_JOINT_ANGLE_MAXS;
 					default:
 						return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
@@ -153,6 +156,9 @@ static bool connect_to_mov_obj_hand(void )
 						hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[BASE_SERVO];
 						hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[SHOULDER_SERVO];
 						hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[ELBOW_SERVO];
+						printf ("angle maxs %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].max);
+						printf ("angle maxs %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].max);
+						printf ("angle maxs %f\n", hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].max);
 						goto EXIT;
 					default:
 						return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	

@@ -3,10 +3,10 @@
 
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
 #define LAYER_BASE_SERVO_EXTENSOR_INHI				1
-#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			2		// decreases firing rate for an extension, increases for flexion
+#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			2		// an extension decreases servo pulse width, decreases joint angle, decreases extension spindle firing rate, increases flexion spindle firing rate . 
 #define LAYER_BASE_SERVO_FLEXOR_MOTOR				3		//   incresing pulse width for servo)
 #define LAYER_BASE_SERVO_FLEXOR_INHI					4		
-#define LAYER_BASE_SERVO_FLEXOR_SPINDLE				5		// decreases firing rate for an flexion, increases for extension
+#define LAYER_BASE_SERVO_FLEXOR_SPINDLE				5		//  a flexion increases servo pulse width, increases joint angle, decreases flexion spindle firing rate, increases extension spindle firing rate  . 
 
 #define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		6		//   decreasing pulse width for servo)
 #define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			7
@@ -25,7 +25,7 @@
 
 #define NUM_OF_IN_SILICO_NETWORK_LAYERS 				18	
 
-#define NUM_OF_EXTENSOR_SPINDLES					1		
+#define NUM_OF_EXTENSOR_SPINDLES					4		
 #define NUM_OF_FLEXOR_SPINDLES						NUM_OF_EXTENSOR_SPINDLES	
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
@@ -71,8 +71,8 @@ struct __HybridNetRLBMIData
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
-	ExponentialPrimaryFlexorSpindle	flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
-	ExponentialPrimaryExtensorSpindle	extensor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+	ExponentialPrimaryFlexorSpindle	flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS][NUM_OF_FLEXOR_SPINDLES];
+	ExponentialPrimaryExtensorSpindle	extensor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS][NUM_OF_EXTENSOR_SPINDLES];
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

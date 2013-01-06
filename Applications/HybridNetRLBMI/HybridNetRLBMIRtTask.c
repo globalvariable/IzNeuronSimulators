@@ -370,15 +370,13 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 {
 	RT_TASK *handler;
         RTIME period;
-	unsigned int i, prev_time, curr_time, num_of_cpu_threads; 
+	unsigned int i, j, prev_time, curr_time, num_of_cpu_threads; 
 	HybridNetRLBMIData *hybrid_net_rl_bmi_data = get_hybrid_net_rl_bmi_data(); 
 	MovObjHand2NeuralNetMsgMultiThread		*msgs_mov_obj_hand_2_neural_net_multi_thread;
 	MovObjHand2NeuralNetMsgItem msg_item;
 	RtTasksData *rt_tasks_data = NULL;
 	Network *in_silico_network = hybrid_net_rl_bmi_data->in_silico_network;
-	ExponentialPrimaryFlexorSpindle	*flexor_spindles = hybrid_net_rl_bmi_data->flexor_spindles;
-	ExponentialPrimaryExtensorSpindle	*extensor_spindles = hybrid_net_rl_bmi_data->extensor_spindles;
-	double robot_base_angle, robot_shoulder_angle, robot_elbow_angle;
+	double robot_angles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	Neuron *nrn;
 
 	msgs_mov_obj_hand_2_neural_net_multi_thread = hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
@@ -416,29 +414,37 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 				switch (msg_item.msg_type)
 				{
 					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_3_DOF_JOINT_ANGLE:
-						robot_base_angle = msg_item.additional_data.three_dof_robot_joint_angles[BASE_SERVO];
-						robot_shoulder_angle = msg_item.additional_data.three_dof_robot_joint_angles[SHOULDER_SERVO];
-						robot_elbow_angle = msg_item.additional_data.three_dof_robot_joint_angles[ELBOW_SERVO];
+						for (j = 0; j < THREE_DOF_ROBOT_NUM_OF_SERVOS; j++)
+						{
+							robot_angles[j] = msg_item.additional_data.three_dof_robot_joint_angles[j];
+//							printf ("angle %u %f \n", j , robot_angles[j]);
+						}
+						for (j = 0; j < NUM_OF_FLEXOR_SPINDLES; j++)
+						{
+							nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->flexor_spindles[BASE_SERVO][j]), robot_angles[BASE_SERVO]);	
+//							printf ("flex curr %u %f \n", j , nrn->iz_params->I_inject);
 
-						nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(extensor_spindles[BASE_SERVO]), robot_base_angle);
+							nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->flexor_spindles[SHOULDER_SERVO][j]), robot_angles[SHOULDER_SERVO]);	
 
-						nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(flexor_spindles[BASE_SERVO]), robot_base_angle);
+							nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_FLEXOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->flexor_spindles[ELBOW_SERVO][j]), robot_angles[ELBOW_SERVO]);	
+						}
+						for (j = 0; j < NUM_OF_EXTENSOR_SPINDLES; j++)
+						{
+							nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_spindles[BASE_SERVO][j]), robot_angles[BASE_SERVO]);	
+//							printf ("ext curr %u %f \n", j , nrn->iz_params->I_inject);
 
-						nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(extensor_spindles[SHOULDER_SERVO]), robot_shoulder_angle);
+							nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_spindles[SHOULDER_SERVO][j]), robot_angles[SHOULDER_SERVO]);
 
-						nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(flexor_spindles[SHOULDER_SERVO]), robot_shoulder_angle);
-
-						nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(extensor_spindles[ELBOW_SERVO]), robot_elbow_angle);
-
-						nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_FLEXOR_SPINDLE, 0, 0);
-						nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(flexor_spindles[ELBOW_SERVO]), robot_elbow_angle);
-
-						break;		
+							nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE, 0, j);
+							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_spindles[ELBOW_SERVO][j]), robot_angles[ELBOW_SERVO]);
+						}
+						break;	
+	
 					default:
 						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Invalid message.");	
 						exit(1);

@@ -301,8 +301,8 @@ bool create_current_pattern_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),entry_tau_inhibitory, FALSE,FALSE,0);
 	gtk_widget_set_size_request(entry_tau_inhibitory, 50, 25) ;	
 
- 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), 1);	
-	set_neuron_param_entries(1);			
+ 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo_neuron_type), NRN_TYPE_REGULAR_SPIKING);	
+	set_neuron_param_entries(NRN_TYPE_REGULAR_SPIKING);			
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);

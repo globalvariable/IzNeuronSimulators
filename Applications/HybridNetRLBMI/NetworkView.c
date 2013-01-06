@@ -1363,23 +1363,34 @@ static void submit_synaptic_weight_button_func(void)
 static void submit_secondary_spindle_current_button_func(void)
 {	
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
-	double I_min, I_max, decay_rate;
-	unsigned int i;
+	double I_min, I_max, decay_rate, min_sensitive_angle, max_sensitive_angle;
+	unsigned int i, j;
 
 	I_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_spindle_current_min)));
 	I_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_spindle_current_max)));
 
 	for (i = 0; i < THREE_DOF_ROBOT_NUM_OF_SERVOS; i++)
 	{
-		if (! evaluate_exponential_primary_spindle_decay_rate(bmi_data->servo_angle_min_max[i].max, bmi_data->servo_angle_min_max[i].min, I_max, I_min, &decay_rate))
-			return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
-		bmi_data->flexor_spindles[i].I_decay_rate = decay_rate;
-		bmi_data->flexor_spindles[i].I_max = I_max;
-		bmi_data->flexor_spindles[i].min_sensi_angle = bmi_data->servo_angle_min_max[i].min;
-
-		bmi_data->extensor_spindles[i].I_decay_rate = decay_rate;
-		bmi_data->extensor_spindles[i].I_max = I_max;
-		bmi_data->extensor_spindles[i].max_sensi_angle = bmi_data->servo_angle_min_max[i].max;
+		for (j = 0; j < NUM_OF_FLEXOR_SPINDLES; j++)    /// a flexion increases servo pulse width, increases joint angle, decreases flexion spindle firing rate. 
+		{
+			max_sensitive_angle = bmi_data->servo_angle_min_max[i].max - (j * ((bmi_data->servo_angle_min_max[i].max - bmi_data->servo_angle_min_max[i].min) / ((double)NUM_OF_FLEXOR_SPINDLES)));
+			if (! evaluate_exponential_primary_spindle_decay_rate(max_sensitive_angle, bmi_data->servo_angle_min_max[i].min, I_max, I_min, &decay_rate))
+				return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
+			bmi_data->flexor_spindles[i][j].I_decay_rate = decay_rate;
+			bmi_data->flexor_spindles[i][j].I_max = I_max;
+			bmi_data->flexor_spindles[i][j].min_sensi_angle = bmi_data->servo_angle_min_max[i].min;
+			printf ("decay_flex %f\n", bmi_data->flexor_spindles[i][j].I_decay_rate);
+		}
+		for (j = 0; j < NUM_OF_EXTENSOR_SPINDLES; j++)
+		{
+			min_sensitive_angle = bmi_data->servo_angle_min_max[i].min + (j * ((bmi_data->servo_angle_min_max[i].max - bmi_data->servo_angle_min_max[i].min) / ((double)NUM_OF_EXTENSOR_SPINDLES)));
+			if (! evaluate_exponential_primary_spindle_decay_rate(bmi_data->servo_angle_min_max[i].max, min_sensitive_angle, I_max, I_min, &decay_rate))
+				return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
+			bmi_data->extensor_spindles[i][j].I_decay_rate = decay_rate;
+			bmi_data->extensor_spindles[i][j].I_max = I_max;
+			bmi_data->extensor_spindles[i][j].max_sensi_angle = bmi_data->servo_angle_min_max[i].max;
+			printf ("decay_exte %f\n", bmi_data->flexor_spindles[i][j].I_decay_rate);
+		}
 	}
 
 	return;
