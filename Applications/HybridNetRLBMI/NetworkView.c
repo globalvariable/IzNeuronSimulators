@@ -95,8 +95,8 @@ static GtkWidget *btn_submit_new_stdp_and_eligibility_for_neuron;
 static LayerNrnGrpNrnSynapseCombo *combos_select_synapse;
 static GtkWidget *btn_submit_new_stdp_and_eligibility_for_synapse;
 
-static GtkWidget *entry_secondary_spindle_current_min;
-static GtkWidget *entry_secondary_spindle_current_max;
+static GtkWidget *entry_spindle_current_min;
+static GtkWidget *entry_spindle_current_max;
 static GtkWidget *btn_submit_secondary_spindle_current;
 
 static GtkWidget *entry_simulation_length;
@@ -963,14 +963,14 @@ bool create_network_view_gui(void)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_secondary_spindle_current, TRUE, TRUE, 0);
 	lbl = gtk_label_new("");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
-	entry_secondary_spindle_current_min =  gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_secondary_spindle_current_min, FALSE,FALSE,0);
-	gtk_widget_set_size_request(entry_secondary_spindle_current_min, 50, 25);	
-	gtk_entry_set_text(GTK_ENTRY(entry_secondary_spindle_current_min), "70");	
-	entry_secondary_spindle_current_max =  gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_secondary_spindle_current_max, FALSE,FALSE,0);
-	gtk_widget_set_size_request(entry_secondary_spindle_current_max, 50, 25);	
-	gtk_entry_set_text(GTK_ENTRY(entry_secondary_spindle_current_max), "1500");
+	entry_spindle_current_min =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_spindle_current_min, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_spindle_current_min, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_spindle_current_min), "60");	
+	entry_spindle_current_max =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_spindle_current_max, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_spindle_current_max, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_spindle_current_max), "450");
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -1361,14 +1361,27 @@ static void submit_synaptic_weight_button_func(void)
 }
 
 static void submit_secondary_spindle_current_button_func(void)
-{
-	double min, max;
-	min = atof(gtk_entry_get_text(GTK_ENTRY(entry_secondary_spindle_current_min)));
-	max = atof(gtk_entry_get_text(GTK_ENTRY(entry_secondary_spindle_current_max)));
-	if (min > max)
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_secondary_spindle_current_button_func", "(min > max).");		
-	get_hybrid_net_rl_bmi_data()->secondary_spindle_current_min = min;
-	get_hybrid_net_rl_bmi_data()->secondary_spindle_current_max = max;
+{	
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	double I_min, I_max, decay_rate;
+	unsigned int i;
+
+	I_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_spindle_current_min)));
+	I_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_spindle_current_max)));
+
+	for (i = 0; i < THREE_DOF_ROBOT_NUM_OF_SERVOS; i++)
+	{
+		if (! evaluate_exponential_primary_spindle_decay_rate(bmi_data->servo_angle_min_max[i].max, bmi_data->servo_angle_min_max[i].min, I_max, I_min, &decay_rate))
+			return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! set_neuron_synaptic_weights().");
+		bmi_data->flexor_spindles[i].I_decay_rate = decay_rate;
+		bmi_data->flexor_spindles[i].I_max = I_max;
+		bmi_data->flexor_spindles[i].min_sensi_angle = bmi_data->servo_angle_min_max[i].min;
+
+		bmi_data->extensor_spindles[i].I_decay_rate = decay_rate;
+		bmi_data->extensor_spindles[i].I_max = I_max;
+		bmi_data->extensor_spindles[i].max_sensi_angle = bmi_data->servo_angle_min_max[i].max;
+	}
+
 	return;
 }
 

@@ -2,26 +2,31 @@
 #define HYBRID_NET_RL_BMI_H
 
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
-#define LAYER_BASE_SERVO_EXTENSOR_INHI				1		
-#define LAYER_BASE_SERVO_FLEXOR_MOTOR				2		//   incresing pulse width for servo)
-#define LAYER_BASE_SERVO_FLEXOR_INHI					3		
-#define LAYER_BASE_JOINT_ANGLE						4
+#define LAYER_BASE_SERVO_EXTENSOR_INHI				1
+#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			2		// decreases firing rate for an extension, increases for flexion
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				3		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR_INHI					4		
+#define LAYER_BASE_SERVO_FLEXOR_SPINDLE				5		// decreases firing rate for an flexion, increases for extension
 
-#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		5		//   decreasing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			6		
-#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			7		//   incresing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			8		
-#define LAYER_SHOULDER_JOINT_ANGLE					9
+#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		6		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			7
+#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE	8		// decreases firing rate for an extension, increases for flexion
+#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			9		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			10		
+#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE		11		// decreases firing rate for an flexion, increases for extension
 
 
-#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			10		//   decreasing pulse width for servo)
-#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			11		
-#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			12		//   incresing pulse width for servo)
-#define LAYER_ELBOW_SERVO_FLEXOR_INHI				13		
-#define LAYER_ELBOW_JOINT_ANGLE						14
+#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			12		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			13
+#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE		14		// decreases firing rate for an extension, increases for flexion
+#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			15		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR_INHI				16		
+#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE			17		// decreases firing rate for an flexion, increases for extension
 
-#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				15
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				18	
 
+#define NUM_OF_EXTENSOR_SPINDLES					1		
+#define NUM_OF_FLEXOR_SPINDLES						NUM_OF_EXTENSOR_SPINDLES	
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
@@ -43,6 +48,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2PostTrialHand.h"
 #include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
+#include "../../Library/Spindle/Spindle.h"
 
 struct __HybridNetRLBMIData		
 {
@@ -64,8 +70,9 @@ struct __HybridNetRLBMIData
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
-	double						secondary_spindle_current_min;
-	double						secondary_spindle_current_max;
+	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+	ExponentialPrimaryFlexorSpindle	flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+	ExponentialPrimaryExtensorSpindle	extensor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

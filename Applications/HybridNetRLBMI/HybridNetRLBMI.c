@@ -102,8 +102,7 @@ static bool connect_to_mov_obj_hand(void )
 						num_of_alive_responses++;
 						if (num_of_alive_responses == (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS))
 						{
-							print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Connection to MOV_OBJ_HANDLER is successful!!!");
-							return TRUE;
+							goto GET_JOINT_ANGLE_MINS;
 						}
 						break;		
 					default:
@@ -114,7 +113,58 @@ static bool connect_to_mov_obj_hand(void )
 		print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Waiting for MOV_OBJ_HANDLER to connect.");	
 		sleep(1);
 	}
-	return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Wrong hit in the code.");
+
+	GET_JOINT_ANGLE_MINS:
+	while (1) 
+	{ 
+		for (i = 0; i < (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS); i++)
+		{
+			while (get_next_mov_obj_hand_2_neural_net_msg_buffer_item((*(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread))[i], &msg_item))
+			{
+				get_mov_obj_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_mov_obj_hand_2_neural_net_msg);
+				print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				switch (msg_item.msg_type)
+				{
+					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_JOINT_ANGLE_MIN:
+						hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[BASE_SERVO];
+						hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[SHOULDER_SERVO];
+						hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].min = msg_item.additional_data.three_dof_robot_min_joint_angles[ELBOW_SERVO];
+						goto GET_JOINT_ANGLE_MAXS;
+					default:
+						return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				}
+			}
+		}
+		print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Waiting for MOV_OBJ_HANDLER to joint angle minimums");	
+		sleep(1);
+	}
+	GET_JOINT_ANGLE_MAXS:
+	while (1) 
+	{ 
+		for (i = 0; i < (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS); i++)
+		{
+			while (get_next_mov_obj_hand_2_neural_net_msg_buffer_item((*(hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread))[i], &msg_item))
+			{
+				get_mov_obj_hand_2_neural_net_msg_type_string(msg_item.msg_type, str_mov_obj_hand_2_neural_net_msg);
+				print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				switch (msg_item.msg_type)
+				{
+					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_JOINT_ANGLE_MAX:
+						hybrid_net_rl_bmi_data->servo_angle_min_max[BASE_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[BASE_SERVO];
+						hybrid_net_rl_bmi_data->servo_angle_min_max[SHOULDER_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[SHOULDER_SERVO];
+						hybrid_net_rl_bmi_data->servo_angle_min_max[ELBOW_SERVO].max = msg_item.additional_data.three_dof_robot_max_joint_angles[ELBOW_SERVO];
+						goto EXIT;
+					default:
+						return print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", str_mov_obj_hand_2_neural_net_msg);	
+				}
+			}
+		}
+		print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Waiting for MOV_OBJ_HANDLER to joint angle maximums");	
+		sleep(1);
+	}
+
+	EXIT:
+	return print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Connection to MOV_OBJ_HANDLER is successful!!!");
 }
 
 static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
@@ -156,6 +206,11 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
+	C = 50.0; 
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_SPINDLES, LAYER_BASE_SERVO_EXTENSOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
+
+	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
@@ -165,7 +220,7 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	C = 50.0; 
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_JOINT_ANGLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_SPINDLES, LAYER_BASE_SERVO_FLEXOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	// SHOULDER SERVO
@@ -178,6 +233,11 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
+	C = 50.0; 
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_SPINDLES, LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
+
+	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_SHOULDER_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
@@ -187,7 +247,7 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	C = 50.0; 
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_SHOULDER_JOINT_ANGLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_SPINDLES, LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	// ELBOW SERVO
@@ -200,6 +260,11 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
+	C = 50.0; 
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_SPINDLES, LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
+
+	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_ELBOW_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
@@ -209,7 +274,7 @@ static bool prepare_external_and_in_silico_network(HybridNetRLBMIData *bmi_data)
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	C = 50.0; 
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_ELBOW_JOINT_ANGLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_SPINDLES, LAYER_ELBOW_SERVO_FLEXOR_SPINDLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	return TRUE;
