@@ -22,9 +22,9 @@ void hybrid_net_rl_bmi_create_rt_threads(void)
 	static bool first = TRUE;
 	unsigned int i;
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
-	
+
 	if (bmi_data->in_silico_network->layer_count != NUM_OF_IN_SILICO_NETWORK_LAYERS)
-		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_create_rt_threads", "in_silico_network->layer_count < NUM_OF_IN_SILICO_NETWORK_LAYERS.");			
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_create_rt_threads", "in_silico_network->layer_count != NUM_OF_IN_SILICO_NETWORK_LAYERS.");			
 	
 	if (first)
 	{

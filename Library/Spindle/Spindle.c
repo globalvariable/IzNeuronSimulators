@@ -36,3 +36,23 @@ double evaluate_exponential_primary_flexor_spindle_current(ExponentialPrimaryFle
 
 	return spindle->I_max*exp(-spindle->I_decay_rate*angle);
 }
+
+bool evaluate_angular_exponential_spindle_decay_rate(double joint_angle_center, double joint_angle_adjacent, double I_max, double I_min, double *decay_rate)
+{
+	double angle;  // radian
+
+	if (I_max <= I_min)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "evaluate_angular_exponential_spindle_decay_rate", "(I_max <= I_min)."); 
+
+	angle = fabs( joint_angle_center - joint_angle_adjacent);
+	*decay_rate = -log(I_min / I_max) / angle;
+	if ((*decay_rate) <= 0) 
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "evaluate_angular_exponential_spindle_decay_rate", "(decay_rate) <= 0)."); 
+	return true;
+}
+
+double evaluate_angular_exponential_spindle_current(ExponentialAngularSpindle *spindle, double joint_angle)
+{
+	double angle = fabs(spindle->center_angle - joint_angle);
+	return spindle->I_max*exp(-spindle->I_decay_rate*angle);
+}

@@ -92,7 +92,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 		}
 		else if (synapse->type == INHIBITORY_SYNAPSE)
 		{
-			// no learning for inhibitory synapses.			
+			write_to_synapse_history_buffer(synapse);
 		}
 		else
 		{		

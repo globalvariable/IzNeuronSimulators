@@ -45,9 +45,9 @@ bool create_ps_depol_eligibility_for_neuron(Neuron* neuron , unsigned int parker
 
 	if (depol_eligibility_memo_change_max < depol_eligibility_memo_change_min)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "create_ps_stdp_for_neuron_group", "depol_eligibility_memo_change_max < depol_eligibility_memo_change_min.");
-	if (depol_eligibility_memo_change_max <= 0)
+	if (depol_eligibility_memo_change_max < 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "create_ps_stdp_for_neuron_group", "depol_eligibility_memo_change_max <= 0.");
-	if (depol_eligibility_memo_change_min <= 0)
+	if (depol_eligibility_memo_change_min < 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "create_ps_stdp_for_neuron_group", "depol_eligibility_memo_change_min <= 0.");
 
 	if (depol_eligibility_memo_tau_max < depol_eligibility_memo_tau_min)
