@@ -3,35 +3,32 @@
 
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
 #define LAYER_BASE_SERVO_EXTENSOR_INHI				1
-#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			2		// an extension decreases servo pulse width, decreases joint angle, decreases extension spindle firing rate, increases flexion spindle firing rate . 
-#define LAYER_BASE_SERVO_EXTENSOR_INTER			3		
-#define LAYER_BASE_SERVO_FLEXOR_MOTOR				4		//   incresing pulse width for servo)
-#define LAYER_BASE_SERVO_FLEXOR_INHI					5		
-#define LAYER_BASE_SERVO_FLEXOR_SPINDLE				6		//  a flexion increases servo pulse width, increases joint angle, decreases flexion spindle firing rate, increases extension spindle firing rate  . 
-#define LAYER_BASE_SERVO_FLEXOR_INTER				7		
+#define LAYER_BASE_SERVO_EXTENSOR_INTER			2		
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				3		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR_INHI					4		
+#define LAYER_BASE_SERVO_FLEXOR_INTER				5
+#define LAYER_BASE_SERVO_SPINDLE						6
 
-#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		8		//   decreasing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			9
-#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE	10		// decreases firing rate for an extension, increases for flexion
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		11		
-#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			12		//   incresing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			13		
-#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE		14		// decreases firing rate for an flexion, increases for extension
-#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			15		
+#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		7		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			8
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		9		
+#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			10		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			11		
+#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			12
+#define LAYER_SHOULDER_SERVO_SPINDLE				13	
 
-#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			16		//   decreasing pulse width for servo)
-#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			17
-#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE		18		// decreases firing rate for an extension, increases for flexion
-#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			19		
-#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			20		//   incresing pulse width for servo)
-#define LAYER_ELBOW_SERVO_FLEXOR_INHI				21		
-#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE			22		// decreases firing rate for an flexion, increases for extension
-#define LAYER_ELBOW_SERVO_FLEXOR_INTER				23		
+#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			14		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			15
+#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			16		
+#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			17		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR_INHI				18		
+#define LAYER_ELBOW_SERVO_FLEXOR_INTER				19
+#define LAYER_ELBOW_SERVO_SPINDLE					20	
 
-#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				24	
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				21	
 
-#define NUM_OF_EXTENSOR_SPINDLES					4		
-#define NUM_OF_FLEXOR_SPINDLES						NUM_OF_EXTENSOR_SPINDLES	
+#define NUM_OF_SPINDLES								12		
+
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
@@ -76,8 +73,7 @@ struct __HybridNetRLBMIData
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
-	ExponentialPrimaryFlexorSpindle	flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS][NUM_OF_FLEXOR_SPINDLES];
-	ExponentialPrimaryExtensorSpindle	extensor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS][NUM_OF_EXTENSOR_SPINDLES];
+	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);
