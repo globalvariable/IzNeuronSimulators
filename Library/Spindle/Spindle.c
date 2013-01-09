@@ -1,14 +1,9 @@
 #include "Spindle.h"
 
 
-ExponentialPrimaryExtensorFlexorSpindleGroup *allocate_exponent_extensor_flexor_spindle_group(unsigned int num_of_extensor, unsigned int num_of_flexor, double I_max, double I_min, double servo_angle_max, double servo_angle_min)
+ExponentialPrimaryExtensorFlexorSpindleGroup *allocate_exponent_extensor_flexor_spindle_group(unsigned int num_of_extensor, unsigned int num_of_flexor)
 {
-	unsigned int i;	
-	double decay_rate, min_sensitive_angle, max_sensitive_angle;
 	ExponentialPrimaryExtensorFlexorSpindleGroup *group;
-
-	if (servo_angle_max <= servo_angle_min)
-		return (ExponentialPrimaryExtensorFlexorSpindleGroup*)print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "allocate_exponent_extensor_flexor_spindle_group", "(servo_angle_max <= servo_angle_min)."); 
 
 	group = g_new0(ExponentialPrimaryExtensorFlexorSpindleGroup, 1);
 	group->num_of_extensor = num_of_extensor;
@@ -17,27 +12,37 @@ ExponentialPrimaryExtensorFlexorSpindleGroup *allocate_exponent_extensor_flexor_
 	group->extensor_spindles = g_new0(ExponentialPrimaryExtensorSpindle, num_of_extensor);
 	group->flexor_spindles = g_new0(ExponentialPrimaryFlexorSpindle, num_of_flexor);
 
-	for (i = 0; i < num_of_extensor; i++)
+	return group;
+}
+
+bool submit_exponent_extensor_flexor_spindle_group_params(ExponentialPrimaryExtensorFlexorSpindleGroup *group, double I_max, double I_min, double servo_angle_max, double servo_angle_min)
+{
+	unsigned int i;	
+	double decay_rate, min_sensitive_angle, max_sensitive_angle;
+
+	if (servo_angle_max <= servo_angle_min)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "submit_exponent_extensor_flexor_spindle_group_params", "(servo_angle_max <= servo_angle_min)."); 
+
+	for (i = 0; i < group->num_of_extensor; i++)
 	{
-		min_sensitive_angle = servo_angle_min + (i * ((servo_angle_max - servo_angle_min) / ((double)num_of_extensor)));
+		min_sensitive_angle = servo_angle_min + (i * ((servo_angle_max - servo_angle_min) / ((double)group->num_of_extensor)));
 		if (! evaluate_exponential_primary_spindle_decay_rate(servo_angle_max, min_sensitive_angle, I_max, I_min, &decay_rate))
-			return (ExponentialPrimaryExtensorFlexorSpindleGroup *)print_message(ERROR_MSG ,"HybridNetRLBMI", "Spindle", "allocate_exponent_extensor_flexor_spindle_group", "! evaluate_exponential_primary_spindle_decay_rate().");
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "submit_exponent_extensor_flexor_spindle_group_params", "! evaluate_exponential_primary_spindle_decay_rate().");
 		group->extensor_spindles[i].I_decay_rate = decay_rate;
 		group->extensor_spindles[i].I_max = I_max;
 		group->extensor_spindles[i].max_sensi_angle = servo_angle_max;		
 	}
 
-	for (i = 0; i < num_of_flexor; i++)
+	for (i = 0; i < group->num_of_flexor; i++)
 	{
-		max_sensitive_angle = servo_angle_max - (i * ((servo_angle_max - servo_angle_min) / ((double)num_of_flexor)));
+		max_sensitive_angle = servo_angle_max - (i * ((servo_angle_max - servo_angle_min) / ((double)group->num_of_flexor)));
 		if (! evaluate_exponential_primary_spindle_decay_rate(max_sensitive_angle, servo_angle_min, I_max, I_min, &decay_rate))
-			return (ExponentialPrimaryExtensorFlexorSpindleGroup *)print_message(ERROR_MSG ,"HybridNetRLBMI", "Spindle", "allocate_exponent_extensor_flexor_spindle_group", "! evaluate_exponential_primary_spindle_decay_rate().");
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "submit_exponent_extensor_flexor_spindle_group_params", "! evaluate_exponential_primary_spindle_decay_rate().");
 		group->flexor_spindles[i].I_decay_rate = decay_rate;
 		group->flexor_spindles[i].I_max = I_max;
 		group->flexor_spindles[i].min_sensi_angle = servo_angle_min;
 	}
-
-	return group;
+	return true;
 }
 
 
@@ -100,7 +105,7 @@ bool submit_exponent_angular_spindle_group_params(ExponentialAngularSpindleGroup
 		group->spindles[i].center_angle = servo_angle_min + (spindle_angle_range/2.0) + (i*spindle_angle_range);
 		group->spindles[i].I_max = I_center;
 		if (! evaluate_angular_exponential_spindle_decay_rate(spindle_angle_range/2.0, 0.0, I_center, I_adjacent, &decay_rate))
-			return print_message(ERROR_MSG ,"HybridNetRLBMI", "Spindle", "submit_exponent_angular_spindle_group_params", "! evaluate_angular_exponential_spindle_decay_rate().");
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Spindle", "submit_exponent_angular_spindle_group_params", "! evaluate_angular_exponential_spindle_decay_rate().");
 		group->spindles[i].I_decay_rate = decay_rate;
 	}
 	return true;

@@ -1,7 +1,7 @@
 #ifndef NEURON_DYNAMICS_VIEW_H
 #define NEURON_DYNAMICS_VIEW_H
 
-#define NUM_OF_NEURON_DYNAMICS_GRAPHS	2
+#define NUM_OF_NEURON_DYNAMICS_GRAPHS	4
 
 #include <gtk/gtk.h>
 #include <stdbool.h>

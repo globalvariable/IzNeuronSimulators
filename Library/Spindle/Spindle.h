@@ -39,7 +39,8 @@ typedef struct
 	ExponentialAngularSpindle	*spindles;
 } ExponentialAngularSpindleGroup;
 
-ExponentialPrimaryExtensorFlexorSpindleGroup *allocate_exponent_extensor_flexor_spindle_group(unsigned int num_of_extensor, unsigned int num_of_flexor, double I_max, double I_min, double servo_angle_max, double servo_angle_min);
+ExponentialPrimaryExtensorFlexorSpindleGroup *allocate_exponent_extensor_flexor_spindle_group(unsigned int num_of_extensor, unsigned int num_of_flexor);
+bool submit_exponent_extensor_flexor_spindle_group_params(ExponentialPrimaryExtensorFlexorSpindleGroup *group, double I_max, double I_min, double servo_angle_max, double servo_angle_min);
 bool evaluate_exponential_primary_spindle_decay_rate(double max_joint_angle, double min_joint_angle, double I_max, double I_min, double *decay_rate);
 double evaluate_exponential_primary_extensor_spindle_current(ExponentialPrimaryExtensorSpindle *spindle, double joint_angle);
 double evaluate_exponential_primary_flexor_spindle_current(ExponentialPrimaryFlexorSpindle *spindle, double joint_angle);

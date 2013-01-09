@@ -3,31 +3,39 @@
 
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
 #define LAYER_BASE_SERVO_EXTENSOR_INHI				1
-#define LAYER_BASE_SERVO_EXTENSOR_INTER			2		
-#define LAYER_BASE_SERVO_FLEXOR_MOTOR				3		//   incresing pulse width for servo)
-#define LAYER_BASE_SERVO_FLEXOR_INHI					4		
-#define LAYER_BASE_SERVO_FLEXOR_INTER				5
-#define LAYER_BASE_SERVO_SPINDLE						6
+#define LAYER_BASE_SERVO_EXTENSOR_INTER			2
+#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			3
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				4		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR_INHI					5		
+#define LAYER_BASE_SERVO_FLEXOR_INTER				6
+#define LAYER_BASE_SERVO_FLEXOR_SPINDLE				7
+#define LAYER_BASE_SERVO_SPINDLE						8
 
-#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		7		//   decreasing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			8
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		9		
-#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			10		//   incresing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			11		
-#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			12
-#define LAYER_SHOULDER_SERVO_SPINDLE				13	
+#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		9		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			10
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		11	
+#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE	12	
+#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			13		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			14		
+#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			15
+#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE		16	
+#define LAYER_SHOULDER_SERVO_SPINDLE				17	
 
-#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			14		//   decreasing pulse width for servo)
-#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			15
-#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			16		
-#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			17		//   incresing pulse width for servo)
-#define LAYER_ELBOW_SERVO_FLEXOR_INHI				18		
-#define LAYER_ELBOW_SERVO_FLEXOR_INTER				19
-#define LAYER_ELBOW_SERVO_SPINDLE					20	
+#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			18		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			19
+#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			20	
+#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE		21		
+#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			22		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR_INHI				23		
+#define LAYER_ELBOW_SERVO_FLEXOR_INTER				24
+#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE			25	
+#define LAYER_ELBOW_SERVO_SPINDLE					26	
 
-#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				21	
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				27	
 
-#define NUM_OF_SPINDLES								12		
+#define NUM_OF_ANGULAR_SPINDLES						12
+#define NUM_OF_FLEXOR_SPINDLES						1
+#define NUM_OF_EXTENSOR_SPINDLES					NUM_OF_FLEXOR_SPINDLES
 
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
@@ -74,6 +82,7 @@ struct __HybridNetRLBMIData
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+	ExponentialPrimaryExtensorFlexorSpindleGroup *extensor_flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

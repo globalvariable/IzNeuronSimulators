@@ -1373,6 +1373,9 @@ static void submit_primary_spindle_current_button_func(void)
 	{
 		if (! submit_exponent_angular_spindle_group_params(bmi_data->angle_sensitive_spindles[i], I_max, I_min, bmi_data->servo_angle_min_max[i].max, bmi_data->servo_angle_min_max[i].min))
 			return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! submit_exponent_angular_spindle_group_params().");
+
+		if (! submit_exponent_extensor_flexor_spindle_group_params(bmi_data->extensor_flexor_spindles[i], I_max, I_min, bmi_data->servo_angle_min_max[i].max, bmi_data->servo_angle_min_max[i].min))
+			return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_synaptic_weight_button_func", "! submit_exponent_angular_spindle_group_params().");
 	}
 
 	return;
