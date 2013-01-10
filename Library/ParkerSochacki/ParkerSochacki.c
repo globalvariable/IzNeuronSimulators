@@ -950,7 +950,7 @@ bool parker_sochacki_integration_stdp_elig_depol_elig(Neuron *nrn, TimeStamp int
 		{
 			stdp_post_pre[s] += change_stdp_post_pre[s];	// it is already negative. 
 			eligibility[s] += stdp_pre_post[s];  /// increment eligibility 
-			depol_eligibility[s] = 0; 
+//			depol_eligibility[s] = 0; 
 			memo_depol_eligibility[s] = 0; // for depol_eligibility & memo_depol_eligibility, it is unnecessary to parker_sochacki_update_stdp_elig_depol_elig since below they are zero' d after a spike generation .
 		}
 		v_pol_vals[0] = iz_params->c;    ///   v = c

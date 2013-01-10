@@ -1,11 +1,11 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
-#define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)
+#define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)   ///  TURN TO RIGHT
 #define LAYER_BASE_SERVO_EXTENSOR_INHI				1
 #define LAYER_BASE_SERVO_EXTENSOR_INTER			2
 #define LAYER_BASE_SERVO_EXTENSOR_SPINDLE			3
-#define LAYER_BASE_SERVO_FLEXOR_MOTOR				4		//   incresing pulse width for servo)
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				4		//   incresing pulse width for servo)   ///  TURN TO LEFT
 #define LAYER_BASE_SERVO_FLEXOR_INHI					5		
 #define LAYER_BASE_SERVO_FLEXOR_INTER				6
 #define LAYER_BASE_SERVO_FLEXOR_SPINDLE				7

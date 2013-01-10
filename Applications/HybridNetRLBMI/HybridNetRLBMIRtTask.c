@@ -344,7 +344,8 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
-					reward = msg_item.additional_data;
+					//reward = msg_item.additional_data;
+					reward = 0;
 					sleep(1);	// wait one second to ensure trial is really ended and all neurons processed NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD and NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT messages. 
 					for (i = 0; i < num_of_neurons; i++)
 					{
@@ -378,6 +379,8 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 	Network *in_silico_network = hybrid_net_rl_bmi_data->in_silico_network;
 	double robot_angles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	Neuron *nrn;
+	Neuron		**all_neurons = hybrid_net_rl_bmi_data->in_silico_network->all_neurons;
+	unsigned int 		num_of_neurons = hybrid_net_rl_bmi_data->in_silico_network->num_of_neurons;
 
 	msgs_mov_obj_hand_2_neural_net_multi_thread = hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
 	rt_tasks_data = hybrid_net_rl_bmi_data->rt_tasks_data;
@@ -455,9 +458,16 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[ELBOW_SERVO]->flexor_spindles[j]), robot_angles[ELBOW_SERVO]);
 						}
 						break;	
-	
+					case MOV_OBJ_HAND_2_NEURAL_NET_MSG_MOMENTARY_REWARD:	
+						printf("mom_rew %f\n", msg_item.additional_data.momentary_reward);
+						for (j = 0; j < num_of_neurons; j++)
+						{
+							if (! update_neuron_synaptic_weights(all_neurons[j],  msg_item.additional_data.momentary_reward)) {
+								print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "mov_obj_hand_2_neural_net_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
+						}						
+						break;
 					default:
-						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "Invalid message.");	
+						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "mov_obj_hand_2_neural_net_msgs_handler", "Invalid message.");	
 						exit(1);
 				}
 			}

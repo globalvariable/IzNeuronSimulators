@@ -14,7 +14,7 @@ bool get_num_of_synapses_in_neuron(Network *network, unsigned int layer, unsigne
 	return TRUE;
 }
 
-bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate)
+bool update_neuron_synaptic_weights(Neuron *neuron, double reward)
 {
 	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
 	Synapse	*synapses = neuron->syn_list->synapses;
@@ -25,27 +25,30 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double change_rate)
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
-		if (change_rate == 0)
-		{
-			change_rate = -0.01;
-		}
-		weight_change = (eligibility_saved[i]-depol_eligibility_saved[i])*change_rate;
+
+		weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
+
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
-			if ((synapse->weight - weight_change) < 0)
-				synapse->weight = 0;
+			if ((synapse->weight + weight_change) < 0.01)
+			{
+				synapse->weight = 0.01;
+			}
 			else if ((synapse->weight + weight_change) > 15)
+			{			
 				synapse->weight = 15;
+			}
 			else
-				synapse->weight += weight_change;
+			{
+				synapse->weight = synapse->weight+weight_change;
+			}
 		}
 		else if (synapse->type == INHIBITORY_SYNAPSE)
 		{
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights", "No implementation for INHIBITORY_SYNAPSE currently supported.");
 		}
 		else
 		{		
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights", "Invalid synapse->type.");
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "update_neuron_synaptic_weights_with_history", "Invalid synapse->type.");
 		}
 	}
 
@@ -63,10 +66,9 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
-		if ((depol_eligibility_saved[i]) < 2.0)
-			weight_change = reward * (eligibility_saved[i]);  
-		else
-			weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]-2.0));  
+
+		weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
+
 		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);
 		printf("Depol: %.8f\t", depol_eligibility_saved[i]);
@@ -79,9 +81,9 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 				synapse->weight = 0.01;
 				write_to_synapse_history_buffer(synapse);
 			}
-			else if ((synapse->weight + weight_change) > 20)
+			else if ((synapse->weight + weight_change) > 15)
 			{			
-				synapse->weight = 20;
+				synapse->weight = 15;
 				write_to_synapse_history_buffer(synapse);
 			}
 			else
