@@ -95,16 +95,16 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 	}
 	else if (neuron_type == NRN_TYPE_LOW_THRESHOLD) 
 	{
-		*v = -75;
+		*v = -56;
 		*a =0.03;
 		*b = 8;
 		*c = -53;
-		*d = 130;
-		*C = 150;
+		*d = 20;
+		*C = 100;
 		*k = 1.2;
-		*v_resting = -75;
-		*v_threshold = -45;
-		*v_peak = 50;
+		*v_resting = -56;
+		*v_threshold = -42;
+		*v_peak = 40;
 		*inhibitory = 1;
 		*E_excitatory = 0;
 		*E_inhibitory = -80;
