@@ -91,6 +91,7 @@ struct __HybridNetRLBMIData
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	ExponentialPrimaryExtensorFlexorSpindleGroup *extensor_flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+	double						learning_rate;
 };
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);

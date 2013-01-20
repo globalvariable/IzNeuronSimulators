@@ -55,7 +55,7 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double reward)
 	return TRUE;
 }
 
-bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
+bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward, double learning_rate)
 {
 	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
 	Synapse	*synapses = neuron->syn_list->synapses;
@@ -67,7 +67,7 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward)
 	{
 		synapse = &(synapses[i]);
 
-		weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
+		weight_change = learning_rate * reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
 
 		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);
@@ -131,6 +131,29 @@ bool set_neuron_synaptic_weights(Neuron *neuron, double lower_limit, double uppe
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_synaptic_weights", "Invalid synapse->type.");
 		}
 	}
+	return TRUE;
+}
+
+bool set_neuron_synapse_synaptic_weight(Neuron *neuron, double lower_limit, double upper_limit, SynapseIndex syn_idx)
+{
+	Synapse	*synapse = &(neuron->syn_list->synapses[syn_idx]);
+
+	if (upper_limit < lower_limit)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_synapse_synaptic_weight", "upper_limit < lower_limit.");
+
+	if (synapse->type == EXCITATORY_SYNAPSE)
+	{
+		synapse->weight = ((upper_limit-lower_limit) * get_rand_number()) + lower_limit;
+	}
+	else if (synapse->type == INHIBITORY_SYNAPSE)
+	{
+		synapse->weight = -(((upper_limit-lower_limit) * get_rand_number()) + lower_limit);
+	}
+	else
+	{		
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_synapse_synaptic_weight", "Invalid synapse->type.");
+	}
+
 	return TRUE;
 }
 

@@ -131,7 +131,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
 			{
 				nrn = all_neurons[i];
-				if (!evaluate_neuron_dyn_stdp_elig_depol_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
+				if (! evaluate_neuron_dyn_stdp_psddp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
 				if (spike_generated)
 				{
@@ -334,6 +334,8 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 	unsigned int 		i, num_of_neurons = hybrid_net_rl_bmi_data->in_silico_network->num_of_neurons;
 	msgs_neural_net_2_post_trial_hand = get_hybrid_net_rl_bmi_data()->msgs_neural_net_2_post_trial_hand;
 	double reward;
+	double learning_rate;
+
         while (1) 
 	{
 		sleep(1);
@@ -346,9 +348,10 @@ static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
 				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
 					reward = msg_item.additional_data;
 					sleep(1);	// wait one second to ensure trial is really ended and all neurons processed NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD and NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT messages. 
+					learning_rate = hybrid_net_rl_bmi_data->learning_rate;
 					for (i = 0; i < num_of_neurons; i++)
 					{
-						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], reward)) {
+						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], reward, learning_rate)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
 					}
 					break;	
