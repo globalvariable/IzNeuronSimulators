@@ -78,8 +78,8 @@ struct __HybridNetRLBMIData
 	STDPBufferLimited			*stdp_limited_buffer;
 	EligibilityBufferLimited			*eligibility_limited_buffer;
 	DepolEligibilityBufferLimited		*depol_eligibility_limited_buffer;
-	SpikeData					*blue_spike_spike_data;   // for visualization
-	SpikeData					*in_silico_spike_data;  // for visualization
+	SpikeData					**blue_spike_spike_data_for_graph;   // for visualization
+	SpikeData					**in_silico_spike_data_for_graph;  // for visualization  // each thread writes to one buffer.
 	TrialHand2NeuralNetMsg		*msgs_trial_hand_2_neural_net;
 	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
 	MovObjHand2NeuralNetMsgMultiThread		*msgs_mov_obj_hand_2_neural_net_multi_thread;

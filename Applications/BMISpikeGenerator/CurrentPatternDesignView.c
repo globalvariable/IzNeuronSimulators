@@ -914,7 +914,8 @@ static void generate_current_injection_graphs_button_func(void)
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	spike_gen_data->limited_current_pattern_buffer = allocate_current_pattern_buffer_limited(spike_gen_data->network, spike_gen_data->limited_current_pattern_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_CURRENT_PATTERN_GRAPHS); // 3 second buffer
 	spike_gen_data->limited_neuron_dynamics_buffer = allocate_neuron_dynamics_buffer_limited(spike_gen_data->network, spike_gen_data->limited_neuron_dynamics_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS); // 3 second buffer for 1 second graph refresh rate. 
-	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	spike_gen_data->spike_data = g_new0(SpikeData*,1);
+	spike_gen_data->spike_data[0] = allocate_spike_data(spike_gen_data->spike_data[0], get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 
 	if (! buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	
@@ -1572,7 +1573,7 @@ void load_button_func(void)
 	neuron_dynamics_graph = allocate_neuron_dynamics_graph(neuron_dynamics_graph_hbox, neuron_dynamics_graph, max_num_of_samples, PARKER_SOCHACKI_INTEGRATION_STEP_SIZE);
 	spike_gen_data->limited_current_pattern_buffer = allocate_current_pattern_buffer_limited(spike_gen_data->network, spike_gen_data->limited_current_pattern_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_CURRENT_PATTERN_GRAPHS); // 3 second buffer
 	spike_gen_data->limited_neuron_dynamics_buffer = allocate_neuron_dynamics_buffer_limited(spike_gen_data->network, spike_gen_data->limited_neuron_dynamics_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_NEURON_DYNAMICS_GRAPHS); // 3 second buffer for 1 second graph refresh rate. 
-	spike_gen_data->spike_data = allocate_spike_data(spike_gen_data->spike_data, get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	spike_gen_data->spike_data[0] = allocate_spike_data(spike_gen_data->spike_data[0], get_num_of_neurons_in_network(spike_gen_data->network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 
 	if (! buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	

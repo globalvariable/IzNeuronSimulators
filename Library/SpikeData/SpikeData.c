@@ -34,8 +34,29 @@ bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsig
 
 	buff_idx_write = &(spike_data->buff_idx_write);
 	item = &(spike_data->buff[*buff_idx_write]);
+	item->peak_time = spike_time;
+	item->mwa_or_layer = mwa_or_layer;
+	item->channel_or_neuron_group = channel_or_neuron_group;
+	item->unit_or_neuron = unit_or_neuron;	
+	if ((*buff_idx_write +1) ==  spike_data->buffer_size )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
+		*buff_idx_write = 0;
+	else
+		(*buff_idx_write)++;
+	if ((*buff_idx_write) == spike_data->buff_idx_read)
+	{
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data", "SpikeData buffer is FULL!!!.");
+	}
+	return TRUE;
+}
+
+bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time)
+{
+	unsigned int *buff_idx_write;
+	SpikeTimeStampItem *item;
 
 	pthread_mutex_lock(&(spike_data->mutex));
+	buff_idx_write = &(spike_data->buff_idx_write);
+	item = &(spike_data->buff[*buff_idx_write]);
 	item->peak_time = spike_time;
 	item->mwa_or_layer = mwa_or_layer;
 	item->channel_or_neuron_group = channel_or_neuron_group;
@@ -47,7 +68,7 @@ bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsig
 	if ((*buff_idx_write) == spike_data->buff_idx_read)
 	{
 		pthread_mutex_unlock(&(spike_data->mutex));	
-		print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data", "SpikeData buffer is FULL!!!.");
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data", "SpikeData buffer is FULL!!!.");
 	}
 	pthread_mutex_unlock(&(spike_data->mutex));	
 	return TRUE;
@@ -116,11 +137,11 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 		}
 	} while (1);
 	
-	if ((*ptr_buffer_write_idx + 1) == buff_size)
-		*ptr_buffer_write_idx = 0;
+	if (((*ptr_buffer_write_idx) + 1) == buff_size)
+		(*ptr_buffer_write_idx) = 0;
 	else
 		(*ptr_buffer_write_idx)++;
-	if (*ptr_buffer_write_idx == spike_data->buff_idx_read)
+	if ((*ptr_buffer_write_idx) == spike_data->buff_idx_read)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeData", "write_to_spike_data_with_sorting", "SpikeData buffer is FULL!!!.");
 //	pthread_mutex_unlock(&(spike_data->mutex));
 	return TRUE;
@@ -131,16 +152,31 @@ bool get_next_spike_data_item(SpikeData* spike_data, SpikeTimeStampItem *data_it
 	unsigned int *idx;
 	SpikeTimeStampItem *buff_data_item;
 	idx = &(spike_data->buff_idx_read);
-	if (*idx == spike_data->buff_idx_write)
+	if ((*idx) == spike_data->buff_idx_write)
 		return FALSE;
 	buff_data_item = &(spike_data->buff[*idx]);	
 	data_item->peak_time = buff_data_item->peak_time;
 	data_item->mwa_or_layer = buff_data_item->mwa_or_layer;
 	data_item->channel_or_neuron_group = buff_data_item->channel_or_neuron_group;
 	data_item->unit_or_neuron = buff_data_item->unit_or_neuron;
-	if ((*idx + 1) == spike_data->buffer_size)
-		*idx = 0;
+	if (((*idx) + 1) == spike_data->buffer_size)
+		(*idx) = 0;
 	else
 		(*idx)++;
 	return TRUE;
+}
+
+void get_spike_data_item_by_idx(SpikeData* spike_data, unsigned int idx, SpikeTimeStampItem *data_item)
+{
+	SpikeTimeStampItem *buff_data_item;
+	buff_data_item = &(spike_data->buff[idx]);	
+	data_item->peak_time = buff_data_item->peak_time;
+	data_item->mwa_or_layer = buff_data_item->mwa_or_layer;
+	data_item->channel_or_neuron_group = buff_data_item->channel_or_neuron_group;
+	data_item->unit_or_neuron = buff_data_item->unit_or_neuron;
+}
+
+void reset_spike_data_read_idx(SpikeData* spike_data)
+{
+	spike_data->buff_idx_read = spike_data->buff_idx_write;
 }

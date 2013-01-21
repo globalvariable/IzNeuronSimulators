@@ -2,7 +2,7 @@
 
 
 
-NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData *source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events)
+NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData **source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, unsigned int	num_of_spike_data_buffer)
 {
 	GdkColor color_bg;
 	GdkColor color_line;
@@ -31,6 +31,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	graph->graph_len_to_scroll = sampling_interval*num_of_data_points_to_scroll;
 	graph->spike_buffer_followup_latency = spike_buffer_followup_latency;
 	graph->source_spike_data_to_plot = source_spike_data_to_plot;
+	graph->num_of_source_spike_data_to_plot = num_of_spike_data_buffer;
 	graph->spike_handling_buffer = allocate_spike_data(graph->spike_handling_buffer, (unsigned int)(get_num_of_neurons_in_network(network)*(spike_buffer_followup_latency/1000000000.0)*500) ); // to buffer spikes appear during spike_buffer_followup_latency, assuming neuron firing rate cannot be more than 500 Hz 
 
 	color_bg.red = 0;
@@ -100,9 +101,11 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 
 bool determine_spike_pattern_graph_scroll_start_time_and_read_indexes(NetworkSpikePatternGraphScroll *graph, TimeStamp current_system_time)
 {
+	unsigned int i;
 	graph->new_part_start_time = current_system_time;
-	graph->source_spike_data_buffer_read_idx = graph->source_spike_data_to_plot->buff_idx_write;
-	graph->spike_handling_buffer_read_idx = graph->spike_handling_buffer->buff_idx_write;
+	for (i = 0; i < graph->num_of_source_spike_data_to_plot; i++)
+		reset_spike_data_read_idx(graph->source_spike_data_to_plot[i]);
+	reset_spike_data_read_idx(graph->spike_handling_buffer);
 	graph->trial_status_event_buffer_read_idx = graph->trial_status_events->buff_write_idx;
 	return TRUE;
 }
@@ -115,19 +118,17 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 	TimeStamp				sampling_interval;
 	TimeStamp				graph_len_to_scroll;
 	TimeStamp				graph_len;
-	unsigned int				idx, end_idx;
 	unsigned int				data_point_placement_start_idx;
-	SpikeData				*source_spike_data_to_plot;
+	SpikeData				**source_spike_data_to_plot;
 	SpikeData				*spike_handling_buffer;
 	SpikeTimeStampItem		*spike_handling_buffer_buff;	
 	unsigned int				spike_handling_buffer_size;
-	SpikeTimeStampItem		*source_spike_data_buffer_buff;	
-	unsigned int				source_spike_data_buffer_size;
-	SpikeTimeStampItem		*spike_item;
+	SpikeTimeStampItem		spike_item;
 	NeuronSpikePatternGraphScroll	***neuron_graphs;
 	StatusMarker 				*markers;
 	TrialStatusEventItem		*status_event_item;
 	float					status_marker_x;
+	unsigned int				idx, end_idx, i;
 	if ((graph->global_pause_request) && (graph->scroll_request))
 	{
 		graph->global_pause_request = FALSE;
@@ -148,53 +149,54 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 		spike_handling_buffer_buff = spike_handling_buffer->buff;
 		spike_handling_buffer_size = spike_handling_buffer->buffer_size;
 		source_spike_data_to_plot = graph->source_spike_data_to_plot;
-		source_spike_data_buffer_buff = source_spike_data_to_plot->buff;
-		source_spike_data_buffer_size = source_spike_data_to_plot->buffer_size;
 		neuron_graphs =  graph->neuron_graphs;
 		if (graph->scroll_request)   // it is necessary otherwise set_total_limits cannot display slided and clear graph part. 
 			scroll_network_spike_pattern_graph(network, graph);
 		if (current_system_time > (new_part_end_time + graph->spike_buffer_followup_latency) )
 		{
 			// first handle graph' s spike buffer
-			idx = graph->spike_handling_buffer_read_idx;		
+			idx = spike_handling_buffer->buff_idx_read;
 			end_idx = spike_handling_buffer->buff_idx_write;
-			while (idx != end_idx)
+			while (idx != end_idx)   // do not use get_next_spike_data_item(spike_handling_buffer, &spike_item) since write_to_spike_data(spike_handling_buffer) in while loop writes in this buffer as well. So there will be an infinite loop.
 			{
-				spike_item = &(spike_handling_buffer_buff[idx]);
-				spike_time = spike_item->peak_time;
+				get_spike_data_item_by_idx(spike_handling_buffer, idx, &spike_item);
+				spike_time = spike_item.peak_time;
 				if (spike_time < new_part_start_time)
+				{
+					printf("1 sp time: %llu\n", spike_time);
 					print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
+					idx++;
+					if (idx == spike_handling_buffer_size)
+						idx = 0;
+					continue;				
+				}
 				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
-					write_to_spike_data(spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);
+					write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);
 				idx++;
 				if (idx == spike_handling_buffer_size)
 					idx = 0;
 			}
-			graph->spike_handling_buffer_read_idx = end_idx;
+			spike_handling_buffer->buff_idx_read = end_idx;
 			// second handle graph' s source buffer	
-			idx = graph->source_spike_data_buffer_read_idx;
-			end_idx = source_spike_data_to_plot->buff_idx_write;	
-			while (idx != end_idx)
+			for (i = 0; i < graph->num_of_source_spike_data_to_plot; i++)
 			{
-				spike_item = &(source_spike_data_buffer_buff[idx]);
-				spike_time = spike_item->peak_time;
-				if (spike_time < new_part_start_time)
+				while (get_next_spike_data_item(source_spike_data_to_plot[i], &spike_item))
 				{
-					print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
-					printf("spike_time = %llu, new_part_start_time = %llu", spike_time, new_part_start_time);
+					spike_time = spike_item.peak_time;
+					if (spike_time < new_part_start_time)
+					{
+						printf("2 sp time: %llu\n", spike_time);
+						print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
+						continue;		
+					}
+					if (spike_time < new_part_end_time)
+						neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					else
+						write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);	
 				}
-				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
-				else
-					write_to_spike_data(spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);	
-				idx++;
-				if (idx == source_spike_data_buffer_size)
-					idx = 0;			
 			}
-			graph->source_spike_data_buffer_read_idx = end_idx;	
-
 			while (graph->trial_status_event_buffer_read_idx != graph->trial_status_events->buff_write_idx)
 			{
 				status_event_item = &(graph->trial_status_events->buff[graph->trial_status_event_buffer_read_idx]);
@@ -233,42 +235,48 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 		else
 		{
 			// first handle graph' s spike buffer
-			idx = graph->spike_handling_buffer_read_idx;		
+			idx = spike_handling_buffer->buff_idx_read;
 			end_idx = spike_handling_buffer->buff_idx_write;
-			while (idx != end_idx)
+			while (idx != end_idx)   // do not use get_next_spike_data_item(spike_handling_buffer, &spike_item) since write_to_spike_data(spike_handling_buffer) in while loop writes in this buffer as well. So there will be an infinite loop.
 			{
-				spike_item = &(spike_handling_buffer_buff[idx]);
-				spike_time = spike_item->peak_time;
+				get_spike_data_item_by_idx(spike_handling_buffer, idx, &spike_item);
+				spike_time = spike_item.peak_time;
 				if (spike_time < new_part_start_time)
+				{
+					printf("3 sp time: %llu\n", spike_time);
 					print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
+					idx++;
+					if (idx == spike_handling_buffer_size)
+						idx = 0;
+					continue;		
+				}
 				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
-					write_to_spike_data(spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);
+					write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);
 				idx++;
 				if (idx == spike_handling_buffer_size)
 					idx = 0;
 			}
-			graph->spike_handling_buffer_read_idx = end_idx;
+			spike_handling_buffer->buff_idx_read = end_idx;
 			// second handle graph' s source buffer	
-			idx = graph->source_spike_data_buffer_read_idx;
-			end_idx = source_spike_data_to_plot->buff_idx_write;	
-			while (idx != end_idx)
-			{
-				spike_item = &(source_spike_data_buffer_buff[idx]);
-				spike_time = spike_item->peak_time;
-				if (spike_time < new_part_start_time)
-					print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
-				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item->mwa_or_layer][spike_item->channel_or_neuron_group][spike_item->unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
-				else
-					write_to_spike_data(spike_handling_buffer, spike_item->mwa_or_layer, spike_item->channel_or_neuron_group, spike_item->unit_or_neuron, spike_time);	
-
-				idx++;
-				if (idx == source_spike_data_buffer_size)
-					idx = 0;			
+			for (i = 0; i < graph->num_of_source_spike_data_to_plot; i++)
+			{			
+				while (get_next_spike_data_item(source_spike_data_to_plot[i], &spike_item))
+				{
+					spike_time = spike_item.peak_time;
+					if (spike_time < new_part_start_time)
+					{
+						printf("4 sp time: %llu\n", spike_time);
+						print_message(WARNING_MSG ,"IzNeuronSimulators", "SpikePatternGraph", "handle_spike_pattern_graph_scrolling_and_plotting", "spike_time < new_part_start_time (Only normal at plotting resumed).");
+						continue;				
+					}
+					if (spike_time < new_part_end_time)
+						neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					else
+						write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);	
+				}
 			}
-			graph->source_spike_data_buffer_read_idx = end_idx;
 		}	
 			
 	}

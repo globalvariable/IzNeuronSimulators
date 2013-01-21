@@ -2,8 +2,7 @@
 
 static Network *blue_spike_network = NULL;
 static Network *in_silico_network = NULL;
-static SpikeData *blue_spike_spike_data = NULL;
-static SpikeData *in_silico_spike_data = NULL;
+
 static RtTasksData *rt_tasks_data = NULL;
 
 
@@ -47,8 +46,6 @@ bool buffer_view_handler(void)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	blue_spike_network = bmi_data->blue_spike_network;
 	in_silico_network = bmi_data->in_silico_network;
-	blue_spike_spike_data = bmi_data->blue_spike_spike_data;
-	in_silico_spike_data = bmi_data->in_silico_spike_data;
 	rt_tasks_data = bmi_data->rt_tasks_data;
 	if (!create_neuron_dynamics_view_gui())
 		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_neuron_dynamics_view_gui().");
@@ -88,7 +85,7 @@ bool buffer_view_handler(void)
 	blue_spike_spike_graph = get_blue_spike_spike_pattern_graph_ptr();
 	in_silico_spike_graph = get_in_silico_spike_pattern_graph_ptr();
 
-	g_timeout_add(500, timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
+	g_timeout_add(500 , timeout_callback, NULL);		// timeout shoud be less than buffer_followup_latency,
 
 	return TRUE;
 }

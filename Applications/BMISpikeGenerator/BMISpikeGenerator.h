@@ -29,7 +29,7 @@ struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeD
 	CurrentTemplate				*current_templates;
 	CurrentPatternBufferLimited		*limited_current_pattern_buffer;
 	NeuronDynamicsBufferLimited	*limited_neuron_dynamics_buffer;
-	SpikeData					*spike_data;
+	SpikeData					**spike_data;
 	TrialHand2SpikeGenMsg		*msgs_trial_hand_2_spike_gen;
 	SpikeGen2TrialHandMsg		*msgs_spike_gen_2_trial_hand;
 	TrialStatusEvents				*trial_status_events;

@@ -72,7 +72,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	STDPBufferLimited *stdp_buffer_limited = bmi_data->stdp_limited_buffer;
 	EligibilityBufferLimited *eligibility_buffer_limited = bmi_data->eligibility_limited_buffer;
 	DepolEligibilityBufferLimited *depol_eligibility_buffer_limited = bmi_data->depol_eligibility_limited_buffer;
-	SpikeData	*in_silico_spike_data = bmi_data->in_silico_spike_data ;
+	SpikeData	**in_silico_spike_data_for_graph = bmi_data->in_silico_spike_data_for_graph ;
 	unsigned int i; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
@@ -135,7 +135,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
 				if (spike_generated)
 				{
-//					write_to_spike_data(in_silico_spike_data, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
+					write_to_spike_data(in_silico_spike_data_for_graph[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
 					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 					{
 						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
@@ -176,7 +176,7 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 	unsigned int blue_spike_buff_size = SPIKE_TIME_STAMP_BUFF_SIZE;
 	unsigned int mwa_or_layer, channel_or_neuron_group, unit_or_neuron;
 	TimeStamp spike_time;
-	SpikeData *blue_spike_spike_data = bmi_data->blue_spike_spike_data;
+	SpikeData **blue_spike_spike_data_for_graph = bmi_data->blue_spike_spike_data_for_graph;
 	if (! check_rt_task_specs_to_init(rt_tasks_data, BLUE_SPIKE_BUFF_HANDLER_CPU_ID, BLUE_SPIKE_BUFF_HANDLER_CPU_THREAD_ID, BLUE_SPIKE_BUFF_HANDLER_CPU_THREAD_TASK_ID, BLUE_SPIKE_BUFF_HANDLER_PERIOD))  {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
         if (! (handler = rt_task_init_schmod(BLUE_SPIKE_BUFF_HANDLER_TASK_NAME, BLUE_SPIKE_BUFF_HANDLER_TASK_PRIORITY, BLUE_SPIKE_BUFF_HANDLER_STACK_SIZE, BLUE_SPIKE_BUFF_HANDLER_MSG_SIZE, BLUE_SPIKE_BUFF_HANDLER_POLICY, 1 << ((BLUE_SPIKE_BUFF_HANDLER_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU)+BLUE_SPIKE_BUFF_HANDLER_CPU_THREAD_ID)))) {
@@ -208,7 +208,7 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 			blue_spike_neuron = get_neuron_address(blue_spike_network, mwa_or_layer, channel_or_neuron_group, unit_or_neuron);
 			if (!schedule_synaptic_event(blue_spike_neuron, spike_time)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! schedule_event()."); exit(1); }
-//			write_to_spike_data(blue_spike_spike_data, mwa_or_layer, channel_or_neuron_group, unit_or_neuron, spike_time);	
+			write_to_spike_data(blue_spike_spike_data_for_graph[0], mwa_or_layer, channel_or_neuron_group, unit_or_neuron, spike_time);	
 			if ((blue_spike_buff_read_idx+1) == blue_spike_buff_size)
 				blue_spike_buff_read_idx = 0;
 			else

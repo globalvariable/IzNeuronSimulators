@@ -6,7 +6,7 @@ static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;
 static void *bmi_simulation_spike_generator_rt_handler(void *args); 
 static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integration_start_time, TimeStamp integration_end_time, unsigned int num_of_neurons);
 
-static SpikeData *generated_spike_data;
+static SpikeData **generated_spike_data;
 static TrialHandParadigmRobotReach *paradigm = NULL;
 static TrialStatusEvents *trial_status_events = NULL;
 static Network *network = NULL;
@@ -139,7 +139,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								if (spike_generated)
 								{
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+									write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
 								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
@@ -167,7 +167,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								if (spike_generated)
 								{
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+									write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
 								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
@@ -206,7 +206,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						if (spike_generated)
 						{
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+							write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
 						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
@@ -241,7 +241,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						if (spike_generated)
 						{
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+							write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
 						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
@@ -276,7 +276,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								if (spike_generated)
 								{
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+									write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
 								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
@@ -299,7 +299,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 								if (spike_generated)
 								{
 									write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//									write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+									write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 								}
 								push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 							}
@@ -333,7 +333,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						if (spike_generated)
 						{
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+							write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
 						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}
@@ -363,7 +363,7 @@ static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integra
 						if (spike_generated)
 						{
 							write_generated_spike_to_blue_spike_buffer(spike_time_stamp, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
-//							write_to_spike_data(generated_spike_data, neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
+							write_to_spike_data(generated_spike_data[0], neuron->layer, neuron->neuron_group, neuron->neuron_num, spike_time);
 						}
 						push_neuron_dynamics_to_neuron_dynamics_buffer_limited(network, limited_neuron_dynamics_buffer, time_ns, i);	
 					}

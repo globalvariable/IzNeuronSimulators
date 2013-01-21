@@ -25,7 +25,7 @@ bool create_spike_pattern_buffer_view_gui(void)
 
 	btn_pause = gtk_button_new_with_label("P");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_pause, FALSE, FALSE, 0);
-	spike_pattern_graph = allocate_network_spike_pattern_graph_scroll(spike_gen_data->network, hbox, spike_pattern_graph, 3000, 1000000, 900, 1000, BUFFER_FOLLOWUP_LATENCY, spike_gen_data->spike_data, NUM_OF_STATUS_MARKERS, spike_gen_data->trial_status_events);    // 3 seconds, 1000 samples/sec, 100 ms latency
+	spike_pattern_graph = allocate_network_spike_pattern_graph_scroll(spike_gen_data->network, hbox, spike_pattern_graph, 3000, 1000000, 900, 1000, BUFFER_FOLLOWUP_LATENCY, spike_gen_data->spike_data, NUM_OF_STATUS_MARKERS, spike_gen_data->trial_status_events, 1);    // 3 seconds, 1000 samples/sec, 100 ms latency
 
 
 	g_signal_connect(G_OBJECT(btn_pause), "clicked", G_CALLBACK(pause_button_func), NULL);
