@@ -306,6 +306,12 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, msg_item.additional_data.reward)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_START_RECORDING:	
+					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING:	
+					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_DELETE_RECORDING:	
+					break;
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);
 					rt_make_soft_real_time();

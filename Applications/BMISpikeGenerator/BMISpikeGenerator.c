@@ -130,6 +130,12 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_TRIAL_STATUS_CHANGED:
 					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data.trial_status_change_msg_add) ; 
 					break;	
+				case TRIAL_HAND_2_SPIKE_GEN_MSG_START_RECORDING:	
+					break;
+				case TRIAL_HAND_2_SPIKE_GEN_MSG_STOP_RECORDING:	
+					break;
+				case TRIAL_HAND_2_SPIKE_GEN_MSG_DELETE_RECORDING:	
+					break;
 				default: 
 					get_trial_hand_2_spike_gen_msg_type_string(msg_item.msg_type, str_trial_hand_msg);  
 					print_message(BUG_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "trial_hand_2_spike_gen_msgs_handler", str_trial_hand_msg);
