@@ -310,7 +310,7 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING:	
 					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_DELETE_RECORDING:	
+				case TRIAL_HAND_2_NEURAL_NET_MSG_CANCEL_RECORDING:	
 					break;
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);

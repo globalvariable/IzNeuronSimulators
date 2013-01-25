@@ -134,7 +134,7 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 					break;
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_STOP_RECORDING:	
 					break;
-				case TRIAL_HAND_2_SPIKE_GEN_MSG_DELETE_RECORDING:	
+				case TRIAL_HAND_2_SPIKE_GEN_MSG_CANCEL_RECORDING:	
 					break;
 				default: 
 					get_trial_hand_2_spike_gen_msg_type_string(msg_item.msg_type, str_trial_hand_msg);  
