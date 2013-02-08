@@ -238,9 +238,12 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 	TrialStatusEvents* trial_status_events = NULL;
 	RtTasksData *rt_tasks_data = NULL;
 	TimeStamp current_sys_time;
+	unsigned int recording_number;
 
 	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
+	NeuralNet2GuiMsg *msgs_neural_net_2_gui = NULL;
 	msgs_neural_net_2_post_trial_hand = hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand;
+	msgs_neural_net_2_gui = hybrid_net_rl_bmi_data->msgs_neural_net_2_gui;
 	msgs_trial_hand_2_neural_net = hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net;
 	trial_status_events = hybrid_net_rl_bmi_data->trial_status_events;
 	rt_tasks_data = hybrid_net_rl_bmi_data->rt_tasks_data;
@@ -307,10 +310,19 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_START_RECORDING:	
+					recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_START_RECORDING, recording_number)) {
+						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING:	
+					recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_STOP_RECORDING, recording_number)) {
+						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_CANCEL_RECORDING:	
+					recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_CANCEL_RECORDING, recording_number)) {
+						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				default: 
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", str_trial_hand_msg);

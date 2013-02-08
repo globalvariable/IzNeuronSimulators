@@ -112,6 +112,11 @@ static GtkWidget *btn_start_hybrid_network;
 static GtkWidget *btn_clear_network_num_of_spike_events;
 static GtkWidget *btn_print_network_num_of_spike_events;
 
+static GtkWidget *btn_select_directory_to_save;
+static GtkWidget *btn_create_recording_folder;
+
+
+
 // GRAPHS
 static NeuronDynamicsGraph *neuron_dynamics_graph = NULL;
 
@@ -150,7 +155,11 @@ static void start_hybrid_network_button_func(void);
 static void clear_network_num_of_spike_events_button_func(void);
 static void print_network_num_of_spike_events_button_func(void);
 
-bool create_network_view_gui(void)
+static void create_recording_folder_button_func (void);
+
+static void set_directory_btn_select_directory_to_save(void);
+
+bool create_network_view_gui(GtkWidget *arg_btn_select_directory_to_save)
 {
 	GtkWidget *frame, *frame_label, *table, *vbox, *hbox, *lbl;
 
@@ -1018,6 +1027,17 @@ bool create_network_view_gui(void)
 	btn_print_network_num_of_spike_events = gtk_button_new_with_label("Print All Spike Events Log");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_print_network_num_of_spike_events, TRUE, TRUE, 0);
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+	btn_select_directory_to_save = arg_btn_select_directory_to_save;
+	gtk_box_pack_start (GTK_BOX (hbox), btn_select_directory_to_save, TRUE, TRUE, 0);
+
+   	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE, 0);  	     
+
+	btn_create_recording_folder = gtk_button_new_with_label("Create Recording Folder");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_create_recording_folder, TRUE, TRUE, 0);
+	set_directory_btn_select_directory_to_save();
 
 /////////  GRAPHS  ////////////////////////////////
 
@@ -1072,6 +1092,8 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_neuron_group), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_neuron), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_neuron);
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_synapse), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_synapse);
+
+	g_signal_connect(G_OBJECT(btn_create_recording_folder), "clicked", G_CALLBACK(create_recording_folder_button_func), NULL);
 
 //	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_make_output, FALSE);	
@@ -1531,9 +1553,10 @@ static void ready_for_simulation_button_func(void)
 	bmi_data->depol_eligibility_limited_buffer = allocate_depol_eligibility_buffer_limited(bmi_data->in_silico_network, bmi_data->depol_eligibility_limited_buffer, 3000000000/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, NUM_OF_DEPOL_ELIGIBILITY_GRAPHS);  // 3 second buffer for 1 second graph refresh rate.
 	bmi_data->blue_spike_spike_data_for_graph = g_new0(SpikeData*, 1);
 	bmi_data->blue_spike_spike_data_for_graph[0] = allocate_spike_data(bmi_data->blue_spike_spike_data_for_graph[0], get_num_of_neurons_in_network(bmi_data->blue_spike_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
-	bmi_data->in_silico_spike_data_for_graph = g_new0(SpikeData*, bmi_data->num_of_dedicated_cpu_threads);
 	for (i = 0; i < bmi_data->num_of_dedicated_cpu_threads; i ++)
 		bmi_data->in_silico_spike_data_for_graph[i] = allocate_spike_data(bmi_data->in_silico_spike_data_for_graph[i], get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
+	for (i = 0; i < bmi_data->num_of_dedicated_cpu_threads; i ++)
+		bmi_data->in_silico_spike_data_for_recording[i] = allocate_spike_data(bmi_data->in_silico_spike_data_for_recording[i], get_num_of_neurons_in_network(bmi_data->in_silico_network)*3*500 ); // 3 seconds buffer assuming a neuron firing rate cannot be more than 500 Hz 
 
 	if(!update_texts_of_synapse_combos_when_add_remove(combos_select_synapse, bmi_data->in_silico_network))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! update_texts_of_combos_when_add_remove().");	
@@ -1567,3 +1590,50 @@ static void submit_learning_rate_button_func (void)
 
 	get_hybrid_net_rl_bmi_data()-> learning_rate = learning_rate;
 }
+
+
+static void create_recording_folder_button_func (void)
+{
+	unsigned int path_len;
+	char *path_temp = NULL, *path = NULL;
+	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_save));
+	path = &path_temp[7];   // since     uri returns file:///home/....	
+	path_len = strlen(path_temp);
+	if (strcmp(&(path_temp[path_len-8]),"EXP_DATA") == 0)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "create_recording_folder_button_func", "Selected folder is /EXP_DATA main folder. Select a folder inside this folder.");				
+	if ((*create_main_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, path))		// record in last format version
+	{
+		
+	}
+	else
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "create_recording_folder_button_func", " *create_main_directory().");			
+}
+
+
+static void set_directory_btn_select_directory_to_save(void)
+{
+	char line[600];
+	FILE *fp = NULL;
+       	if ((fp = fopen("./path_initial_directory", "r")) == NULL)  
+       	{ 
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "set_directory_btn_select_directory_to_save", "Couldn't find file: ./path_initial_directory.");
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "set_directory_btn_select_directory_to_save", "/home is loaded as initial direcoty to create data folder.");
+		gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),"/home");
+       	}
+       	else
+       	{
+		if (fgets(line, sizeof line, fp ) == NULL) 
+		{ 
+			print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "set_directory_btn_select_directory_to_save", "Couldn' t read ./path_initial_directory.");
+			print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "set_directory_btn_select_directory_to_save", "/home is loaded as initial direcoty to create data folder.");
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),"/home");
+		}
+		else
+		{
+			line[strlen(line)-16] = 0;   
+			gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (btn_select_directory_to_save),line);
+		}
+		fclose(fp); 		
+	}  	 
+}
+

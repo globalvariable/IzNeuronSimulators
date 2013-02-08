@@ -65,6 +65,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentHandlers/Library/Messages/MovObjHand2NeuralNet.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2MovObjHand.h"
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2PostTrialHand.h"
+#include "../../../ExperimentHandlers/Library/Messages/NeuralNet2Gui.h"
 #include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 #include "../../Library/Spindle/Spindle.h"
 
@@ -80,11 +81,13 @@ struct __HybridNetRLBMIData
 	DepolEligibilityBufferLimited		*depol_eligibility_limited_buffer;
 	SpikeData					**blue_spike_spike_data_for_graph;   // for visualization
 	SpikeData					**in_silico_spike_data_for_graph;  // for visualization  // each thread writes to one buffer.
+	SpikeData					**in_silico_spike_data_for_recording;  // for recording to hdd // each thread writes to one buffer.
 	TrialHand2NeuralNetMsg		*msgs_trial_hand_2_neural_net;
 	NeuralNet2TrialHandMsg		*msgs_neural_net_2_trial_hand;
 	MovObjHand2NeuralNetMsgMultiThread		*msgs_mov_obj_hand_2_neural_net_multi_thread;
 	NeuralNet2MovObjHandMsgMultiThread		*msgs_neural_net_2_mov_obj_hand_multi_thread;
 	NeuralNet2PostTrialHandMsg	*msgs_neural_net_2_post_trial_hand;
+	NeuralNet2GuiMsg				*msgs_neural_net_2_gui;
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress

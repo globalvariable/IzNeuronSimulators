@@ -20,7 +20,7 @@ typedef struct __ConstantCurrent ConstantCurrent;
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../../../BlueSpike/Library/Misc/Randn.h"
 #include "../Network/Network.h"
-#include "../../../ExperimentHandlers/Library/ExpParadigm/ParadigmRobotReach/TrialHandParadigm.h"
+#include "../../../ExperimentHandlers/Applications/BMIExpController/ExpParadigm/TrialHandParadigm.h"
 
 struct __CurrentNoiseParams
 {
