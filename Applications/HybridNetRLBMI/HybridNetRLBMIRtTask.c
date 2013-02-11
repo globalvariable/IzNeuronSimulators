@@ -71,8 +71,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
 	STDPBufferLimited *stdp_buffer_limited = bmi_data->stdp_limited_buffer;
 	EligibilityBufferLimited *eligibility_buffer_limited = bmi_data->eligibility_limited_buffer;
-	DepolEligibilityBufferLimited *depol_eligibility_buffer_limited = bmi_data->depol_eligibility_limited_buffer;
 	SpikeData	**in_silico_spike_data_for_graph = bmi_data->in_silico_spike_data_for_graph ;
+	SpikeData	**in_silico_spike_data_for_recording = bmi_data->in_silico_spike_data_for_recording ;
 	unsigned int i; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
@@ -132,10 +132,11 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			{
 				nrn = all_neurons[i];
 				if (! evaluate_neuron_dyn_stdp_psddp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
-					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_elig_depol_elig()."); exit(1); }	
+					print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_psddp_elig()."); exit(1); }	
 				if (spike_generated)
 				{
 					write_to_spike_data(in_silico_spike_data_for_graph[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
+					write_to_spike_data(in_silico_spike_data_for_recording[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
 					if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 					{
 						if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
@@ -145,7 +146,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, i);
 				push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, i);
 				push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, i);
-				push_depol_eligibility_to_depol_eligibility_buffer_limited(in_silico_network, depol_eligibility_buffer_limited, time_ns, i);
 			}
 
 		}
@@ -460,29 +460,6 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 							nrn->iz_params->I_inject = evaluate_angular_exponential_spindle_current(&(hybrid_net_rl_bmi_data->angle_sensitive_spindles[ELBOW_SERVO]->spindles[j]), robot_angles[ELBOW_SERVO]);
 						}
 
-						for (j = 0; j < NUM_OF_EXTENSOR_II_SPINDLES; j++)
-						{
-							nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[BASE_SERVO]->extensor_spindles[j]), robot_angles[BASE_SERVO]);
-
-							nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[SHOULDER_SERVO]->extensor_spindles[j]), robot_angles[SHOULDER_SERVO]);
-
-							nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_extensor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[ELBOW_SERVO]->extensor_spindles[j]), robot_angles[ELBOW_SERVO]);
-						}
-
-						for (j = 0; j < NUM_OF_FLEXOR_II_SPINDLES; j++)
-						{
-							nrn = get_neuron_address(in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[BASE_SERVO]->flexor_spindles[j]), robot_angles[BASE_SERVO]);
-
-							nrn = get_neuron_address(in_silico_network, LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[SHOULDER_SERVO]->flexor_spindles[j]), robot_angles[SHOULDER_SERVO]);
-
-							nrn = get_neuron_address(in_silico_network, LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_II, 0, j);
-							nrn->iz_params->I_inject = evaluate_exponential_primary_flexor_spindle_current(&(hybrid_net_rl_bmi_data->extensor_flexor_spindles[ELBOW_SERVO]->flexor_spindles[j]), robot_angles[ELBOW_SERVO]);
-						}
 						k++;
 						if (k != 2)
 							break;

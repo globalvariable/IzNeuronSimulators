@@ -17,7 +17,7 @@
 
 
 
-bool create_network_view_gui(GtkWidget *arg_btn_select_directory_to_save);
+bool create_network_view_gui(void);
 
 
 

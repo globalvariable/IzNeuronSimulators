@@ -14,7 +14,6 @@
 #include "InSilicoSpikePatternView.h"
 #include "STDPView.h"
 #include "EligibilityView.h"
-#include "DepolEligibilityView.h"
 #include "WeightHistoryView.h"
 
 

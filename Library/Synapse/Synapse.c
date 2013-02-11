@@ -20,13 +20,12 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double reward)
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
 	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
-	double	*depol_eligibility_saved = neuron->depol_eligibility_list->depol_eligibility_saved;
 	double weight_change;
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
 
-		weight_change = reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
+		weight_change = reward * eligibility_saved[i];  
 
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
@@ -61,17 +60,15 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward, 
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
 	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
-	double	*depol_eligibility_saved = neuron->depol_eligibility_list->depol_eligibility_saved;
 	double weight_change;
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
 
-		weight_change = learning_rate * reward * (eligibility_saved[i]-(depol_eligibility_saved[i]));  
+		weight_change = learning_rate * reward * eligibility_saved[i];  
 
 		printf("Synapse: %u\t ", i);
 		printf("Elig: %.8f\t", eligibility_saved[i]);
-		printf("Depol: %.8f\t", depol_eligibility_saved[i]);
 		printf("Weight: %.8f\t", synapse->weight);
 		printf("WeightChange: %.8f\n", weight_change);
 		if (synapse->type == EXCITATORY_SYNAPSE)

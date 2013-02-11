@@ -12,6 +12,7 @@
 
 #include "../../../../../BlueSpike/Library/Misc/Misc.h"
 #include "../../../../Library/SpikeData/SpikeData.h"
+#include "../../HybridNetRLBMI.h"
 
 int create_main_directory_v0(int num, ...);
 int create_data_directory_v0(int num, ...);

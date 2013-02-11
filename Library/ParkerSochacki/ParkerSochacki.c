@@ -789,7 +789,6 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 	Synapse						*synapse;
 	STDPList					*stdp_list = nrn->stdp_list;
 	EligibilityList					*eligibility_list = nrn->eligibility_list;
-	DepolEligibilityList				*depol_eligibility_list = nrn->depol_eligibility_list;
 	NeuronSortedEventBuffer		*sorted_event_buffer = nrn->sorted_event_buffer;
 	NeuronSortedEventBufferItem	*event_item;		
 	SynapseIndex					num_of_synapses =  nrn->syn_list->num_of_synapses;	
@@ -824,12 +823,6 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 	double	**eligibility_pol_vals = eligibility_list->eligibility_pol_vals;			
 	double	**eligibility_decay_rate_pol_vals = eligibility_list->eligibility_decay_rate_pol_vals;
 
-	double	*depol_eligibility = depol_eligibility_list->depol_eligibility;				
-	double 	*depol_eligibility_iter_prev = depol_eligibility_list->depol_eligibility_iter_prev;		
-	double 	*depol_eligibility_iter_curr = depol_eligibility_list->depol_eligibility_iter_curr;		
-	double 	**depol_eligibility_pol_vals = depol_eligibility_list->depol_eligibility_pol_vals;
-	double 	**depol_eligibility_decay_rate_pol_vals = depol_eligibility_list->depol_eligibility_decay_rate_pol_vals;
-
 	TimeStamp 			integration_start_ns, event_time;
 	unsigned int			*read_idx, write_idx;
 
@@ -857,19 +850,19 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 //		printf("event: %llu syn: %u weight: %f type: %u\n", event_time, event_item->syn_idx, synapses[event_item->syn_idx].weight, event_item->event_type); 	
 		if (event_item->event_type == NEURON_EVENT_TYPE_SYNAPTIC_EVENT)
 		{
-			if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params, depol_eligibility_iter_prev, depol_eligibility_iter_curr, depol_eligibility_pol_vals, depol_eligibility, depol_eligibility_decay_rate_pol_vals))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_elig_depol_elig().");
+			if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
+				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_psddp_elig().");
 			event_from_syn_idx = event_item->syn_idx;
 			synapse = &(synapses[event_from_syn_idx]);
 			if (synapse->type == EXCITATORY_SYNAPSE)
 			{		
 				iz_params->conductance_excitatory += synapse->weight;
-				depol_eligibility[event_from_syn_idx] +=  (depol_eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight);   // depol eligibility will always be positive for an excitatory synapse
+				eligibility[event_from_syn_idx] -=  (eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight);   
 			}
 			else if (synapse->type == INHIBITORY_SYNAPSE)
 			{
 				iz_params->conductance_inhibitory -= synapse->weight;  
-				depol_eligibility[event_from_syn_idx] -=  (depol_eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight); // depol eligibility will always be negative for an excitatory synapse
+				eligibility[event_from_syn_idx] +=  (eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight);   // curentlly no development for inhibitory neuron plasticity. it is here just to be compatible with excitatory.
 			}
 			else
 				return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "Unknown neuron type(excitatory/inhibitory).");
@@ -879,17 +872,14 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_START_EVENT)
 		{
 			clear_eligibility_for_neuron(nrn);
-			clear_depol_eligibility_for_neuron(nrn);
 		}
 		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)
 		{
 			save_eligibility_for_neuron(nrn);	
-			save_depol_eligibility_for_neuron(nrn);	
 		}
 		else if (event_item->event_type == NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)
 		{
 			save_eligibility_for_neuron(nrn);	
-			save_depol_eligibility_for_neuron(nrn);				
 		}
 		else
 		{
@@ -901,14 +891,14 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 		else
 			(*read_idx)++;
 	}
-	if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, end_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params, depol_eligibility_iter_prev, depol_eligibility_iter_curr, depol_eligibility_pol_vals, depol_eligibility, depol_eligibility_decay_rate_pol_vals))
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_elig_depol_elig().");
+	if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, end_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_psddp_elig().");
 	return TRUE ;	
 }
 
 
 
-bool parker_sochacki_integration_stdp_psddp_elig(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time, bool *spike_generated, TimeStamp *spike_time, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, IzNeuronParams *iz_params, double *depol_eligibility_iter_prev, double 	*depol_eligibility_iter_curr, double **depol_eligibility_pol_vals, double *depol_eligibility, double **depol_eligibility_decay_rate_pol_vals)
+bool parker_sochacki_integration_stdp_psddp_elig(Neuron *nrn, TimeStamp integration_start_time, TimeStamp integration_end_time, bool *spike_generated, TimeStamp *spike_time, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, IzNeuronParams *iz_params)
 {
 
 	*spike_generated = FALSE;	
@@ -928,12 +918,11 @@ bool parker_sochacki_integration_stdp_psddp_elig(Neuron *nrn, TimeStamp integrat
 		stdp_pre_post_pol_vals[s][0] = stdp_pre_post[s];	
  		stdp_post_pre_pol_vals[s][0] = stdp_post_pre[s];	
 		eligibility_pol_vals[s][0] = eligibility[s];  
-		depol_eligibility_pol_vals[s][0] = depol_eligibility[s]; 
 	}	
 
 //	(chi = kv - eta - gamma - k*v_t)
 	dt = (integration_end_time - integration_start_time)/PARKER_SOCHACKI_EMBEDDED_STEP_SIZE;     // do not change PARKER_SOCHACKI_EMBEDDED_STEP_SIZE
-	p = parker_sochacki_step_stdp_psddp_elig(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, dt, iz_params, stdp_pre_post, stdp_post_pre, eligibility, depol_eligibility_iter_prev, depol_eligibility_iter_curr, depol_eligibility_pol_vals, depol_eligibility, depol_eligibility_decay_rate_pol_vals);
+	p = parker_sochacki_step_stdp_psddp_elig(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, dt, iz_params, stdp_pre_post, stdp_post_pre, eligibility);
 //	printf("%f\t %d\n ", nrn->v, p);
 	if (iz_params->v  > iz_params->v_peak)    // updated nrn->v inside parker_sochacki_step(dt)
 	{
@@ -944,7 +933,8 @@ bool parker_sochacki_integration_stdp_psddp_elig(Neuron *nrn, TimeStamp integrat
 		if (!schedule_synaptic_event(nrn, *spike_time))
 			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "parker_sochacki_integration", "! schedule_events().");
 
-		parker_sochacki_update_stdp_psddp_elig(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, depol_eligibility_pol_vals, stdp_pre_post, stdp_post_pre, eligibility, depol_eligibility, num_of_synapses, dt_part, p, iz_params);   // for depol_eligibility & memo_depol_eligibility, it is unnecessary to parker_sochacki_update_stdp_elig_depol_elig since below they are zero' d after a spike generation .
+		parker_sochacki_update_stdp_psddp_elig(nrn, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post, stdp_post_pre, eligibility, num_of_synapses, dt_part, p, iz_params);   
+
 		change_stdp_post_pre = nrn->stdp_list->change_stdp_post_pre;
 		for (s = 0; s < num_of_synapses; s++)	// update eligibility & post_pre STDP
 		{
@@ -961,14 +951,13 @@ bool parker_sochacki_integration_stdp_psddp_elig(Neuron *nrn, TimeStamp integrat
 			stdp_pre_post_pol_vals[s][0] = stdp_pre_post[s];	
  			stdp_post_pre_pol_vals[s][0] = stdp_post_pre[s];	
 			eligibility_pol_vals[s][0] = eligibility[s];  
-			depol_eligibility_pol_vals[s][0] = depol_eligibility[s]; 
 		}	
-		p = parker_sochacki_step_stdp_psddp_elig(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, dt-dt_part, iz_params, stdp_pre_post, stdp_post_pre, eligibility, depol_eligibility_iter_prev, depol_eligibility_iter_curr, depol_eligibility_pol_vals, depol_eligibility, depol_eligibility_decay_rate_pol_vals);
+		p = parker_sochacki_step_stdp_psddp_elig(nrn, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, dt-dt_part, iz_params, stdp_pre_post, stdp_post_pre, eligibility);
 	}
 	return TRUE;
 }
 
-int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double dt, IzNeuronParams *iz_params, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, double *depol_eligibility_iter_prev, double *depol_eligibility_iter_curr, double **depol_eligibility_pol_vals, double *depol_eligibility, double **depol_eligibility_decay_rate_pol_vals)
+int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double *chi_pol_vals, double *E_pol_vals, double *a_pol_vals, double *conductance_decay_rate_excitatory_pol_vals , double *conductance_decay_rate_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **stdp_pre_post_decay_rate_pol_vals, double **stdp_post_pre_decay_rate_pol_vals, double **eligibility_decay_rate_pol_vals, double *stdp_pre_post_iter_prev, double *stdp_pre_post_iter_curr, double *stdp_post_pre_iter_prev, double *stdp_post_pre_iter_curr, double *eligibility_iter_prev, double *eligibility_iter_curr, SynapseIndex num_of_synapses, double dt, IzNeuronParams *iz_params, double *stdp_pre_post, double *stdp_post_pre, double *eligibility)
 {
 	double dt_pow;
 	int m, p, s;
@@ -993,7 +982,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 		stdp_pre_post_pol_vals[s][1] = stdp_pre_post_decay_rate_pol_vals[s][0] * stdp_pre_post_pol_vals[s][0];   // stdp_pre_post_decay_rate_pol_vals[i][0] = decay_rate_stdp_pre_post[i]
  		stdp_post_pre_pol_vals[s][1] = stdp_post_pre_decay_rate_pol_vals[s][0] * stdp_post_pre_pol_vals[s][0];	
 		eligibility_pol_vals[s][1] = eligibility_decay_rate_pol_vals[s][0] * eligibility_pol_vals[s][0];  
-		depol_eligibility_pol_vals[s][1] = depol_eligibility_decay_rate_pol_vals[s][0] * depol_eligibility_pol_vals[s][0];  
 	}
 
 	v_prev_for_iter = v_pol_vals[0] + v_pol_vals[1] * dt;
@@ -1007,7 +995,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 		stdp_pre_post_iter_prev[s] = stdp_pre_post_pol_vals[s][0] + stdp_pre_post_pol_vals[s][1] * dt;   
 		stdp_post_pre_iter_prev[s] = stdp_post_pre_pol_vals[s][0] + stdp_post_pre_pol_vals[s][1] * dt;   
 		eligibility_iter_prev[s] = eligibility_pol_vals[s][0] + eligibility_pol_vals[s][1] * dt;   
-		depol_eligibility_iter_prev[s] = depol_eligibility_pol_vals[s][0] + depol_eligibility_pol_vals[s][1] * dt;   
 	}	
 	
 	v_curr_for_iter = v_prev_for_iter;
@@ -1021,7 +1008,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 		stdp_pre_post_iter_curr[s] = stdp_pre_post_iter_prev[s];
 		stdp_post_pre_iter_curr[s] = stdp_post_pre_iter_prev[s];   
 		eligibility_iter_curr[s] = eligibility_iter_prev[s]; 
-		depol_eligibility_iter_curr[s] = depol_eligibility_iter_prev[s];   
 	}	
 	
 	dt_pow= dt*dt;
@@ -1044,7 +1030,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 			stdp_pre_post_pol_vals[s][p+1] = stdp_pre_post_decay_rate_pol_vals[s][p] * stdp_pre_post_pol_vals[s][p];   
 			stdp_post_pre_pol_vals[s][p+1] = stdp_post_pre_decay_rate_pol_vals[s][p] * stdp_post_pre_pol_vals[s][p];   
 			eligibility_pol_vals[s][p+1] = eligibility_decay_rate_pol_vals[s][p] * eligibility_pol_vals[s][p];   
-			depol_eligibility_pol_vals[s][p+1] = depol_eligibility_pol_vals[s][p] * depol_eligibility_pol_vals[s][p];  
 		}	
 
 		v_curr_for_iter = v_prev_for_iter + v_pol_vals[p+1] * dt_pow;
@@ -1058,7 +1043,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 			stdp_pre_post_iter_curr[s] = stdp_pre_post_iter_prev[s] + stdp_pre_post_pol_vals[s][p+1] * dt_pow;
 			stdp_post_pre_iter_curr[s] = stdp_post_pre_iter_prev[s] + stdp_post_pre_pol_vals[s][p+1] * dt_pow;   
 			eligibility_iter_curr[s] = eligibility_iter_prev[s] + eligibility_pol_vals[s][p+1] * dt_pow;   
-			depol_eligibility_iter_curr[s] = depol_eligibility_iter_prev[s] + depol_eligibility_pol_vals[s][p+1] * dt_pow;   
 		}	
 
 		dt_pow *= dt;
@@ -1085,8 +1069,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 				goto GO_ON_ITER;	
 			if (fabs(eligibility_iter_curr[s] - eligibility_iter_prev[s]) > parker_sochacki_error_tolerance)
 				goto GO_ON_ITER;
-			if (fabs(depol_eligibility_iter_curr[s] - depol_eligibility_iter_prev[s]) > parker_sochacki_error_tolerance)
-				goto GO_ON_ITER;	
 		}
 		break;	// break iteration since error tolerance achieved 
 
@@ -1101,7 +1083,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 			stdp_pre_post_iter_prev[s] = stdp_pre_post_iter_curr[s];
 			stdp_post_pre_iter_prev[s] = stdp_post_pre_iter_curr[s];   
 			eligibility_iter_prev[s] = eligibility_iter_curr[s];   
-			depol_eligibility_iter_prev[s] = depol_eligibility_iter_curr[s];   
 		}	
 	}
 	iz_params->v = v_curr_for_iter;
@@ -1113,7 +1094,6 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 		stdp_pre_post[s] = stdp_pre_post_iter_curr[s];
 		stdp_post_pre[s] = stdp_post_pre_iter_curr[s];   
 		eligibility[s] = eligibility_iter_curr[s];   
-		depol_eligibility[s] = depol_eligibility_iter_curr[s];   
 	}	
 	p++;
 	if (p == parker_sochacki_max_order+1)
@@ -1121,7 +1101,7 @@ int parker_sochacki_step_stdp_psddp_elig (Neuron *nrn, double *v_pol_vals, doubl
 	return p;
 }
 
-void parker_sochacki_update_stdp_psddp_elig(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double **depol_eligibility_pol_vals, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, double *depol_eligibility, SynapseIndex num_of_synapses, double dt, int p, IzNeuronParams *iz_params)
+void parker_sochacki_update_stdp_psddp_elig(Neuron *nrn, double *u_pol_vals, double *conductance_excitatory_pol_vals, double *conductance_inhibitory_pol_vals, double **stdp_pre_post_pol_vals, double **stdp_post_pre_pol_vals, double **eligibility_pol_vals, double *stdp_pre_post, double *stdp_post_pre, double *eligibility, SynapseIndex num_of_synapses, double dt, int p, IzNeuronParams *iz_params)
 {
 	int i;
 	unsigned int s;
@@ -1141,7 +1121,6 @@ void parker_sochacki_update_stdp_psddp_elig(Neuron *nrn, double *u_pol_vals, dou
 		stdp_pre_post[s] = stdp_pre_post_pol_vals[s][p] * dt + stdp_pre_post_pol_vals[s][p-1];
 		stdp_post_pre[s] = stdp_post_pre_pol_vals[s][p] * dt + stdp_post_pre_pol_vals[s][p-1];
 		eligibility[s] = eligibility_pol_vals[s][p] * dt + eligibility_pol_vals[s][p-1];
-		depol_eligibility[s] = depol_eligibility_pol_vals[s][p] * dt + depol_eligibility_pol_vals[s][p-1];
 	}	
 	for (i=p-2; i>=0; i--)
 	{
@@ -1153,7 +1132,6 @@ void parker_sochacki_update_stdp_psddp_elig(Neuron *nrn, double *u_pol_vals, dou
 			stdp_pre_post[s] = stdp_pre_post_pol_vals[s][i] + stdp_pre_post[s] * dt;
 			stdp_post_pre[s] = stdp_post_pre_pol_vals[s][i] + stdp_post_pre[s] * dt;
 			eligibility[s] = eligibility_pol_vals[s][i] + eligibility[s] * dt;
-			depol_eligibility[s] = depol_eligibility_pol_vals[s][i] + depol_eligibility[s] * dt;
 		}	
 	}
 	return;

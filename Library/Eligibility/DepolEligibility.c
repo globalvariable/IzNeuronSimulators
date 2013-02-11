@@ -85,9 +85,9 @@ bool submit_new_ps_depol_eligibility_vals_for_neuron(Neuron* neuron , unsigned i
 
 	if (depol_eligibility_change_scaler_max < depol_eligibility_change_scaler_min)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_change_scaler_max < depol_eligibility_change_scaler_min.");
-	if (depol_eligibility_change_scaler_max <= 0)
+	if (depol_eligibility_change_scaler_max < 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memb_v_coeff_max <= 0.");
-	if (depol_eligibility_change_scaler_min <= 0)
+	if (depol_eligibility_change_scaler_min < 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "DepolEligibility", "submit_new_ps_depol_eligibility_vals_for_neuron", "depol_eligibility_memb_v_coeff_min <= 0.");
 
 	depol_eligibility_list = neuron->depol_eligibility_list;

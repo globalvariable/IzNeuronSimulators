@@ -2,46 +2,32 @@
 #define HYBRID_NET_RL_BMI_H
 
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)   ///  TURN TO RIGHT
-#define LAYER_BASE_SERVO_EXTENSOR_INHI				1
-#define LAYER_BASE_SERVO_EXTENSOR_INTER			2
-#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE_II		3
-#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE_IA		4
-#define LAYER_BASE_SERVO_FLEXOR_MOTOR				5		//   incresing pulse width for servo)   ///  TURN TO LEFT
-#define LAYER_BASE_SERVO_FLEXOR_INHI					6		
-#define LAYER_BASE_SERVO_FLEXOR_INTER				7
-#define LAYER_BASE_SERVO_FLEXOR_SPINDLE_II			8
-#define LAYER_BASE_SERVO_FLEXOR_SPINDLE_IA			9
-#define LAYER_BASE_SERVO_ANGLE_SENS_SPINDLE		10
+#define LAYER_BASE_SERVO_EXTENSOR_INTER			1
+#define LAYER_BASE_SERVO_EXTENSOR_SPINDLE_IA		2
+#define LAYER_BASE_SERVO_FLEXOR_MOTOR				3		//   incresing pulse width for servo)   ///  TURN TO LEFT
+#define LAYER_BASE_SERVO_FLEXOR_INTER				4
+#define LAYER_BASE_SERVO_FLEXOR_SPINDLE_IA			5
+#define LAYER_BASE_SERVO_ANGLE_SENS_SPINDLE		6
 
-#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		11		//   decreasing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INHI			12
-#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		13	
-#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_II	14	
-#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_IA	15
-#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			16		//   incresing pulse width for servo)
-#define LAYER_SHOULDER_SERVO_FLEXOR_INHI			17		
-#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			18
-#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_II		19	
-#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_IA		20
-#define LAYER_SHOULDER_SERVO_ANGLE_SENS_SPINDLE	21	
+#define LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR 		7		//   decreasing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_EXTENSOR_INTER		8	
+#define LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_IA	9
+#define LAYER_SHOULDER_SERVO_FLEXOR_MOTOR			10		//   incresing pulse width for servo)
+#define LAYER_SHOULDER_SERVO_FLEXOR_INTER			11
+#define LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_IA		12
+#define LAYER_SHOULDER_SERVO_ANGLE_SENS_SPINDLE	13	
 
-#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			22		//   decreasing pulse width for servo)
-#define LAYER_ELBOW_SERVO_EXTENSOR_INHI			23
-#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			24	
-#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_II		25
-#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_IA		26		
-#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			27		//   incresing pulse width for servo)
-#define LAYER_ELBOW_SERVO_FLEXOR_INHI				28		
-#define LAYER_ELBOW_SERVO_FLEXOR_INTER				29
-#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_II			30	
-#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_IA		31		
-#define LAYER_ELBOW_SERVO_ANGLE_SENS_SPINDLE		32	
+#define LAYER_ELBOW_SERVO_EXTENSOR_MOTOR 			14		//   decreasing pulse width for servo)
+#define LAYER_ELBOW_SERVO_EXTENSOR_INTER			15	
+#define LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_IA		16		
+#define LAYER_ELBOW_SERVO_FLEXOR_MOTOR			17		//   incresing pulse width for servo)
+#define LAYER_ELBOW_SERVO_FLEXOR_INTER				18
+#define LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_IA		19		
+#define LAYER_ELBOW_SERVO_ANGLE_SENS_SPINDLE		20	
 
-#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				33	
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				21	
 
 #define NUM_OF_ANGULAR_SPINDLES						12
-#define NUM_OF_FLEXOR_II_SPINDLES						1
-#define NUM_OF_EXTENSOR_II_SPINDLES					NUM_OF_FLEXOR_II_SPINDLES
 
 #define NUM_OF_FLEXOR_IA_SPINDLES						1
 #define NUM_OF_EXTENSOR_IA_SPINDLES					NUM_OF_FLEXOR_IA_SPINDLES
@@ -56,7 +42,6 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
 #include "../../Library/STDPData/STDPData.h"
 #include "../../Library/EligibilityData/EligibilityData.h"
-#include "../../Library/EligibilityData/DepolEligibilityData.h"
 #include "../../Library/SpikeData/SpikeData.h"
 #include "../../Library/Stats/FiringStats.h"
 #include "../../Library/InjectionCurrentData/InjectionCurrentData.h"
@@ -78,7 +63,6 @@ struct __HybridNetRLBMIData
 	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;
 	STDPBufferLimited			*stdp_limited_buffer;
 	EligibilityBufferLimited			*eligibility_limited_buffer;
-	DepolEligibilityBufferLimited		*depol_eligibility_limited_buffer;
 	SpikeData					**blue_spike_spike_data_for_graph;   // for visualization
 	SpikeData					**in_silico_spike_data_for_graph;  // for visualization  // each thread writes to one buffer.
 	SpikeData					**in_silico_spike_data_for_recording;  // for recording to hdd // each thread writes to one buffer.
@@ -93,7 +77,6 @@ struct __HybridNetRLBMIData
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
-	ExponentialPrimaryExtensorFlexorSpindleGroup *extensor_flexor_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	double						learning_rate;
 };
 

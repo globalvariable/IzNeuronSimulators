@@ -74,7 +74,7 @@ struct __Neuron
 	SynapseList					*syn_list;
 	STDPList					*stdp_list;
 	EligibilityList					*eligibility_list;
-	DepolEligibilityList				*depol_eligibility_list;
+//	DepolEligibilityList				*depol_eligibility_list;
 	NeuronTrialEventBuffer			*trial_event_buffer;
 	NeuronSortedEventBuffer		*sorted_event_buffer;
 };
