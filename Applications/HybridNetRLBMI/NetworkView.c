@@ -1029,7 +1029,7 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_synapse, FALSE);
 	gtk_widget_set_sensitive(btn_submit_angular_spindle_current, FALSE);	
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
-	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, FALSE);	
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, TRUE);	
 	gtk_widget_set_sensitive(btn_ready_for_simulation, FALSE);	
 	gtk_widget_set_sensitive(btn_create_recording_folder, FALSE);	
 	gtk_widget_set_sensitive(btn_submit_learning_rate, FALSE);	
