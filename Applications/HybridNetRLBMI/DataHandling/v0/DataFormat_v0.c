@@ -239,7 +239,7 @@ int delete_data_directory_v0(int num, ...)
 	}
 	
 	strcpy(data_directory_path, path_chooser);	
-	strcat(data_directory_path, "/HybridNetRLBMIRecord");
+	strcat(data_directory_path, "/HybridNetRLBMIRecord/");
 	strcat(data_directory_path, data_directory_name);	
 	if ((dir_data_directory = opendir(data_directory_path)) == NULL)
         {
@@ -565,7 +565,8 @@ static int close_in_silico_spike_data(void)
 			fwrite(&(item), sizeof(SpikeTimeStampItem), 1, in_silico_spike_data_file_ptr);
 		}
 		reset_spike_data_read_idx(spike_data);
-	}	
+	}
+	fclose(in_silico_spike_data_file_ptr);	
 	return 1;
 }
 static int close_in_silico_network_data(void)
@@ -595,7 +596,7 @@ static int close_in_silico_network_data(void)
 			}		
 		}
 	}	
-
+	fclose(in_silico_network_data_file_ptr);	
 	return 1;
 }
 

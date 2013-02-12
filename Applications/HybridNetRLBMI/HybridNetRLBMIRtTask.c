@@ -7,15 +7,12 @@ static int *hybrid_net_rl_bmi_internal_network_handling_rt_threads = NULL;
 static unsigned int *hybrid_net_rl_bmi_internal_network_handling_rt_thread_ids = NULL;
 static int hybrid_net_rl_bmi_blue_spike_handling_rt_thread = 0;
 static int trial_hand_2_neural_net_msgs_handler_rt_thread = 0;
-static int neural_net_2_post_trial_hand_msgs_handler_thread = 0;
 static int mov_obj_hand_2_neural_net_msgs_handler_rt_thread = 0;
-static pthread_t post_trial_hand_thread;
 
 static void *hybrid_net_rl_bmi_internal_network_handler(void *args); 
 static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args); 
 static void *trial_hand_2_neural_net_msgs_handler(void *args); 
 static void *mov_obj_hand_2_neural_net_msgs_handler(void *args); 
-static void *neural_net_2_post_trial_hand_msgs_handler(void *args); 
 
 void hybrid_net_rl_bmi_create_rt_threads(void)
 {
@@ -40,7 +37,6 @@ void hybrid_net_rl_bmi_create_rt_threads(void)
 		hybrid_net_rl_bmi_blue_spike_handling_rt_thread = rt_thread_create( hybrid_net_rl_bmi_blue_spike_rt_handler, NULL, 10000);
 		trial_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(trial_hand_2_neural_net_msgs_handler, NULL, 10000);
 		mov_obj_hand_2_neural_net_msgs_handler_rt_thread =  rt_thread_create(mov_obj_hand_2_neural_net_msgs_handler, NULL, 10000);
-		neural_net_2_post_trial_hand_msgs_handler_thread = pthread_create( &post_trial_hand_thread, NULL, neural_net_2_post_trial_hand_msgs_handler, NULL);
 
 		first = FALSE;
 	}
@@ -238,11 +234,9 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 	TrialStatusEvents* trial_status_events = NULL;
 	RtTasksData *rt_tasks_data = NULL;
 	TimeStamp current_sys_time;
-	unsigned int recording_number;
+	NeuralNet2GuiMsgAdditional neural_net_2_gui_msg_add;
 
-	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
 	NeuralNet2GuiMsg *msgs_neural_net_2_gui = NULL;
-	msgs_neural_net_2_post_trial_hand = hybrid_net_rl_bmi_data->msgs_neural_net_2_post_trial_hand;
 	msgs_neural_net_2_gui = hybrid_net_rl_bmi_data->msgs_neural_net_2_gui;
 	msgs_trial_hand_2_neural_net = hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net;
 	trial_status_events = hybrid_net_rl_bmi_data->trial_status_events;
@@ -296,8 +290,9 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, msg_item.additional_data.reward)) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
+					neural_net_2_gui_msg_add.reward = msg_item.additional_data.reward;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, current_sys_time, NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
+						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   
 					current_sys_time = rt_tasks_data->current_system_time;
@@ -306,22 +301,23 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 						if (! write_to_neuron_trial_event_buffer(all_neurons[i], current_sys_time, NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT)) {
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
-					if (! write_to_neural_net_2_post_trial_hand_msg_buffer(msgs_neural_net_2_post_trial_hand, current_sys_time, NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END, msg_item.additional_data.reward)) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_post_trial_hand_msg_buffer()."); exit(1); }	
+					neural_net_2_gui_msg_add.reward = msg_item.additional_data.reward;	/// THIS MESSAGE SHOULD BE SENT BEFORE TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING which saves the synaptic weights.
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, current_sys_time, NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
+						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_START_RECORDING:	
-					recording_number = msg_item.additional_data.recording_number;
-					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_START_RECORDING, recording_number)) {
+					neural_net_2_gui_msg_add.recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_START_RECORDING, neural_net_2_gui_msg_add)) {
 						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING:	
-					recording_number = msg_item.additional_data.recording_number;
-					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_STOP_RECORDING, recording_number)) {
+					neural_net_2_gui_msg_add.recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_STOP_RECORDING, neural_net_2_gui_msg_add)) {
 						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_CANCEL_RECORDING:	
-					recording_number = msg_item.additional_data.recording_number;
-					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_CANCEL_RECORDING, recording_number)) {
+					neural_net_2_gui_msg_add.recording_number = msg_item.additional_data.recording_number;
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_CANCEL_RECORDING, neural_net_2_gui_msg_add)) {
 						print_message(BUG_MSG ,"NeuralNetler", "HandleTrialHand2NeuralNetMsgs", "write_to_neural_net_2_gui_msg_buffer", "! write_to_neural_net_2_gui_msg_buffer(().");exit(1); }	
 					break;
 				default: 
@@ -340,46 +336,6 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 	print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "rt_task_delete().");	
 
         return 0;
-}
-
-static void *neural_net_2_post_trial_hand_msgs_handler(void *args)
-{
-	char str_neural_net_msg[NEURAL_NET_2_POST_TRIAL_HAND_MSG_STRING_LENGTH];
-	NeuralNet2PostTrialHandMsg *msgs_neural_net_2_post_trial_hand = NULL;
-	NeuralNet2PostTrialHandMsgItem msg_item;
-	HybridNetRLBMIData *hybrid_net_rl_bmi_data = get_hybrid_net_rl_bmi_data(); 
-	Neuron		**all_neurons = hybrid_net_rl_bmi_data->in_silico_network->all_neurons;
-	unsigned int 		i, num_of_neurons = hybrid_net_rl_bmi_data->in_silico_network->num_of_neurons;
-	msgs_neural_net_2_post_trial_hand = get_hybrid_net_rl_bmi_data()->msgs_neural_net_2_post_trial_hand;
-	double reward;
-	double learning_rate;
-
-        while (1) 
-	{
-		sleep(1);
-		while (get_next_neural_net_2_post_trial_hand_msg_buffer_item(msgs_neural_net_2_post_trial_hand, &msg_item))
-		{
-			get_neural_net_2_post_trial_hand_msg_type_string(msg_item.msg_type, str_neural_net_msg);  
-			print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);
-			switch (msg_item.msg_type)
-			{
-				case NEURAL_NET_2_POST_TRIAL_HAND_MSG_TRIAL_END: // update synaptic weights 
-					reward = msg_item.additional_data;
-					sleep(1);	// wait one second to ensure trial is really ended and all neurons processed NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD and NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT messages. 
-					learning_rate = hybrid_net_rl_bmi_data->learning_rate;
-					for (i = 0; i < num_of_neurons; i++)
-					{
-						if (! update_neuron_synaptic_weights_with_history(all_neurons[i], reward, learning_rate)) {
-							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", "! update_neuron_synaptic_weights()"); exit(1); }
-					}
-					break;	
-				default: 
-					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "neural_net_2_post_trial_hand_msgs_handler", str_neural_net_msg);
-				        exit(1); 
-			}
-		}		
-	}
-	return 0;
 }
 
 void hybrid_net_rl_bmi_kill_rt_tasks(void)

@@ -848,10 +848,11 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 			return 0;
 		}
 //		printf("event: %llu syn: %u weight: %f type: %u\n", event_time, event_item->syn_idx, synapses[event_item->syn_idx].weight, event_item->event_type); 	
+
+		if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_psddp_elig().");
 		if (event_item->event_type == NEURON_EVENT_TYPE_SYNAPTIC_EVENT)
 		{
-			if (! parker_sochacki_integration_stdp_psddp_elig(nrn, integration_start_ns, event_time, spike_generated, spike_time, v_pol_vals, u_pol_vals, conductance_excitatory_pol_vals, conductance_inhibitory_pol_vals, chi_pol_vals, E_pol_vals, a_pol_vals, conductance_decay_rate_excitatory_pol_vals, conductance_decay_rate_inhibitory_pol_vals, stdp_pre_post_pol_vals, stdp_post_pre_pol_vals, eligibility_pol_vals, stdp_pre_post_decay_rate_pol_vals, stdp_post_pre_decay_rate_pol_vals, eligibility_decay_rate_pol_vals, stdp_pre_post_iter_prev, stdp_pre_post_iter_curr, stdp_post_pre_iter_prev, stdp_post_pre_iter_curr, eligibility_iter_prev, eligibility_iter_curr, num_of_synapses, stdp_pre_post, stdp_post_pre, eligibility, iz_params))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "! parker_sochacki_integration_stdp_psddp_elig().");
 			event_from_syn_idx = event_item->syn_idx;
 			synapse = &(synapses[event_from_syn_idx]);
 			if (synapse->type == EXCITATORY_SYNAPSE)
