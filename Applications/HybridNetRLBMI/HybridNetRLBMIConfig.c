@@ -214,3 +214,16 @@ bool connect_inter_neurons_between_motor_neurons(HybridNetRLBMIData *bmi_data)
 
 	return TRUE;
 }
+
+bool submit_stdp_elig_for_layer_nrn_grp(HybridNetRLBMIData *bmi_data)
+{
+	if (! create_ps_stdp_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_INTER, 0, get_maximum_parker_sochacki_order(), 0, 0, 10, 10, 0, 0, 10, 10))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "submit_stdp_elig_for_layer_nrn_grp", "! create_ps_stdp_for_neuron_group().");	
+	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_INTER, 0, get_maximum_parker_sochacki_order(),  10, 10, 0, 0))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "submit_stdp_elig_for_layer_nrn_grp", "! create_ps_eligibility_for_neuron_group().");
+	if (! create_ps_stdp_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_INTER, 0, get_maximum_parker_sochacki_order(), 0, 0, 10, 10, 0, 0, 10, 10))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "submit_stdp_elig_for_layer_nrn_grp", "! create_ps_stdp_for_neuron_group().");	
+	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_INTER, 0, get_maximum_parker_sochacki_order(),  10, 10, 0, 0))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "submit_stdp_elig_for_layer_nrn_grp", "! create_ps_eligibility_for_neuron_group().");
+	return TRUE;
+}

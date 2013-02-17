@@ -713,13 +713,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "0.1");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "5");
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "1.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "5");	
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -733,13 +733,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_min), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_min), "10");
 	gtk_widget_set_size_request(entry_STDP_pre_post_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_max), "5");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_max), "10");	
 	gtk_widget_set_size_request(entry_STDP_pre_post_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -759,13 +759,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_post_pre_change_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_post_pre_change_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_change_min), "0.1");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_change_min), "0.5");
 	gtk_widget_set_size_request(entry_STDP_post_pre_change_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_post_pre_change_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_post_pre_change_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_change_max), "1.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_change_max), "0.5");	
 	gtk_widget_set_size_request(entry_STDP_post_pre_change_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -779,13 +779,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_post_pre_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_post_pre_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_tau_min), "1");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_tau_min), "10");
 	gtk_widget_set_size_request(entry_STDP_post_pre_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_post_pre_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_post_pre_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_tau_max), "5");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_post_pre_tau_max), "10");	
 	gtk_widget_set_size_request(entry_STDP_post_pre_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -805,13 +805,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_depol_eligibility_change_scaler_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_change_scaler_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_change_scaler_min), "1.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_change_scaler_min), "0.01");
 	gtk_widget_set_size_request(entry_depol_eligibility_change_scaler_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_depol_eligibility_change_scaler_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_change_scaler_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_change_scaler_max), "1.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_change_scaler_max), "0.01");	
 	gtk_widget_set_size_request(entry_depol_eligibility_change_scaler_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -831,7 +831,7 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "5000");	
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "2000");	
 	gtk_widget_set_size_request(entry_eligibility_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);

@@ -54,6 +54,9 @@ int main( int argc, char *argv[])
 	if (! connect_inter_neurons_between_motor_neurons(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_inter_neurons_between_motor_neurons()."); return -1; }
 
+	if (! submit_stdp_elig_for_layer_nrn_grp(hybrid_net_rl_bmi_data)) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! submit_stdp_elig_for_layer_nrn_grp()."); return -1; }
+
 	initialize_data_read_write_handlers();
 
 	gtk_init(&argc, &argv);

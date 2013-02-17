@@ -27,7 +27,7 @@
 
 #define NUM_OF_IN_SILICO_NETWORK_LAYERS 				21	
 
-#define NUM_OF_ANGULAR_SPINDLES						12
+#define NUM_OF_ANGULAR_SPINDLES						16
 
 #define NUM_OF_FLEXOR_IA_SPINDLES						1
 #define NUM_OF_EXTENSOR_IA_SPINDLES					NUM_OF_FLEXOR_IA_SPINDLES
@@ -44,5 +44,5 @@ bool set_output_layers(HybridNetRLBMIData *bmi_data);
 bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data);
 bool connect_angle_sensitive_spindles_to_in_silico_network(HybridNetRLBMIData *bmi_data);
 bool connect_inter_neurons_between_motor_neurons(HybridNetRLBMIData *bmi_data);
-
+bool submit_stdp_elig_for_layer_nrn_grp(HybridNetRLBMIData *bmi_data);
 #endif
