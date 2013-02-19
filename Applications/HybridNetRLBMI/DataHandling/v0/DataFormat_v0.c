@@ -449,7 +449,7 @@ static int create_main_meta_file(char *main_directory_path)
 				for (m = 0; m < in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->num_of_synapses; m++)
 				{
 					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->eligibility_decay_rate[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->eligibility_decay_rate[m]);
-					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->depol_eligibility_change_scaler[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->depol_eligibility_change_scaler[m]);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->depol_eligibility_change[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->depol_eligibility_change[m]);
 				}
 			}		
 		}

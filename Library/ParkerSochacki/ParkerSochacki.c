@@ -862,12 +862,12 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 			if (synapse->type == EXCITATORY_SYNAPSE)
 			{		
 				iz_params->conductance_excitatory += synapse->weight;
-				eligibility[event_from_syn_idx] -=  (eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight);   
+				eligibility[event_from_syn_idx] -=  eligibility_list->depol_eligibility_change[event_from_syn_idx] ;   
 			}
 			else if (synapse->type == INHIBITORY_SYNAPSE)
 			{
 				iz_params->conductance_inhibitory -= synapse->weight;  
-				eligibility[event_from_syn_idx] +=  (eligibility_list->depol_eligibility_change_scaler[event_from_syn_idx] * synapse->weight);   // curentlly no development for inhibitory neuron plasticity. it is here just to be compatible with excitatory.
+				eligibility[event_from_syn_idx] +=  eligibility_list->depol_eligibility_change[event_from_syn_idx];   // curentlly no development for inhibitory neuron plasticity. it is here just to be compatible with excitatory.
 			}
 			else
 				return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn_stdp_elig", "Unknown neuron type(excitatory/inhibitory).");
