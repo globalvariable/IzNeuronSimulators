@@ -131,6 +131,35 @@ bool set_neuron_synaptic_weights(Neuron *neuron, double lower_limit, double uppe
 	return TRUE;
 }
 
+bool set_neuron_excitatory_synaptic_weights(Neuron *neuron, double lower_limit, double upper_limit)
+{
+	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
+	Synapse	*synapses = neuron->syn_list->synapses;
+	Synapse	*synapse;
+
+	if (upper_limit < lower_limit)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_excitatory_synaptic_weights", "upper_limit < lower_limit.");
+
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		synapse = &(synapses[i]);
+
+		if (synapse->type == EXCITATORY_SYNAPSE)
+		{
+			synapse->weight = ((upper_limit-lower_limit) * get_rand_number()) + lower_limit;
+		}
+		else if (synapse->type == INHIBITORY_SYNAPSE)
+		{
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_excitatory_synaptic_weights", "synapse->type == INHIBITORY_SYNAPSE.");
+		}
+		else
+		{		
+			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_excitatory_synaptic_weights", "Invalid synapse->type.");
+		}
+	}
+	return TRUE;
+}
+
 bool set_neuron_synapse_synaptic_weight(Neuron *neuron, double lower_limit, double upper_limit, SynapseIndex syn_idx)
 {
 	Synapse	*synapse = &(neuron->syn_list->synapses[syn_idx]);

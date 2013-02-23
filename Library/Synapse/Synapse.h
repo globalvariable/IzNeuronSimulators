@@ -37,6 +37,7 @@ bool get_num_of_synapses_in_neuron(Network *network, unsigned int layer, unsigne
 bool update_neuron_synaptic_weights(Neuron *neuron, double reward);
 bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward, double learning_rate);
 bool set_neuron_synaptic_weights(Neuron *neuron, double lower_limit, double upper_limit);
+bool set_neuron_excitatory_synaptic_weights(Neuron *neuron, double lower_limit, double upper_limit);
 bool set_neuron_synapse_synaptic_weight(Neuron *neuron, double lower_limit, double upper_limit, SynapseIndex syn_idx);
 void write_to_synapse_history_buffer(Synapse *synapse);
 

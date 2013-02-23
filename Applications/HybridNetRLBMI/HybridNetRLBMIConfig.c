@@ -40,10 +40,6 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_EXTENSOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_IA_SPINDLES, LAYER_BASE_SERVO_EXTENSOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
-
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
@@ -51,10 +47,6 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_FLEXOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
-
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_IA_SPINDLES, LAYER_BASE_SERVO_FLEXOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	C = 50.0; 
@@ -70,20 +62,12 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_SHOULDER_SERVO_EXTENSOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_IA_SPINDLES, LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
-
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_SHOULDER_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_SHOULDER_SERVO_FLEXOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
-
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_IA_SPINDLES, LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
@@ -100,10 +84,6 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_ELBOW_SERVO_EXTENSOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_EXTENSOR_IA_SPINDLES, LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
-
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_ELBOW_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
@@ -111,10 +91,6 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_ELBOW_SERVO_FLEXOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
-
-	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, NUM_OF_FLEXOR_IA_SPINDLES, LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_IA, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
-		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	C = 50.0; 
