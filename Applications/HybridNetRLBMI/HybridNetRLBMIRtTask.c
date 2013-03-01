@@ -416,7 +416,7 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 							nrn->iz_params->I_inject = evaluate_angular_exponential_spindle_current(&(hybrid_net_rl_bmi_data->angle_sensitive_spindles[ELBOW_SERVO]->spindles[j]), robot_angles[ELBOW_SERVO]);
 						}
 
-						k++;
+/*						k++;
 						if (k != 2)
 							break;
 						k = 0;
@@ -465,7 +465,7 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 						{
 							robot_angles_prev[j] =  robot_angles[j];
 						}
-						break;	
+*/						break;	
 					default:
 						print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "mov_obj_hand_2_neural_net_msgs_handler", "Invalid message.");	
 						exit(1);
