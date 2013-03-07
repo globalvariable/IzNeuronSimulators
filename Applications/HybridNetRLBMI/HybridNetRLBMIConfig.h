@@ -1,6 +1,8 @@
 #ifndef HYBRID_NET_RL_BMI_CONFIG_H
 #define HYBRID_NET_RL_BMI_CONFIG_H
 
+#define MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE 2    // to decrease the number of synaptic connections to SNN simulators.
+
 #define LAYER_BASE_SERVO_EXTENSOR_MOTOR 			0		//   decreasing pulse width for servo)   ///  TURN TO RIGHT
 #define LAYER_BASE_SERVO_EXTENSOR_INTER			1
 #define LAYER_BASE_SERVO_FLEXOR_MOTOR				2		//   incresing pulse width for servo)   ///  TURN TO LEFT

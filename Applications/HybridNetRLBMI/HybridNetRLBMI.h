@@ -6,7 +6,6 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "Gui.h"
 #include "HybridNetRLBMIConfig.h"
 #include "../../../BlueSpike/SpikeTimeStamp.h"
-#include "../../../BlueSpike/TemplateMatchingData.h"
 #include "../../../BlueSpike/System/ShmSemNum/ShmSemNum.h"
 #include "../../../BlueSpike/System/RtTasksData/RtTasksData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
@@ -25,7 +24,7 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
 struct __HybridNetRLBMIData		
 {
-	SpikeTimeStamp 				*sorted_spike_time_stamp;    /// spike time stamps from biological neurons 
+	SpikeTimeStamp 				*sorted_spike_time_stamp;    /// spike time stamps from biological neurons // sorted according to unit, not according to spike time.
 	RtTasksData					*rt_tasks_data;
 	Network						*in_silico_network;
 	Network						*blue_spike_network;

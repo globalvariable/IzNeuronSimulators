@@ -357,8 +357,6 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 	static double robot_angles_prev[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	Neuron *nrn;
 	
-	static unsigned int k = 0;
-
 	msgs_mov_obj_hand_2_neural_net_multi_thread = hybrid_net_rl_bmi_data->msgs_mov_obj_hand_2_neural_net_multi_thread;
 	rt_tasks_data = hybrid_net_rl_bmi_data->rt_tasks_data;
 	num_of_cpu_threads = hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads;
