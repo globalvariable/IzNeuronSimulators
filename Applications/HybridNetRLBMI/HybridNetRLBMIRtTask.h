@@ -6,7 +6,7 @@
 #include <rtai_nam2num.h>
 #include "HybridNetRLBMI.h"
 #include "../../../BlueSpike/Library/RtTaskStats/RtTaskStats.h"
-
+#include "../../Library/ParkerSochacki/ParkerSochackiStdpPsddp.h"
 
 void hybrid_net_rl_bmi_create_rt_threads(void);
 void hybrid_net_rl_bmi_kill_rt_tasks(void);

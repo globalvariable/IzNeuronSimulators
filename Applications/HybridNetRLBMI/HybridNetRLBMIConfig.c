@@ -33,19 +33,19 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 
 	// BASE SERVO
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_EXTENSOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 10, LAYER_BASE_SERVO_EXTENSOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_EXTENSOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 2, LAYER_BASE_SERVO_EXTENSOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 10, LAYER_BASE_SERVO_FLEXOR_MOTOR, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
 	get_neuron_type_parameters(NRN_TYPE_LOW_THRESHOLD, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 5, LAYER_BASE_SERVO_FLEXOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 2, LAYER_BASE_SERVO_FLEXOR_INTER, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
@@ -121,10 +121,10 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 	SynapticWeight weight_excitatory_min = 1;
 	SynapticWeight weight_inhibitory_max = 10;
 	SynapticWeight weight_inhibitory_min = 1;
-	AxonalDelay EPSP_delay_max = (AxonalDelay)(7.0 * 1000000);
-	AxonalDelay EPSP_delay_min = (AxonalDelay)(7.0 * 1000000);
-	AxonalDelay IPSP_delay_max = (AxonalDelay)(7.0 * 1000000);
-	AxonalDelay IPSP_delay_min = (AxonalDelay)(7.0 * 1000000);
+	AxonalDelay EPSP_delay_max = (AxonalDelay)(13.0 * 1000000);
+	AxonalDelay EPSP_delay_min = (AxonalDelay)(13.0 * 1000000);
+	AxonalDelay IPSP_delay_max = (AxonalDelay)(13.0 * 1000000);
+	AxonalDelay IPSP_delay_min = (AxonalDelay)(13.0 * 1000000);
 	double excitatory_connection_probability = 1.0;
 	double inhibitory_connection_probability = 1.0;
 
@@ -165,8 +165,8 @@ bool connect_angle_sensitive_spindles_to_in_silico_network(HybridNetRLBMIData *b
 
 bool connect_inter_neurons_between_motor_neurons(HybridNetRLBMIData *bmi_data)
 {
-	SynapticWeight weight_excitatory_max = 10;
-	SynapticWeight weight_excitatory_min = 10;
+	SynapticWeight weight_excitatory_max = 5;
+	SynapticWeight weight_excitatory_min = 5;
 	SynapticWeight weight_inhibitory_max = 10;
 	SynapticWeight weight_inhibitory_min = 10;
 	AxonalDelay EPSP_delay_max = (AxonalDelay)(7.0 * 1000000);

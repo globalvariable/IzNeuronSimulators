@@ -17,6 +17,7 @@
 #include "../../Library/Combos/NeuronDynamicsCombo.h"
 #include "../../Library/Graphs/CurrentPatternGraph.h"
 #include "../../Library/Graphs/NeuronDynamicsGraph.h"
+#include "../../Library/ParkerSochacki/ParkerSochackiSynapseCond.h"
 
 #define LINE 0
 #define SIN 1

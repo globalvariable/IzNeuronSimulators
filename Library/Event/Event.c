@@ -164,7 +164,7 @@ void destroy_neuron_event_buffer(Neuron *neuron)
 NeuronSynapticEventBuffer* allocate_neuron_synaptic_event_buffer(TimeStamp synaptic_delay)
 {
 	NeuronSynapticEventBuffer *event_buffer;
-	unsigned int buff_size = ((unsigned int)(synaptic_delay/1000000)) + 1;   // assumes presynaptic neuron cannot fire more than 1000 Hz. 
+	unsigned int buff_size = ((unsigned int)(((double)synaptic_delay)/1000000.0)) + 1;   // assumes presynaptic neuron cannot fire more than 1000 Hz. 
 	event_buffer = g_new0(NeuronSynapticEventBuffer, 1);
 	event_buffer->buff = g_new(NeuronSynapticEventBufferItem, buff_size);
 	event_buffer->buff_size = buff_size;

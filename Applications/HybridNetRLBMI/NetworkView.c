@@ -827,13 +827,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "500");
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "3000");
 	gtk_widget_set_size_request(entry_eligibility_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "1000");	
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "4000");	
 	gtk_widget_set_size_request(entry_eligibility_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -929,7 +929,7 @@ bool create_network_view_gui(void)
    	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	btn_submit_excitatory_synaptic_weight_for_neuron = gtk_button_new_with_label("Submit Excitatory Weight for Neuron");
+	btn_submit_excitatory_synaptic_weight_for_neuron = gtk_button_new_with_label("Submit Excita. Weight for Neuron");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_excitatory_synaptic_weight_for_neuron, FALSE, FALSE, 0);	
 
   	hbox = gtk_hbox_new(FALSE, 0);

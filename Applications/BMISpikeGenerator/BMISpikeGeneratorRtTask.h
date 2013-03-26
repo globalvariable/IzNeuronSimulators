@@ -6,6 +6,7 @@
 #include "../../../BlueSpike/Library/RtTaskStats/RtTaskStats.h"
 #include "../../../BlueSpike/Library/SpikeGen/SpikeGen.h"
 #include "BMISpikeGenerator.h"
+#include "../../Library/ParkerSochacki/ParkerSochackiSynapseCond.h"
 
 
 

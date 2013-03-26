@@ -19,7 +19,7 @@ typedef struct __SpikeGenData SpikeGenData;
 
 #define LEFT_ROBOT_TARGET		0
 #define RIGHT_ROBOT_TARGET	1
-
+#define MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE 2
 
 struct __SpikeGenData		// get gloabal trial stats by searching though TrialTypeData
 {
