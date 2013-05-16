@@ -53,6 +53,12 @@ bool create_ps_stdp_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max
 	if (STDP_post_pre_tau_min <= 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "create_ps_stdp_for_neuron_group", "STDP_post_pre_tau_min <= 0.");
 
+	if (STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "create_ps_stdp_for_neuron_group", "STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility.");
+
+	if (STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "create_ps_stdp_for_neuron_group", "STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility.");
+
 	stdp_list = neuron->stdp_list;
 	num_of_synapses = neuron->syn_list->num_of_synapses;
 
@@ -126,6 +132,12 @@ bool submit_new_ps_stdp_vals_for_neuron(Neuron* neuron , unsigned int parker_soc
 	if (STDP_post_pre_tau_min <= 0)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_tau_min <= 0.");
 
+	if (STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility.");
+
+	if (STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility.");
+
 	stdp_list = neuron->stdp_list;
 	num_of_synapses = neuron->syn_list->num_of_synapses;
 
@@ -156,31 +168,37 @@ bool submit_new_ps_stdp_vals_for_synapse(Neuron* neuron , unsigned int parker_so
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "Eligibility", "submit_new_ps_stdp_vals_for_synapse", "synapse >= neuron->syn_list->num_of_synapses.");
 
 	if (parker_sochacki_max_order <= 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "parker_sochacki_max_order <= 0.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "parker_sochacki_max_order <= 0.");
 	if (STDP_pre_post_change_max < STDP_pre_post_change_min)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_change_max < STDP_pre_post_change_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_change_max < STDP_pre_post_change_min.");
 	if (STDP_pre_post_change_max < 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_change_max.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_change_max.");
 	if (STDP_pre_post_change_min < 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_change_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_change_min.");
 	if (STDP_pre_post_tau_max < STDP_pre_post_tau_min)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_tau_max < STDP_pre_post_tau_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_tau_max < STDP_pre_post_tau_min.");
 	if (STDP_pre_post_tau_max <= 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_tau_max <= 0.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_tau_max <= 0.");
 	if (STDP_pre_post_tau_min <= 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_pre_post_tau_min <= 0.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_tau_min <= 0.");
 	if (STDP_post_pre_change_max < STDP_post_pre_change_min)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_change_max < STDP_post_pre_change_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_change_max < STDP_post_pre_change_min.");
 	if (STDP_post_pre_change_max < 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_change_max.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_change_max.");
 	if (STDP_post_pre_change_min < 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_change_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_change_min.");
 	if (STDP_post_pre_tau_max < STDP_post_pre_tau_min)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_tau_max < STDP_post_pre_tau_min.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_tau_max < STDP_post_pre_tau_min.");
 	if (STDP_post_pre_tau_max <= 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_tau_max <= 0.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_tau_max <= 0.");
 	if (STDP_post_pre_tau_min <= 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_neuron", "STDP_post_pre_tau_min <= 0.");
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_tau_min <= 0.");
+
+	if (STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_pre_post_change_max > neuron->eligibility_list->max_eligibility.");
+
+	if (STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_new_ps_stdp_vals_for_synapse", "STDP_post_pre_change_max > neuron->eligibility_list->max_eligibility.");
 
 	stdp_list = neuron->stdp_list;
 	i = synapse;

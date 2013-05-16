@@ -14,14 +14,14 @@ typedef struct 	__STDPList		STDPList;
 struct __STDPList
 {
 	double		*stdp_pre_post; 					// num_of_synapses
-	double		*change_stdp_pre_post;			// num_of_synapses
+	double		*change_stdp_pre_post;			// num_of_synapses       // should be less than 'max_eligibility'
 	double		*decay_rate_stdp_pre_post;			// num_of_synapses
 	double 		*stdp_pre_post_iter_prev;			// num_of_synapses 
 	double 		*stdp_pre_post_iter_curr;			// num_of_synapses 
 	double 		**stdp_pre_post_pol_vals;			// num_of_synapses * size should be parker_sochacki_max_order + 1
 	double		**stdp_pre_post_decay_rate_pol_vals;	// num_of_synapses * size should be parker_sochacki_max_order + 1
 	double		*stdp_post_pre;					// num_of_synapses
-	double		*change_stdp_post_pre;			// num_of_synapses
+	double		*change_stdp_post_pre;			// num_of_synapses	// should be less than 'max_eligibility'
 	double		*decay_rate_stdp_post_pre;			// num_of_synapses
 	double 		*stdp_post_pre_iter_prev;			// num_of_synapses 
 	double 		*stdp_post_pre_iter_curr;			// num_of_synapses 

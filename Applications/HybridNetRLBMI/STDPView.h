@@ -1,7 +1,7 @@
 #ifndef STDP_VIEW_H
 #define STDP_VIEW_H
 
-#define NUM_OF_STDP_GRAPHS	2
+#define NUM_OF_STDP_GRAPHS	0
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
