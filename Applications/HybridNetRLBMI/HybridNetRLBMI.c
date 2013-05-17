@@ -7,6 +7,14 @@ static bool connect_to_mov_obj_hand(void);
 
 int main( int argc, char *argv[])
 {
+	cpu_set_t  mask;
+	CPU_ZERO(&mask);
+	CPU_SET(IZ_PS_NETWORK_SIM_USER_SPACE_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU+IZ_PS_NETWORK_SIM_USER_SPACE_CPU_THREAD_ID, &mask);
+	printf ("sched_getcpu() = %d (Before sched_setaffinity)\n", sched_getcpu());
+	if (sched_setaffinity(0, sizeof(mask), &mask))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main","! sched_setaffinity(0, sizeof(mask), &mask).");		
+	printf ("sched_getcpu() = %d (After sched_setaffinity)\n", sched_getcpu());
+
 	hybrid_net_rl_bmi_data = g_new0(HybridNetRLBMIData, 1);
 
 	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_KERNEL_SPIKE_SPIKE_TIME_STAMP, 0);

@@ -1,6 +1,8 @@
 #ifndef HYBRID_NET_RL_BMI_H
 #define HYBRID_NET_RL_BMI_H
 
+#define _GNU_SOURCE	// for sched_setaffinity(0, sizeof(mask), &mask))
+
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 
 #include "Gui.h"
