@@ -12,7 +12,7 @@ int initialize_data_read_write_handlers(void)
 	write_notes_to_files[0] = &write_notes_to_files_v0;
 	write_additional_notes_to_files[0] = &write_additional_notes_to_files_v0;
 	
-
+	load_data_directory[0] = &load_data_directory_v0;
 	
 	return 1;
 }

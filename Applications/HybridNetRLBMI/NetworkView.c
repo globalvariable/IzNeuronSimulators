@@ -116,6 +116,10 @@ static GtkWidget *btn_start_hybrid_network;
 static GtkWidget *btn_select_directory_to_save;
 static GtkWidget *btn_create_recording_folder;
 
+static GtkWidget *btn_select_directory_to_load;
+static GtkWidget *btn_load_data;
+static GtkWidget *entry_load_data_folder_num;
+
 
 // FIRST COLUMN
 static void combo_neuron_type_func (void);
@@ -149,6 +153,8 @@ static void ready_for_simulation_button_func(void);
 static void start_hybrid_network_button_func(void);
 
 static void create_recording_folder_button_func (void);
+
+static void load_data_button_func (void);
 
 static void set_directory_btn_select_directory_to_save(void);
 
@@ -1004,6 +1010,25 @@ bool create_network_view_gui(void)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_create_recording_folder, TRUE, TRUE, 0);
 	set_directory_btn_select_directory_to_save();
 
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+  	btn_select_directory_to_load = gtk_file_chooser_button_new ("Select Directory", GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	gtk_box_pack_start (GTK_BOX (hbox), btn_select_directory_to_load, TRUE, TRUE, 0);
+
+   	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE, 0); 
+
+	btn_load_data = gtk_button_new_with_label("Load Weights");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_load_data, TRUE, TRUE, 0);
+
+	entry_load_data_folder_num =  gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_load_data_folder_num, FALSE,FALSE,0);
+	gtk_widget_set_size_request(entry_load_data_folder_num, 50, 25);	
+	gtk_entry_set_text(GTK_ENTRY(entry_load_data_folder_num), "0");
+
+
 /////////  GRAPHS  ////////////////////////////////
 
 	vbox = gtk_vbox_new(TRUE, 0);
@@ -1048,6 +1073,7 @@ bool create_network_view_gui(void)
 	g_signal_connect(G_OBJECT(combos_select_synapse->combo_synapse), "changed", G_CALLBACK(combos_select_synapse_func), combos_select_synapse->combo_synapse);
 
 	g_signal_connect(G_OBJECT(btn_create_recording_folder), "clicked", G_CALLBACK(create_recording_folder_button_func), NULL);
+	g_signal_connect(G_OBJECT(btn_load_data), "clicked", G_CALLBACK(load_data_button_func), NULL);
 
 //	gtk_widget_set_sensitive(btn_submit_parker_sochacki_params, FALSE);
 	gtk_widget_set_sensitive(btn_make_output, FALSE);	
@@ -1622,4 +1648,24 @@ static gboolean timeout_callback(gpointer user_data)
 		}
 	}
 	return TRUE;
+}
+
+static void load_data_button_func (void)
+{
+	unsigned int path_len, data_folder_num;
+	char *path_temp = NULL, *path = NULL;
+	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_load));
+	path = &path_temp[7];   // since     uri returns file:///home/....	
+	path_len = strlen(path_temp);
+
+	data_folder_num = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_load_data_folder_num)));
+			
+	if ((*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(4, path, get_hybrid_net_rl_bmi_data()->in_silico_network, get_hybrid_net_rl_bmi_data()->blue_spike_network, data_folder_num))		// record in last format version
+	{
+		print_message(INFO_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", "Successfully loaded data");			
+	}
+	else
+	{
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", " *load_data_directory().");			
+	}
 }

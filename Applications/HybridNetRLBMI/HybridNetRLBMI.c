@@ -38,12 +38,12 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->angle_sensitive_spindles[SHOULDER_SERVO] = allocate_exponent_angular_spindle_group(NUM_OF_ANGULAR_SPINDLES);
 	hybrid_net_rl_bmi_data->angle_sensitive_spindles[ELBOW_SERVO] = allocate_exponent_angular_spindle_group(NUM_OF_ANGULAR_SPINDLES);
 
-	if (! connect_to_mov_obj_hand()) {
+/*	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
 
 	if (! connect_to_trial_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_trial_hand()."); return -1; }
-
+*/
 	if (! add_neurons_for_external_and_in_silico_network(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! prepare_external_and_in_silico_network()."); return -1; }	
 

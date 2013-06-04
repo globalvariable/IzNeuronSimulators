@@ -15,6 +15,8 @@ int (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
 int (*delete_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
 int (*write_to_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
 
+int (*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
+
 int (*write_notes_to_files[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
 int (*write_additional_notes_to_files[MAX_NUMBER_OF_DATA_FORMAT_VER]) (int num, ... );
 

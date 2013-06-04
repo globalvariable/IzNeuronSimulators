@@ -10,6 +10,9 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 	AxonalDelay			*delay = NULL;
 	SynapseIndex			*syn_idx = NULL;
 	Synapse				*synapses = NULL;
+	unsigned int		*target_layer = NULL;
+	unsigned int		*target_neuron_group = NULL;	
+	unsigned int		*target_neuron_num = NULL;
 
 	*did_connection = FALSE;
 	if (EPSP_delay_min>EPSP_delay_max)
@@ -48,6 +51,9 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			to = g_new0(Neuron *, ptr_neuron_axon_list->num_of_axons+1);
 			delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
 			syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
+			target_layer = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+			target_neuron_group = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);	
+			target_neuron_num = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
 
 			synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
 
@@ -56,19 +62,31 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 				to[i] = ptr_neuron_axon_list->to[i];
 				delay[i] = ptr_neuron_axon_list->delay[i];
 				syn_idx[i] =  ptr_neuron_axon_list->syn_idx[i];
+				target_layer[i] = ptr_neuron_axon_list->target_layer[i];
+				target_neuron_group[i] = ptr_neuron_axon_list->target_neuron_group[i];
+				target_neuron_num[i] = ptr_neuron_axon_list->target_neuron_num[i];
 			}
 			g_free(ptr_neuron_axon_list->to);
 			g_free(ptr_neuron_axon_list->delay);		
 			g_free(ptr_neuron_axon_list->syn_idx);
+			g_free(ptr_neuron_axon_list->target_layer);
+			g_free(ptr_neuron_axon_list->target_neuron_group);
+			g_free(ptr_neuron_axon_list->target_neuron_num);
 
 			ptr_neuron_axon_list->to = to;
 			ptr_neuron_axon_list->delay = delay;		
 			ptr_neuron_axon_list->syn_idx = syn_idx;
-	
+			ptr_neuron_axon_list->target_layer = target_layer;
+			ptr_neuron_axon_list->target_neuron_group = target_neuron_group;
+			ptr_neuron_axon_list->target_neuron_num = target_neuron_num;
+
 			ptr_neuron_axon_list->to[i] = target_neuron;
 			ptr_neuron_axon_list->delay[i]  = (AxonalDelay) ((IPSP_delay_max-IPSP_delay_min) * get_rand_number() + IPSP_delay_min); 
 			printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
 			ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
+			ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
+			ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
+			ptr_neuron_axon_list->target_neuron_num[i] = target_neuron->neuron_num;
 
 			for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
 			{
@@ -102,6 +120,9 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			to = g_new0(Neuron *, ptr_neuron_axon_list->num_of_axons+1);
 			delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
 			syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
+			target_layer = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+			target_neuron_group = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);	
+			target_neuron_num = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
 
 			synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
 
@@ -110,19 +131,31 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 				to[i] = ptr_neuron_axon_list->to[i];
 				delay[i] = ptr_neuron_axon_list->delay[i];
 				syn_idx[i] =  ptr_neuron_axon_list->syn_idx[i];
+				target_layer[i] = ptr_neuron_axon_list->target_layer[i];
+				target_neuron_group[i] = ptr_neuron_axon_list->target_neuron_group[i];
+				target_neuron_num[i] = ptr_neuron_axon_list->target_neuron_num[i];
 			}
 			g_free(ptr_neuron_axon_list->to);
 			g_free(ptr_neuron_axon_list->delay);		
 			g_free(ptr_neuron_axon_list->syn_idx);
+			g_free(ptr_neuron_axon_list->target_layer);
+			g_free(ptr_neuron_axon_list->target_neuron_group);
+			g_free(ptr_neuron_axon_list->target_neuron_num);
 
 			ptr_neuron_axon_list->to = to;
 			ptr_neuron_axon_list->delay = delay;		
 			ptr_neuron_axon_list->syn_idx = syn_idx;
+			ptr_neuron_axon_list->target_layer = target_layer;
+			ptr_neuron_axon_list->target_neuron_group = target_neuron_group;
+			ptr_neuron_axon_list->target_neuron_num = target_neuron_num;
 	
 			ptr_neuron_axon_list->to[i] = target_neuron;
 			ptr_neuron_axon_list->delay[i]  = (AxonalDelay)  ((EPSP_delay_max-EPSP_delay_min) * get_rand_number() + EPSP_delay_min); 
 			printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
 			ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
+			ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
+			ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
+			ptr_neuron_axon_list->target_neuron_num[i] = target_neuron->neuron_num;
 
 			for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
 			{

@@ -28,6 +28,9 @@ struct __NeuronAxonList
 	AxonalDelay		*delay;
 	SynapseIndex		*syn_idx;
 	unsigned int		num_of_axons;	// Determine event_buff_size by incrementing with each connection. Finally allocate the event buffers (time, *from, weight)
+	unsigned int		*target_layer;		// it is added here to save the axonal connections and load them later on during file save/load
+	unsigned int		*target_neuron_group;	// it is added here to save the axonal connections and load them later on during file save/load
+	unsigned int		*target_neuron_num;	// it is added here to save the axonal connections and load them later on during file save/load
 };
 
 ///////       Fuctions

@@ -20,6 +20,8 @@ int fclose_all_data_files_v0(int num, ...);
 int delete_data_directory_v0(int num, ...);
 int write_to_data_files_v0(int num, ...);
 
+int load_data_directory_v0(int num, ...);
+
 int write_notes_to_files_v0(int num, ...);
 int write_additional_notes_to_files_v0(int num, ...);
 
