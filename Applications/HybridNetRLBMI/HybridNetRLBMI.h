@@ -4,6 +4,7 @@
 #define _GNU_SOURCE	// for sched_setaffinity(0, sizeof(mask), &mask))
 
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
+typedef struct __HybridNetRLBMISynapseData HybridNetRLBMISynapseData;
 
 #include "Gui.h"
 #include "HybridNetRLBMIConfig.h"
@@ -23,6 +24,70 @@ typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2Gui.h"
 #include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 #include "../../Library/Spindle/Spindle.h"
+
+
+struct __HybridNetRLBMISynapseData		
+{
+	double						blue_spike_2_in_silico_excitatory_connection_probability;
+	double						blue_spike_2_in_silico_excitatory_connection_weight_max;
+	double						blue_spike_2_in_silico_excitatory_connection_weight_min;
+	double						blue_spike_2_in_silico_excitatory_connection_delay_max;
+	double						blue_spike_2_in_silico_excitatory_connection_delay_min;
+
+	double						blue_spike_2_in_silico_inhibitory_connection_probability;
+	double						blue_spike_2_in_silico_inhibitory_connection_weight_max;
+	double						blue_spike_2_in_silico_inhibitory_connection_weight_min;
+	double						blue_spike_2_in_silico_inhibitory_connection_delay_max;
+	double						blue_spike_2_in_silico_inhibitory_connection_delay_min;
+
+	double						extensor_motor_2_flexor_inter_neuron_excitatory_connection_probability;
+	double						extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_max;
+	double						extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_min;
+	double						extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_max;
+	double						extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_min;
+
+	double						extensor_motor_2_flexor_inter_neuron_inhibitory_connection_probability;
+	double						extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_max;
+	double						extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_min;
+	double						extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_max;
+	double						extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_min;
+
+	double						flexor_motor_2_extensor_inter_neuron_excitatory_connection_probability;
+	double						flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_max;
+	double						flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_min;
+	double						flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_max;
+	double						flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_min;
+
+	double						flexor_motor_2_extensor_inter_neuron_inhibitory_connection_probability;
+	double						flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_max;
+	double						flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_min;
+	double						flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_max;
+	double						flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_min;
+
+	double						extensor_inter_2_extensor_motor_neuron_excitatory_connection_probability;
+	double						extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_max;
+	double						extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_min;
+	double						extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_max;
+	double						extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_min;
+
+	double						extensor_inter_2_extensor_motor_neuron_inhibitory_connection_probability;
+	double						extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_max;
+	double						extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_min;
+	double						extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_max;
+	double						extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_min;
+
+	double						flexor_inter_2_flexor_motor_neuron_excitatory_connection_probability;
+	double						flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_max;
+	double						flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_min;
+	double						flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_max;
+	double						flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_min;
+
+	double						flexor_inter_2_flexor_motor_neuron_inhibitory_connection_probability;
+	double						flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_max;
+	double						flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_min;
+	double						flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_max;
+	double						flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_min;
+};
 
 struct __HybridNetRLBMIData		
 {
@@ -47,7 +112,10 @@ struct __HybridNetRLBMIData
 	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	double						learning_rate;
+	HybridNetRLBMISynapseData	synapse_data;
 };
+
+
 
 HybridNetRLBMIData * get_hybrid_net_rl_bmi_data(void);
 

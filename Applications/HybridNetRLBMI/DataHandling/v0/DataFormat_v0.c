@@ -558,6 +558,82 @@ static int create_main_meta_file(char *main_directory_path)
 		}
 	}
 
+	fprintf(fp,"............initial synaptic weights.............\n");
+	for(i = 0; i < in_silico_network->layer_count; i++)
+	{
+		for(j = 0; j < in_silico_network->layers[i]->neuron_group_count; j++)	
+		{
+			for (k = 0; k < in_silico_network->layers[i]->neuron_groups[j]->neuron_count; k++)
+			{
+				for (m = 0; m < in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->num_of_synapses; m++)
+				{
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].weight\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->synapses[m].weight);
+				}
+			}		
+		}
+	}	
+
+	fprintf(fp,"............HybridNetRLBMISynapseData.............\n");
+	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_probability);
+	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_weight_max);
+	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_weight_min);
+	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_delay_max);
+	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_delay_min);
+
+	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_probability);
+	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_weight_max);
+	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_weight_min);
+	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_delay_max);
+	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_delay_min);
+
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_probability);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_max);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_min);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_max);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_min);
+
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_probability);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_max);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_min);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_max);
+	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_min);
+
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_probability);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_max);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_min);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_max);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_min);
+
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_probability);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_max);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_min);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_max);
+	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_min);
+
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_probability);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_max);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_min);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_max);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_min);
+
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_probability);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_max);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_min);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_max);
+	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_min);
+
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_probability);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_max);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_min);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_max);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_min);
+
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_probability);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_max);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_min);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_max);
+	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_min);
+
 	fprintf(fp,"----------HybridNetRLBMI - End of Main Meta File----------\n");
 	fclose(fp);
 	return 1;
@@ -1203,6 +1279,31 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 			}		
 		}
 	}
+
+	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // ............initial synaptic weights.............\n
+	for(i = 0; i < in_silico_network->layer_count; i++)
+	{
+		for(j = 0; j < in_silico_network->layers[i]->neuron_group_count; j++)	
+		{
+			for (k_iter = 0; k_iter < in_silico_network->layers[i]->neuron_groups[j]->neuron_count; k_iter++)
+			{
+				for (m = 0; m < in_silico_network->layers[i]->neuron_groups[j]->neurons[k_iter].syn_list->num_of_synapses; m++)
+				{
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].weight\t%.15f\n
+				}
+			}		
+		}
+	}	
+
+	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // ............HybridNetRLBMISynapseData......
+	for (i = 0; i < 50; i++)    // HybridNetRLBMISynapseData
+	{
+		if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
+	}
+
+	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }
+	if (strcmp(line, "----------HybridNetRLBMI - End of Main Meta File----------\n") != 0) 
+		{ fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "Not a HybridNetRLBMI - Main Meta File."); }
 
 	fclose(fp);
 
