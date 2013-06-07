@@ -100,6 +100,78 @@ bool create_ps_stdp_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max
 	return TRUE;
 }
 
+bool allocate_ps_stdp_for_neuron(Neuron* neuron , int parker_sochacki_max_order)
+{
+	unsigned int i, num_of_synapses;
+	STDPList *stdp_list;
+
+	stdp_list = neuron->stdp_list;
+	num_of_synapses = neuron->syn_list->num_of_synapses;
+
+	if (parker_sochacki_max_order <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "allocate_ps_stdp_for_neuron", "parker_sochacki_max_order <= 0.");
+
+	stdp_list->stdp_pre_post = g_new0(double, num_of_synapses); 					
+	stdp_list->change_stdp_pre_post = g_new0(double, num_of_synapses);			
+	stdp_list->decay_rate_stdp_pre_post = g_new0(double, num_of_synapses);	
+	stdp_list->stdp_pre_post_iter_prev = g_new0(double, num_of_synapses);	
+	stdp_list->stdp_pre_post_iter_curr = g_new0(double, num_of_synapses);	
+	stdp_list->stdp_pre_post_pol_vals = g_new0(double*, num_of_synapses);			
+	stdp_list->stdp_pre_post_decay_rate_pol_vals = g_new0(double*, num_of_synapses);	
+
+	stdp_list->stdp_post_pre = g_new0(double, num_of_synapses);					
+	stdp_list->change_stdp_post_pre = g_new0(double, num_of_synapses);			
+	stdp_list->decay_rate_stdp_post_pre = g_new0(double, num_of_synapses);
+	stdp_list->stdp_post_pre_iter_prev = g_new0(double, num_of_synapses);	
+	stdp_list->stdp_post_pre_iter_curr = g_new0(double, num_of_synapses);				
+	stdp_list->stdp_post_pre_pol_vals = g_new0(double*, num_of_synapses);			
+	stdp_list->stdp_post_pre_decay_rate_pol_vals = g_new0(double*, num_of_synapses);	
+
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		stdp_list->stdp_pre_post_pol_vals[i] = g_new0(double, parker_sochacki_max_order+1);
+		stdp_list->stdp_pre_post_decay_rate_pol_vals[i] = g_new0(double, parker_sochacki_max_order + 1);
+		stdp_list->stdp_post_pre_pol_vals[i] = g_new0(double, parker_sochacki_max_order + 1);
+		stdp_list->stdp_post_pre_decay_rate_pol_vals[i] = g_new0(double, parker_sochacki_max_order + 1);
+	}
+	return TRUE;
+}
+
+bool submit_ps_stdp_for_synapse(Neuron* neuron , unsigned int syn_idx, double STDP_pre_post_change, double STDP_pre_post_tau, double  STDP_post_pre_change, double STDP_post_pre_tau)
+{
+	unsigned int i, j;
+	STDPList *stdp_list;
+
+	stdp_list = neuron->stdp_list;
+
+
+	if (STDP_pre_post_change < 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_ps_ps_stdp_for_synapse", "STDP_pre_post_change.");
+	if (STDP_pre_post_tau <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_ps_ps_stdp_for_synapse", "STDP_pre_post_tau_max <= 0.");
+	if (STDP_post_pre_change < 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_ps_ps_stdp_for_synapse", "STDP_post_pre_change_max.");
+	if (STDP_post_pre_tau <= 0)
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "STDP", "submit_ps_ps_stdp_for_synapse", "STDP_post_pre_tau_max <= 0.");
+
+	i = syn_idx;
+
+	stdp_list->change_stdp_pre_post[i] = STDP_pre_post_change;
+	stdp_list->decay_rate_stdp_pre_post[i] = -1.0 / STDP_pre_post_tau;
+	for (j = 0; j < parker_sochacki_max_order + 1; j++)
+	{
+		stdp_list->stdp_pre_post_decay_rate_pol_vals[i][j] = stdp_list->decay_rate_stdp_pre_post[i]/(j+1);	
+	}
+	stdp_list->change_stdp_post_pre[i] = - STDP_post_pre_change;
+	stdp_list->decay_rate_stdp_post_pre[i] = -1.0 / STDP_post_pre_tau;
+	for (j = 0; j < parker_sochacki_max_order + 1; j++)
+	{
+		stdp_list->stdp_post_pre_decay_rate_pol_vals[i][j] = stdp_list->decay_rate_stdp_post_pre[i]/(j+1);	
+	}
+	
+	return TRUE;
+}
+
 bool submit_new_ps_stdp_vals_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_max, double STDP_pre_post_tau_min, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min)
 {
 	unsigned int i, j, num_of_synapses;

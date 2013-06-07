@@ -182,6 +182,159 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 	return TRUE;
 }
 
+bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weight, AxonalDelay arg_delay, AxonalDelay delay_hard_min, AxonalDelay delay_hard_max)
+{
+	unsigned int i;
+	NeuronAxonList	*ptr_neuron_axon_list;
+	SynapseList		*ptr_post_neuron_synapse_list;   // post synaptic neurons synapses
+	Neuron				**to = NULL;
+	AxonalDelay			*delay = NULL;
+	SynapseIndex			*syn_idx = NULL;
+	Synapse				*synapses = NULL;
+	unsigned int		*target_layer = NULL;
+	unsigned int		*target_neuron_group = NULL;	
+	unsigned int		*target_neuron_num = NULL;
+
+ 	if (arg_delay < delay_hard_min)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "arg_delay < delay_hard_min.");	
+ 	if (arg_delay > delay_hard_max)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "arg_delay > delay_hard_max.");	
+	if ((this_neuron->inhibitory) && (weight >= 0))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "(this_neuron->inhibitory) && (weight >= 0).");
+	if ((! this_neuron->inhibitory) && (weight <= 0))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "(! this_neuron->inhibitory) && (weight <= 0).");
+
+	if (this_neuron->inhibitory)
+	{
+		ptr_neuron_axon_list = this_neuron->axon_list;
+		ptr_post_neuron_synapse_list = target_neuron->syn_list;
+
+		to = g_new0(Neuron *, ptr_neuron_axon_list->num_of_axons+1);
+		delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
+		syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
+		target_layer = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+		target_neuron_group = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);	
+		target_neuron_num = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+
+		synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
+
+		for (i = 0; i < ptr_neuron_axon_list->num_of_axons; i++)
+		{
+			to[i] = ptr_neuron_axon_list->to[i];
+			delay[i] = ptr_neuron_axon_list->delay[i];
+			syn_idx[i] =  ptr_neuron_axon_list->syn_idx[i];
+			target_layer[i] = ptr_neuron_axon_list->target_layer[i];
+			target_neuron_group[i] = ptr_neuron_axon_list->target_neuron_group[i];
+			target_neuron_num[i] = ptr_neuron_axon_list->target_neuron_num[i];
+		}
+		g_free(ptr_neuron_axon_list->to);
+		g_free(ptr_neuron_axon_list->delay);		
+		g_free(ptr_neuron_axon_list->syn_idx);
+		g_free(ptr_neuron_axon_list->target_layer);
+		g_free(ptr_neuron_axon_list->target_neuron_group);
+		g_free(ptr_neuron_axon_list->target_neuron_num);
+
+		ptr_neuron_axon_list->to = to;
+		ptr_neuron_axon_list->delay = delay;		
+		ptr_neuron_axon_list->syn_idx = syn_idx;
+		ptr_neuron_axon_list->target_layer = target_layer;
+		ptr_neuron_axon_list->target_neuron_group = target_neuron_group;
+		ptr_neuron_axon_list->target_neuron_num = target_neuron_num;
+
+		ptr_neuron_axon_list->to[i] = target_neuron;
+		ptr_neuron_axon_list->delay[i]  = arg_delay; 
+		printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
+		ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
+		ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
+		ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
+		ptr_neuron_axon_list->target_neuron_num[i] = target_neuron->neuron_num;
+
+		for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
+		{
+			synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
+			synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
+			synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+		}
+		g_free(ptr_post_neuron_synapse_list->synapses);
+		
+		ptr_post_neuron_synapse_list->synapses = synapses;
+		ptr_post_neuron_synapse_list->synapses[i].weight = weight;  
+		ptr_post_neuron_synapse_list->synapses[i].type = INHIBITORY_SYNAPSE;
+		ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+	
+		ptr_neuron_axon_list->num_of_axons++;
+		ptr_post_neuron_synapse_list->num_of_synapses++;
+
+		if (! update_neuron_sorted_event_buffer_size(target_neuron))		
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "! update_neuron_sorted_event_buffer_size().");
+	}
+	else
+	{
+		ptr_neuron_axon_list = this_neuron->axon_list;
+		ptr_post_neuron_synapse_list = target_neuron->syn_list;
+
+		to = g_new0(Neuron *, ptr_neuron_axon_list->num_of_axons+1);
+		delay = g_new0(AxonalDelay, ptr_neuron_axon_list->num_of_axons+1);
+		syn_idx = g_new0(SynapseIndex, ptr_neuron_axon_list->num_of_axons+1);
+		target_layer = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+		target_neuron_group = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);	
+		target_neuron_num = g_new0(unsigned int, ptr_neuron_axon_list->num_of_axons+1);
+
+		synapses = g_new0(Synapse, ptr_post_neuron_synapse_list->num_of_synapses+1);	
+
+		for (i = 0; i < ptr_neuron_axon_list->num_of_axons; i++)
+		{
+			to[i] = ptr_neuron_axon_list->to[i];
+			delay[i] = ptr_neuron_axon_list->delay[i];
+			syn_idx[i] =  ptr_neuron_axon_list->syn_idx[i];
+			target_layer[i] = ptr_neuron_axon_list->target_layer[i];
+			target_neuron_group[i] = ptr_neuron_axon_list->target_neuron_group[i];
+			target_neuron_num[i] = ptr_neuron_axon_list->target_neuron_num[i];
+		}
+		g_free(ptr_neuron_axon_list->to);
+		g_free(ptr_neuron_axon_list->delay);		
+		g_free(ptr_neuron_axon_list->syn_idx);
+		g_free(ptr_neuron_axon_list->target_layer);
+		g_free(ptr_neuron_axon_list->target_neuron_group);
+		g_free(ptr_neuron_axon_list->target_neuron_num);
+
+		ptr_neuron_axon_list->to = to;
+		ptr_neuron_axon_list->delay = delay;		
+		ptr_neuron_axon_list->syn_idx = syn_idx;
+		ptr_neuron_axon_list->target_layer = target_layer;
+		ptr_neuron_axon_list->target_neuron_group = target_neuron_group;
+		ptr_neuron_axon_list->target_neuron_num = target_neuron_num;
+	
+		ptr_neuron_axon_list->to[i] = target_neuron;
+		ptr_neuron_axon_list->delay[i]  = arg_delay; 
+		printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
+		ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
+		ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
+		ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
+		ptr_neuron_axon_list->target_neuron_num[i] = target_neuron->neuron_num;
+
+		for (i = 0; i < ptr_post_neuron_synapse_list->num_of_synapses; i++)
+		{
+			synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
+			synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
+			synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+		}
+		g_free(ptr_post_neuron_synapse_list->synapses);
+		
+		ptr_post_neuron_synapse_list->synapses = synapses;
+		ptr_post_neuron_synapse_list->synapses[i].weight = weight;
+		ptr_post_neuron_synapse_list->synapses[i].type = EXCITATORY_SYNAPSE;
+		ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+
+		ptr_neuron_axon_list->num_of_axons++;
+		ptr_post_neuron_synapse_list->num_of_synapses++;
+
+		if (! update_neuron_sorted_event_buffer_size(target_neuron))		
+			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "! update_neuron_sorted_event_buffer_size().");
+	}
+	return TRUE;
+}
+
 void destroy_neuron_axon_list(Neuron *neuron)
 {
 	NeuronAxonList	*ptr_neuron_axon_list;

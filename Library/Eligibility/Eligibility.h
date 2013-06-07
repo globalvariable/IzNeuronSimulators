@@ -25,6 +25,10 @@ struct __EligibilityList
 bool create_ps_eligibility_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min, double depol_eligibility_change_max, double  depol_eligibility_change_min, double max_eligibility, double eligibility_rate);   // run this function before create_ps_stdp_for_neuron_group, stdp_change  shouldnt be larger than max_eligibility
 
 bool create_ps_eligibility_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min, double depol_eligibility_change_max, double  depol_eligibility_change_min, double max_eligibility, double eligibility_rate);
+
+bool allocate_ps_eligibility_for_neuron(Neuron* neuron , int parker_sochacki_max_order);
+bool submit_ps_eligibility_for_synapse(Neuron* neuron , unsigned int syn_idx, double eligibility_tau, double depol_eligibility_change, double max_eligibility, double eligibility_rate);
+
 bool submit_new_ps_eligibility_vals_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min, double depol_eligibility_change_max, double  depol_eligibility_change_min, double max_eligibility, double eligibility_rate);
 bool submit_new_ps_eligibility_vals_for_synapse(Neuron* neuron , unsigned int parker_sochacki_max_order,  double eligibility_tau_max, double  eligibility_tau_min, unsigned int synapse, double depol_eligibility_change_max, double  depol_eligibility_change_min, double max_eligibility, double eligibility_rate);
 void clear_eligibility_for_neuron(Neuron *neuron);

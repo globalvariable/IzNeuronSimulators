@@ -934,9 +934,9 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_neuron , TRUE,TRUE,0);
 	combo_neuron_dynamics = allocate_neuron_dynamics_combo(hbox, combo_neuron_dynamics);
 
-	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, get_hybrid_net_rl_bmi_data()->in_silico_network))  // it is put here since main() adds neurons to the layers previously
+/*	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, get_hybrid_net_rl_bmi_data()->in_silico_network))  // it is put here since main() adds neurons to the layers previously
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "create_network_view_gui(", "! update_texts_of_combos_when_add_remove().");	
-
+*/
    	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -1660,7 +1660,7 @@ static void load_data_button_func (void)
 
 	data_folder_num = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_load_data_folder_num)));
 			
-	if ((*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(4, path, get_hybrid_net_rl_bmi_data()->in_silico_network, get_hybrid_net_rl_bmi_data()->blue_spike_network, data_folder_num))		// record in last format version
+	if ((*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(5, path, get_hybrid_net_rl_bmi_data()->in_silico_network, get_hybrid_net_rl_bmi_data()->blue_spike_network, data_folder_num, &(get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles)))		// record in last format version
 	{
 		print_message(INFO_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", "Successfully loaded data");			
 	}
