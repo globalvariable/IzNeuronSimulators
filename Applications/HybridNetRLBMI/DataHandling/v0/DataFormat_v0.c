@@ -22,7 +22,7 @@ static int delete_data_files(char *data_directory_path);
 static int delete_meta_data(char *data_directory_path);
 static int delete_in_silico_spike_data(char *data_directory_path);
 static int delete_in_silico_network_data(char *data_directory_path);
-static int load_main_meta_file(char *path_chooser, Network *in_silico_network, Network *blue_spike_network, ExponentialAngularSpindleGroup **angle_sensitive_spindles);
+static int load_main_meta_file(char *path_chooser, Network *in_silico_network, Network *blue_spike_network, ExponentialAngularSpindleGroup **angle_sensitive_spindles, HybridNetRLBMIData *bmi_data);
 static int load_data_folder(char *path_chooser, Network *in_silico_network, Network *blue_spike_network, unsigned int data_folder_num);
 
 
@@ -289,7 +289,7 @@ int load_data_directory_v0(int num, ...)
 	char *path_chooser;
 	unsigned int data_folder_num;
 	ExponentialAngularSpindleGroup	**angle_sensitive_spindles;
-
+	HybridNetRLBMIData *bmi_data;
   	va_list arguments;
 	va_start ( arguments, num );   
     	path_chooser = va_arg ( arguments, char *); 
@@ -297,9 +297,10 @@ int load_data_directory_v0(int num, ...)
 	blue_spike_network = va_arg ( arguments, Network *); 
 	data_folder_num = va_arg ( arguments, unsigned int); 
 	angle_sensitive_spindles = va_arg ( arguments, ExponentialAngularSpindleGroup**); 
+	bmi_data = va_arg ( arguments, HybridNetRLBMIData*);
 	va_end ( arguments );
 
-	if (! load_main_meta_file(path_chooser, in_silico_network, blue_spike_network, angle_sensitive_spindles))
+	if (! load_main_meta_file(path_chooser, in_silico_network, blue_spike_network, angle_sensitive_spindles, bmi_data))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_data_directory_v0", "! load_main_meta_file");		
 
 	if (! load_data_folder(path_chooser, in_silico_network, blue_spike_network, data_folder_num)) 
@@ -560,6 +561,7 @@ static int create_main_meta_file(char *main_directory_path)
 				{
 					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->eligibility_decay_rate[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->eligibility_decay_rate[m]);
 					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->depol_eligibility_change[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->depol_eligibility_change[m]);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->depol_eligibility_memb_volt[%u]\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->depol_eligibility_memb_volt[m] + in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_resting);
 					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->max_eligibility\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->max_eligibility);
 					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->eligibility_rate\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].eligibility_list->eligibility_rate);
 				}
@@ -837,7 +839,7 @@ static int delete_in_silico_network_data(char *data_directory_path)
 	return 1;
 }
 
-static int load_main_meta_file(char *path_chooser, Network *in_silico_network, Network *blue_spike_network, ExponentialAngularSpindleGroup **angle_sensitive_spindles)
+static int load_main_meta_file(char *path_chooser, Network *in_silico_network, Network *blue_spike_network, ExponentialAngularSpindleGroup **angle_sensitive_spindles, HybridNetRLBMIData *bmi_data)
 {
 	char temp[1000];
 	char line[1000];
@@ -865,7 +867,7 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 	double weight;
 	bool syn_type;
 	double change_stdp_pre_post, decay_rate_stdp_pre_post, change_stdp_post_pre, decay_rate_stdp_post_pre;
-	double eligibility_decay_rate, depol_eligibility_change, max_eligibility, eligibility_rate;
+	double eligibility_decay_rate, depol_eligibility_change, max_eligibility, eligibility_rate, depol_eligibility_memb_volt;
 	bool first;
 	unsigned int randomize_params = 0;
 	
@@ -920,6 +922,8 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 		{ fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "Not learning_rate line."); }
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 	learning_rate = atof(word);
+
+	bmi_data->learning_rate = learning_rate;
 
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
@@ -1144,7 +1148,7 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 			k_v_threshold = atof(word);
 
-			if (!add_iz_neurons_to_layer(in_silico_network, neuron_count, i, a, b, c, d, k, 1.0/E, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, -1.0/decay_rate_excitatory, -1.0/decay_rate_inhibitory, randomize_params))
+			if (!add_iz_neurons_to_layer(in_silico_network, neuron_count, i, a, b, c+v_resting, d, k, 1.0/E, v_resting, v_threshold+v_resting, v_peak+v_resting, inhibitory, E_excitatory+v_resting, E_inhibitory+v_resting, -1.0/decay_rate_excitatory, -1.0/decay_rate_inhibitory, randomize_params))
 				return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 			first = TRUE;
 			for (k_iter = 0; k_iter < neuron_count; k_iter++)
@@ -1451,6 +1455,10 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 					depol_eligibility_change = atof(word);	
 
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->depol_eligibility_memb_volt[%u]\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					depol_eligibility_memb_volt = atof(word);	
+
 					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].eligibility_list->max_eligibility\t%.15f\n
 					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 					max_eligibility = atof(word);	
@@ -1459,7 +1467,7 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 					eligibility_rate = atof(word);	
 
-					if (! submit_ps_eligibility_for_synapse(this_neuron , m, -1.0 / eligibility_decay_rate, depol_eligibility_change, max_eligibility, eligibility_rate))
+					if (! submit_ps_eligibility_for_synapse(this_neuron , m, -1.0 / eligibility_decay_rate, depol_eligibility_change, max_eligibility, eligibility_rate, depol_eligibility_memb_volt))
 						{ fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "! submit_ps_eligibility_for_synapse."); }
 				}
 			}		
@@ -1495,6 +1503,8 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 
 	set_layer_type_of_the_neurons_in_layer(in_silico_network, LAYER_BASE_SERVO_EXTENSOR_MOTOR, NEURON_LAYER_TYPE_OUTPUT);
 	set_layer_type_of_the_neurons_in_layer(in_silico_network, LAYER_BASE_SERVO_FLEXOR_MOTOR, NEURON_LAYER_TYPE_OUTPUT);
+
+	
 
 	fclose(fp);
 
@@ -1576,6 +1586,7 @@ static int load_data_folder(char *path_chooser, Network *in_silico_network, Netw
 				for (m = 0; m < syn_list->num_of_synapses; m++)
 				{
 					if (! fread(&(synapses[m].weight), sizeof(SynapticWeight), 1, fp))   { printf ("ERROR: HybridNetRLBMI: Couldn't read weight info from file: %s\n\n", data_directory_path); fclose(fp); return 0; } 
+					printf("%f\n", synapses[m].weight);
 					count_size += sizeof(SynapticWeight);
 				}
 				for (m = 0; m < syn_list->num_of_synapses; m++)

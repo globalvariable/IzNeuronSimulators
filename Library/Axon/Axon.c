@@ -93,6 +93,10 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 				synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
 				synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
 				synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+				synapses[i].axon_from_network = ptr_post_neuron_synapse_list->synapses[i].axon_from_network;
+				synapses[i].axon_from_layer = ptr_post_neuron_synapse_list->synapses[i].axon_from_layer;
+				synapses[i].axon_from_neuron_group = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group;
+				synapses[i].axon_from_neuron = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron;
 			}
 			g_free(ptr_post_neuron_synapse_list->synapses);
 		
@@ -100,6 +104,10 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			ptr_post_neuron_synapse_list->synapses[i].weight = -( (weight_inhibitory_max-weight_inhibitory_min) * get_rand_number() ) - weight_inhibitory_min;
 			ptr_post_neuron_synapse_list->synapses[i].type = INHIBITORY_SYNAPSE;
 			ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_network = this_neuron->network;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_layer = this_neuron->layer;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group = this_neuron->neuron_group;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron = this_neuron->neuron_num;
 	
 			ptr_neuron_axon_list->num_of_axons++;
 			ptr_post_neuron_synapse_list->num_of_synapses++;
@@ -162,6 +170,10 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 				synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
 				synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
 				synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+				synapses[i].axon_from_network = ptr_post_neuron_synapse_list->synapses[i].axon_from_network;
+				synapses[i].axon_from_layer = ptr_post_neuron_synapse_list->synapses[i].axon_from_layer;
+				synapses[i].axon_from_neuron_group = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group;
+				synapses[i].axon_from_neuron = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron;
 			}
 			g_free(ptr_post_neuron_synapse_list->synapses);
 		
@@ -169,6 +181,10 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 			ptr_post_neuron_synapse_list->synapses[i].weight = ( (weight_excitatory_max-weight_excitatory_min) * get_rand_number() ) + weight_excitatory_min;
 			ptr_post_neuron_synapse_list->synapses[i].type = EXCITATORY_SYNAPSE;
 			ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_network = this_neuron->network;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_layer = this_neuron->layer;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group = this_neuron->neuron_group;
+			ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron = this_neuron->neuron_num;
 
 			ptr_neuron_axon_list->num_of_axons++;
 			ptr_post_neuron_synapse_list->num_of_synapses++;
@@ -254,6 +270,9 @@ bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, Synapti
 			synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
 			synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
 			synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+			synapses[i].axon_from_layer = ptr_post_neuron_synapse_list->synapses[i].axon_from_layer;
+			synapses[i].axon_from_neuron_group = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group;
+			synapses[i].axon_from_neuron = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron;
 		}
 		g_free(ptr_post_neuron_synapse_list->synapses);
 		
@@ -261,6 +280,9 @@ bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, Synapti
 		ptr_post_neuron_synapse_list->synapses[i].weight = weight;  
 		ptr_post_neuron_synapse_list->synapses[i].type = INHIBITORY_SYNAPSE;
 		ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_layer = this_neuron->layer;
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group = this_neuron->neuron_group;
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron = this_neuron->neuron_num;
 	
 		ptr_neuron_axon_list->num_of_axons++;
 		ptr_post_neuron_synapse_list->num_of_synapses++;
@@ -318,6 +340,9 @@ bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, Synapti
 			synapses[i].weight = ptr_post_neuron_synapse_list->synapses[i].weight;
 			synapses[i].type = ptr_post_neuron_synapse_list->synapses[i].type;
 			synapses[i].event_buffer =  ptr_post_neuron_synapse_list->synapses[i].event_buffer;
+			synapses[i].axon_from_layer = ptr_post_neuron_synapse_list->synapses[i].axon_from_layer;
+			synapses[i].axon_from_neuron_group = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group;
+			synapses[i].axon_from_neuron = ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron;
 		}
 		g_free(ptr_post_neuron_synapse_list->synapses);
 		
@@ -325,6 +350,9 @@ bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, Synapti
 		ptr_post_neuron_synapse_list->synapses[i].weight = weight;
 		ptr_post_neuron_synapse_list->synapses[i].type = EXCITATORY_SYNAPSE;
 		ptr_post_neuron_synapse_list->synapses[i].event_buffer = allocate_neuron_synaptic_event_buffer(ptr_neuron_axon_list->delay[ptr_neuron_axon_list->num_of_axons]);
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_layer = this_neuron->layer;
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron_group = this_neuron->neuron_group;
+		ptr_post_neuron_synapse_list->synapses[i].axon_from_neuron = this_neuron->neuron_num;
 
 		ptr_neuron_axon_list->num_of_axons++;
 		ptr_post_neuron_synapse_list->num_of_synapses++;

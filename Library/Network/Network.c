@@ -162,7 +162,7 @@ static bool add_iz_neuron_group_to_layer(Network *network, unsigned int layer, u
 
 	for (i=0; i<num_of_neuron; i++)
 	{
-		if( !initialize_iz_neuron_params(&(ptr_neuron_group->neurons[i]), layer, ptr_layer->neuron_group_count-1, i, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
+		if( !initialize_iz_neuron_params(&(ptr_neuron_group->neurons[i]), network, layer, ptr_layer->neuron_group_count-1, i, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory))
 			return FALSE;
 	}
 	
@@ -194,7 +194,7 @@ static bool add_neuron_node_group_to_layer(Network *network, unsigned int layer,
 	ptr_neuron_group->neuron_count = num_of_neuron;
 	for (i=0; i<num_of_neuron; i++)
 	{
-		if( !initialize_neuron_node(&(ptr_neuron_group->neurons[i]), layer, ptr_layer->neuron_group_count-1, i, inhibitory))
+		if( !initialize_neuron_node(&(ptr_neuron_group->neurons[i]), network, layer, ptr_layer->neuron_group_count-1, i, inhibitory))
 			return FALSE;
 	}
 	all_neurons = g_new0(Neuron*, network->num_of_neurons + num_of_neuron);

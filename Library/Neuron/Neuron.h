@@ -62,6 +62,7 @@ struct __IzNeuronParams
 
 struct __Neuron
 {
+	Network 						*network; 
 	unsigned int					layer;
 	unsigned int					neuron_group;
 	unsigned int					neuron_num;	
@@ -79,8 +80,8 @@ struct __Neuron
 	NeuronSortedEventBuffer		*sorted_event_buffer;
 };
 
-bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
-bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory);    // to represent blue spike neurons to connect to in silico network
+bool initialize_iz_neuron_params(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
+bool initialize_neuron_node(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory);    // to represent blue spike neurons to connect to in silico network
 bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuron_num);
 bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
 bool inject_current_to_neuron(Neuron *nrn, double I_inject);

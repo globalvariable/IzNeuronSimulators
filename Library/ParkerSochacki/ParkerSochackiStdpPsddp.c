@@ -124,11 +124,17 @@ bool evaluate_neuron_dyn_stdp_psddp_elig(Neuron *nrn, TimeStamp start_time, Time
 				}
 				if (eligibility_val >= 0)
 				{
-					eligibility_val = eligibility_val - (((max_eligibility - eligibility_val) / max_eligibility)*eligibility_list->depol_eligibility_change[event_from_syn_idx]*eligibility_rate);
+		//			if (nrn->iz_params->v > eligibility_list->depol_eligibility_memb_volt[event_from_syn_idx]) 
+		//			{
+						eligibility_val = eligibility_val - (((max_eligibility - eligibility_val) / max_eligibility)*eligibility_list->depol_eligibility_change[event_from_syn_idx]*eligibility_rate);
+		//			}
 				}
 				else
 				{
-					eligibility_val = eligibility_val - (((max_eligibility + eligibility_val) / max_eligibility)*eligibility_list->depol_eligibility_change[event_from_syn_idx]*eligibility_rate);
+		//			if (nrn->iz_params->v > eligibility_list->depol_eligibility_memb_volt[event_from_syn_idx]) 
+		//			{
+						eligibility_val = eligibility_val - (((max_eligibility + eligibility_val) / max_eligibility)*eligibility_list->depol_eligibility_change[event_from_syn_idx]*eligibility_rate);
+		//			}
 				}
 				eligibility[event_from_syn_idx] = eligibility_val; 
 			}

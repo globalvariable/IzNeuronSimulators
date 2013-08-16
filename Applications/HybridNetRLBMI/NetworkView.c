@@ -84,6 +84,8 @@ static GtkWidget *entry_eligibility_tau_min;
 static GtkWidget *entry_eligibility_tau_max;
 static GtkWidget *entry_depol_eligibility_change_min;
 static GtkWidget *entry_depol_eligibility_change_max;
+static GtkWidget *entry_depol_eligibility_memb_volt_min;
+static GtkWidget *entry_depol_eligibility_memb_volt_max;
 static GtkWidget *entry_max_eligibility;
 static GtkWidget *entry_eligibility_rate;
 static GtkWidget *btn_submit_stdp_and_eligibility;
@@ -827,6 +829,26 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
+	lbl = gtk_label_new("Depol Volt:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+	lbl = gtk_label_new("Min:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memb_volt_min = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memb_volt_min , FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_min), "-52");
+	gtk_widget_set_size_request(entry_depol_eligibility_memb_volt_min, 50, 25) ;
+	lbl = gtk_label_new("Max:");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_depol_eligibility_memb_volt_max = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_memb_volt_max, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_max), "-52");	
+	gtk_widget_set_size_request(entry_depol_eligibility_memb_volt_max, 50, 25) ;
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
 	lbl = gtk_label_new("Tau(ms):");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
 	lbl = gtk_label_new("");
@@ -1020,7 +1042,7 @@ bool create_network_view_gui(void)
    	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE, 0); 
 
-	btn_load_data = gtk_button_new_with_label("Load Weights");
+	btn_load_data = gtk_button_new_with_label("Load");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_load_data, TRUE, TRUE, 0);
 
 	entry_load_data_folder_num =  gtk_entry_new();
@@ -1152,6 +1174,7 @@ void interrogate_network_button_func(void)
 {
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	interrogate_network(bmi_data->in_silico_network);
+	printf ("learning_rate: %f\n", bmi_data->learning_rate);
 } 		
 
 void interrogate_neuron_button_func(void)
@@ -1299,10 +1322,12 @@ static void submit_stdp_and_eligibility_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double depol_eligibility_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_min)));
 	double depol_eligibility_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_max)));
+	double depol_eligibility_memb_volt_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_min)));
+	double depol_eligibility_memb_volt_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_max)));
 	double max_eligibility = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility)));
 	double eligibility_rate = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_rate)));
 
-	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate))
+	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate, depol_eligibility_memb_volt_max, depol_eligibility_memb_volt_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_eligibility_for_neuron_group().");	
 
 	if (! create_ps_stdp_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min))
@@ -1390,10 +1415,12 @@ static void submit_new_stdp_and_eligibility_for_neuron_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double depol_eligibility_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_min)));
 	double depol_eligibility_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_max)));
+	double depol_eligibility_memb_volt_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_min)));
+	double depol_eligibility_memb_volt_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_max)));
 	double max_eligibility = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility)));
 	double eligibility_rate = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_rate)));
 
-	if (! submit_new_ps_eligibility_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate))
+	if (! submit_new_ps_eligibility_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate,  depol_eligibility_memb_volt_max, depol_eligibility_memb_volt_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");	
 	if (! submit_new_ps_stdp_vals_for_neuron(neuron, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_stdp_vals_for_neuron().");	
@@ -1441,10 +1468,12 @@ static void submit_new_stdp_and_eligibility_for_synapse_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double depol_eligibility_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_min)));
 	double depol_eligibility_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_change_max)));
+	double depol_eligibility_memb_volt_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_min)));
+	double depol_eligibility_memb_volt_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_memb_volt_max)));
 	double max_eligibility = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility)));
 	double eligibility_rate = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_rate)));
 
-	if (! submit_new_ps_eligibility_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, syn_num, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate))
+	if (! submit_new_ps_eligibility_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(),  eligibility_tau_max, eligibility_tau_min, syn_num, depol_eligibility_change_max, depol_eligibility_change_min, max_eligibility, eligibility_rate, depol_eligibility_memb_volt_max, depol_eligibility_memb_volt_min))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");
 	if (! submit_new_ps_stdp_vals_for_synapse(neuron, get_maximum_parker_sochacki_order(), STDP_pre_post_change_max, STDP_pre_post_change_min, STDP_pre_post_tau_max, STDP_pre_post_tau_min, STDP_post_pre_change_max, STDP_post_pre_change_min, STDP_post_pre_tau_max, STDP_post_pre_tau_min, syn_num))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_stdp_vals_for_neuron().");	
@@ -1477,6 +1506,9 @@ static void ready_for_simulation_button_func(void)
 
 	if(!update_texts_of_synapse_combos_when_add_remove(combos_select_synapse, bmi_data->in_silico_network))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! update_texts_of_combos_when_add_remove().");	
+
+	if(!update_texts_of_combos_when_add_remove(combos_select_neuron, bmi_data->in_silico_network))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "add_neurons_to_layer_button_func", "! update_texts_of_combos_when_add_remove().");	
 
 	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! create_buffers_view_gui().");	
@@ -1513,7 +1545,7 @@ static void combos_select_synapse_func(GtkWidget *changed_combo)
 static void submit_learning_rate_button_func (void)
 {
 	double learning_rate = atof(gtk_entry_get_text(GTK_ENTRY(entry_learning_rate)));
-	if (learning_rate <= 0)
+	if (learning_rate < 0)
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_learning_rate_button_func", "learning_rate <= 0.");
 
 	get_hybrid_net_rl_bmi_data()-> learning_rate = learning_rate;
@@ -1620,6 +1652,7 @@ static gboolean timeout_callback(gpointer user_data)
 				recording = FALSE;
 				break;
 			case NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS:
+				usleep(100000);  /// sleep 100 ms so that rt neural net simulator can save eligibility traces which is handled by all neurons received from trial handler. 
 				reward = msg_item.additional_data.reward;
 				learning_rate = static_bmi_data->learning_rate;
 				for (i = 0; i < static_num_of_neurons; i++)
@@ -1660,9 +1693,11 @@ static void load_data_button_func (void)
 
 	data_folder_num = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_load_data_folder_num)));
 			
-	if ((*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(5, path, get_hybrid_net_rl_bmi_data()->in_silico_network, get_hybrid_net_rl_bmi_data()->blue_spike_network, data_folder_num, &(get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles)))		// record in last format version
+	if ((*load_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(6, path, get_hybrid_net_rl_bmi_data()->in_silico_network, get_hybrid_net_rl_bmi_data()->blue_spike_network, data_folder_num, &(get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles), get_hybrid_net_rl_bmi_data()))		// record in last format version
 	{
-		print_message(INFO_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", "Successfully loaded data");			
+		print_message(INFO_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", "Successfully loaded data");	
+		gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);		
+		gtk_widget_set_sensitive(btn_submit_learning_rate, TRUE);				
 	}
 	else
 	{

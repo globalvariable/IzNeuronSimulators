@@ -39,7 +39,7 @@ SynapticWeightHistGraph* allocate_synaptic_weight_history_graph(GtkWidget *hbox,
 		graph->x[i] = (float)i;
 	graph->graph = GTK_DATABOX_GRAPH(gtk_databox_lines_new (SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, graph->x, graph->y, &color_line, 0));
 	gtk_databox_graph_add (GTK_DATABOX (graph->box), graph->graph);	
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 25, -25);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 20, -20);	
 
 	gtk_widget_show_all(hbox);	
 
@@ -65,6 +65,58 @@ bool update_synapse_history_graph(SynapticWeightHistGraph *graph, Network *netwo
 		if (read_idx < 0)
 			read_idx = SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE -1;  
 	}
-	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 25, -25);	
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 20, -20);	
 	return TRUE;				
+}
+
+bool update_axon_to_layer_wieght_history_graph(SynapticWeightHistGraph *graph, Network *network, unsigned int layer_num, unsigned int nrn_grp_num, unsigned int nrn_num, unsigned int target_layer_num, SynapticWeight	*mean_target_layer_weight_history)
+{
+	int read_idx, k;   // should be int, not unsigned int 
+	NeuronAxonList	*axon_list = get_neuron_address(network, layer_num, nrn_grp_num, nrn_num)->axon_list;	
+	unsigned int		num_of_axons = axon_list->num_of_axons;	
+	unsigned int i, j, num_of_axons_to_layer;
+	SynapticWeight total_weight;
+
+	for (i = 0; i < SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE - 1; i++)
+	{
+		total_weight = 0;
+		num_of_axons_to_layer = 0;
+		for (j = 0; j < num_of_axons; j++)
+		{
+			if (axon_list->target_layer[j] == target_layer_num)
+			{
+				total_weight += axon_list->to[j]->syn_list->synapses[axon_list->syn_idx[j]].weight_history[i];
+				num_of_axons_to_layer++;
+			}
+		}
+		mean_target_layer_weight_history[i] = total_weight / num_of_axons_to_layer;
+	}
+
+	read_idx = 0; /// to get rid of compiler warning 'may not be initialized variable'.  if check after for loop  keeps it safe it to be initialized. 
+	for (j = 0; j < num_of_axons; j++)
+	{
+		if (axon_list->target_layer[j] == target_layer_num)  // find a weight history buffer write idx for targetted layer.  All others will be same as this one since all is updated at the same time.
+		{
+			read_idx = axon_list->to[j]->syn_list->synapses[axon_list->syn_idx[j]].weight_history_write_idx;
+			break;
+		}
+	}
+	if (j == num_of_axons)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SynapticWeightHistGraph", "update_axon_to_layer_wieght_history_graph", "Couldn't find targeted layer.");	
+	
+
+	read_idx = read_idx -1;
+	if (read_idx < 0)
+		read_idx = SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE -1;  	
+		
+	for (k = SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE-1; k >= 0; k--)
+	{
+		graph->y[k] = mean_target_layer_weight_history[read_idx];
+		read_idx--;
+		if (read_idx < 0)
+			read_idx = SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE -1;  
+	}
+	gtk_databox_set_total_limits (GTK_DATABOX (graph->box), 0, SYNAPTIC_WEIGHT_HISTORY_BUFFER_SIZE, 20, -20);
+
+	return TRUE;
 }

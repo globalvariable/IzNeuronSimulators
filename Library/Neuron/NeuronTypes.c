@@ -129,6 +129,24 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*tau_excitatory = 5;
 		*tau_inhibitory = 10;		
 	}
+	else if (neuron_type == NRN_TYPE_MEDIUM_SPINY) 
+	{
+		*v = -80;
+		*a = 0.01;
+		*b = -20;
+		*c = -55;
+		*d = 150;
+		*C = 50;
+		*k = 1.0;
+		*v_resting = -80;
+		*v_threshold = -25;
+		*v_peak = 40;
+		*inhibitory = 1;
+		*E_excitatory = 0;
+		*E_inhibitory = -110;
+		*tau_excitatory = 5;
+		*tau_inhibitory = 10;
+	}
 	return;
 }
 
@@ -160,7 +178,11 @@ char *get_neuron_type_string(int neuron_type, char *str)
 	}
 	else if (neuron_type == NRN_TYPE_FAST_SPIKING)  
 	{
-		str = "(Inhibitory) Fast Spikinig";		
+		str = "(Inhibitory) Fast Spiking";		
+	}
+	else if (neuron_type == NRN_TYPE_MEDIUM_SPINY)  
+	{
+		str = "(Inhibitory) Medium Spiny";		
 	}
 	return str;
 

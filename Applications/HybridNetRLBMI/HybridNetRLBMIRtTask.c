@@ -305,6 +305,13 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, current_sys_time, NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
 					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_END_TRIAL_WITH_NOTHING:	// do nothing. this message received due to invalid behavior of rat in / during the trial (i.e. nose retract) 
+					current_sys_time = rt_tasks_data->current_system_time;
+					neural_net_2_gui_msg_add.reward = 0;	// zero reward will not update synaptic weights. but the weight history will be kept for this trial in gui timeout callback (NetworkView.c)
+					// no need to send any message to neurons such as NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD etc since the weights will not be updated at the end of this trial. so no eligiility saving required for the neurons.			
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, current_sys_time, NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
+						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
+					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_START_RECORDING:	
 					neural_net_2_gui_msg_add.recording_number = msg_item.additional_data.recording_number;
 					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, rt_tasks_data->current_system_time, NEURAL_NET_2_GUI_MSG_START_RECORDING, neural_net_2_gui_msg_add)) {

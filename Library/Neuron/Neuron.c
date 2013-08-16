@@ -1,6 +1,6 @@
 #include "Neuron.h"
 
-bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory)
+bool initialize_iz_neuron_params(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory)
 {
 	if ((a<0) || ((inhibitory < 0) || (inhibitory > 1)) || (C<=0) ||  (k<0) || (tau_excitatory<=0) || (tau_inhibitory<=0))
 	{
@@ -8,6 +8,7 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 		printf("Neuron: ERROR : a = %f, inhibitory = %d, C = %f, k = %f, tau_excitatory = %f, tau_inhibitory = %f\n", a, inhibitory, C, k, tau_excitatory, tau_inhibitory);		
 		return FALSE;
 	}
+	nrn->network = network;
 	nrn->layer = layer;
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;
@@ -62,8 +63,9 @@ bool initialize_iz_neuron_params(Neuron *nrn, unsigned int layer, unsigned int n
 	return TRUE;
 }
 
-bool initialize_neuron_node(Neuron *nrn, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory)	// to represent blue spike neurons to connect to in silico network
+bool initialize_neuron_node(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory)	// to represent blue spike neurons to connect to in silico network
 {
+	nrn->network = network;
 	nrn->layer = layer;
 	nrn->neuron_group = neuron_group;
 	nrn->neuron_num = neuron_num;

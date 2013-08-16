@@ -25,7 +25,7 @@ struct  __SynapticWeightHistGraph
 
 SynapticWeightHistGraph* allocate_synaptic_weight_history_graph(GtkWidget *hbox, SynapticWeightHistGraph *graph);
 bool update_synapse_history_graph(SynapticWeightHistGraph *graph, Network *network, unsigned int layer_num, unsigned int nrn_grp_num, unsigned int nrn_num, unsigned int syn_num);
-
+bool update_axon_to_layer_wieght_history_graph(SynapticWeightHistGraph *graph, Network *network, unsigned int layer_num, unsigned int nrn_grp_num, unsigned int nrn_num, unsigned int target_layer_num, SynapticWeight	*mean_target_layer_weight_history);
 
 
 

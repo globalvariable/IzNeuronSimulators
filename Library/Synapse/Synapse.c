@@ -29,13 +29,13 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double reward)
 
 		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
-			if ((synapse->weight + weight_change) < 0.01)
+			if ((synapse->weight + weight_change) < 1)
 			{
-				synapse->weight = 0.01;
+				synapse->weight = 1;
 			}
-			else if ((synapse->weight + weight_change) > 15)
+			else if ((synapse->weight + weight_change) > 20)
 			{			
-				synapse->weight = 15;
+				synapse->weight = 20;
 			}
 			else
 			{
@@ -73,14 +73,14 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward, 
 		printf("WeightChange: %.8f\n", weight_change);
 */		if (synapse->type == EXCITATORY_SYNAPSE)
 		{
-			if ((synapse->weight + weight_change) < 0.01)
+			if ((synapse->weight + weight_change) < 0.1)
 			{
-				synapse->weight = 0.01;
+				synapse->weight = 0.1;
 				write_to_synapse_history_buffer(synapse);
 			}
-			else if ((synapse->weight + weight_change) > 15)
+			else if ((synapse->weight + weight_change) > 20)
 			{			
-				synapse->weight = 15;
+				synapse->weight = 20;
 				write_to_synapse_history_buffer(synapse);
 			}
 			else
