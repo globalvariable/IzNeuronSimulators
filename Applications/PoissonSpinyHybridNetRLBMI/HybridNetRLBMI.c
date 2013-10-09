@@ -55,7 +55,15 @@ int main( int argc, char *argv[])
 	if (! connect_medium_spiny_neurons(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_medium_spiny_neurons()."); return -1; }
 
+	if (! connect_babling_neurons(hybrid_net_rl_bmi_data)) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_babling_neurons()."); return -1; }
+
+	if (! connect_babling_2_medium_spiny_neurons(hybrid_net_rl_bmi_data)) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_babling_2_medium_spiny_neurons()."); return -1; }
+
 	initialize_data_read_write_handlers();
+
+	print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "Network setup is successful."); 
 
 	gtk_init(&argc, &argv);
 	create_gui();

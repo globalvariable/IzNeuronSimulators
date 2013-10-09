@@ -20,13 +20,13 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 	if (IPSP_delay_min>IPSP_delay_max)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "IPSP_delay_min>IPSP_delay_max.");	
  	if (EPSP_delay_min < delay_hard_min)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "EPSP_delay_min < delay_hard_min.");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "EPSP_delay_min < delay_hard_min. delay_hard_min is placed due to multicore processing.");	
  	if (EPSP_delay_max > delay_hard_max)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "EPSP_delay_max > delay_hard_max.");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "EPSP_delay_max > delay_hard_max.delay_hard_min is placed due to multicore processing.");	
  	if (IPSP_delay_min < delay_hard_min)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "IPSP_delay_min < delay_hard_min.");	
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "IPSP_delay_min < delay_hard_min.delay_hard_min is placed due to multicore processing.");	
  	if (IPSP_delay_max > delay_hard_max)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "IPSP_delay_max < delay_hard_max.");
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "IPSP_delay_max < delay_hard_max.delay_hard_min is placed due to multicore processing.");
 	if (weight_excitatory_min > weight_excitatory_max)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "weight_excitatory_min > weight_excitatory_max.");
 	if (weight_inhibitory_min > weight_inhibitory_max)

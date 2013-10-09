@@ -36,18 +36,20 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_EXTENSOR_SPINY, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
-	get_neuron_type_parameters(NRN_TYPE_MEDIUM_SPINY, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_EXTENSOR_DUMMY, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 10, LAYER_BASE_SERVO_EXTENSOR_BABBLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
 	get_neuron_type_parameters(NRN_TYPE_MEDIUM_SPINY, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_FLEXOR_SPINY, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
-	get_neuron_type_parameters(NRN_TYPE_MEDIUM_SPINY, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
-	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_FLEXOR_DUMMY, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
+	get_neuron_type_parameters(NRN_TYPE_REGULAR_SPIKING, &v, &a, &b, &c, &d, &k, &C, &v_resting, &v_threshold, &v_peak, &inhibitory, &E_excitatory, &E_inhibitory, &tau_excitatory, &tau_inhibitory);
+	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 10, LAYER_BASE_SERVO_FLEXOR_BABBLE, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
 
+	if (!add_poisson_neurons_to_layer(bmi_data->in_silico_network, 200, LAYER_POISSON_NEURONS, FALSE,  10.0*  ((double)(PARKER_SOCHACKI_INTEGRATION_STEP_SIZE))/1000000000.0))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_poisson_neurons_to_layer().");	
 	return TRUE;
 }
 
@@ -126,4 +128,54 @@ bool connect_medium_spiny_neurons(HybridNetRLBMIData *bmi_data)
 	return TRUE;
 }
 
+bool connect_babling_neurons(HybridNetRLBMIData *bmi_data)
+{
+	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
 
+	synapse_data->poisson_2_babling_neuron_excitatory_connection_probability = 0.1;
+	synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_max = 3;
+	synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_min = 3;
+	synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+	synapse_data->poisson_2_babling_neuron_inhibitory_connection_probability = 0.7;
+	synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_max = 75;
+	synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_min = 75;
+	synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+
+	if (! connect_layers(bmi_data->in_silico_network, LAYER_POISSON_NEURONS, bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_BABBLE, synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_max, synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_min, synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_max, synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_min, synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_max, synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_min, synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_max, synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_min, MAXIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, synapse_data->poisson_2_babling_neuron_excitatory_connection_probability, synapse_data->poisson_2_babling_neuron_inhibitory_connection_probability, TRUE, TRUE, TRUE))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_ext_network_layer_to_int_network_layer().");
+
+	if (! connect_layers(bmi_data->in_silico_network, LAYER_POISSON_NEURONS, bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_BABBLE, synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_max, synapse_data->poisson_2_babling_neuron_excitatory_connection_weight_min, synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_max, synapse_data->poisson_2_babling_neuron_inhibitory_connection_weight_min, synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_max, synapse_data->poisson_2_babling_neuron_excitatory_connection_delay_min, synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_max, synapse_data->poisson_2_babling_neuron_inhibitory_connection_delay_min, MAXIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, synapse_data->poisson_2_babling_neuron_excitatory_connection_probability, synapse_data->poisson_2_babling_neuron_inhibitory_connection_probability, TRUE, TRUE, TRUE))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_ext_network_layer_to_int_network_layer().");
+
+	return TRUE;
+}
+
+bool connect_babling_2_medium_spiny_neurons(HybridNetRLBMIData *bmi_data)
+{
+	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
+
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_probability = 1;
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_max = 9;
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_min = 9;
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+	synapse_data->babling_2_spiny_neuron_inhibitory_connection_probability = 0;
+	synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_max = 75;
+	synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_min = 75;
+	synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+
+	if (! connect_layers(bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_BABBLE, bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_max, synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_min, synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_max, synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_min, synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_max, synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_min, synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_max, synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_min, MAXIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, synapse_data->babling_2_spiny_neuron_excitatory_connection_probability, synapse_data->babling_2_spiny_neuron_inhibitory_connection_probability, TRUE, TRUE, TRUE))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_ext_network_layer_to_int_network_layer().");
+
+	if (! connect_layers(bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_BABBLE, bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_max, synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_min, synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_max, synapse_data->babling_2_spiny_neuron_inhibitory_connection_weight_min, synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_max, synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_min, synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_max, synapse_data->babling_2_spiny_neuron_inhibitory_connection_delay_min, MAXIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_IN_SILICO_TO_IN_SILICO_AXONAL_DELAY, synapse_data->babling_2_spiny_neuron_excitatory_connection_probability, synapse_data->babling_2_spiny_neuron_inhibitory_connection_probability, TRUE, TRUE, TRUE))
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_ext_network_layer_to_int_network_layer().");
+
+	return TRUE;
+}

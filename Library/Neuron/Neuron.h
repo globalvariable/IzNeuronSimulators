@@ -3,6 +3,7 @@
 
 typedef struct __Neuron Neuron;
 typedef struct __IzNeuronParams IzNeuronParams;
+
 typedef unsigned long long int NeuronAddress;
 typedef unsigned int LayerType;
 
@@ -16,6 +17,7 @@ typedef unsigned int LayerType;
 #include "../STDP/STDP.h"
 #include "../Eligibility/Eligibility.h"
 #include "../Eligibility/DepolEligibility.h"
+#include "PoissonNeuron.h"
 
 #define MAX_V_VALUE	150
 #define MIN_V_VALUE	-100
@@ -60,6 +62,8 @@ struct __IzNeuronParams
 	double		k_v_threshold;	
 };
 
+
+
 struct __Neuron
 {
 	Network 						*network; 
@@ -78,10 +82,12 @@ struct __Neuron
 //	DepolEligibilityList				*depol_eligibility_list;
 	NeuronTrialEventBuffer			*trial_event_buffer;
 	NeuronSortedEventBuffer		*sorted_event_buffer;
+	PoissonNeuronParams			*poisson_params;
 };
 
 bool initialize_iz_neuron_params(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak,bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
 bool initialize_neuron_node(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory);    // to represent blue spike neurons to connect to in silico network
+bool initialize_poisson_neuron(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory, double firing_rate);    
 bool interrogate_neuron(Network *network, int layer, int neuron_group, int neuron_num);
 bool submit_new_iz_neuron_params(Network *network, Neuron *nrn, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory); 
 bool inject_current_to_neuron(Neuron *nrn, double I_inject);

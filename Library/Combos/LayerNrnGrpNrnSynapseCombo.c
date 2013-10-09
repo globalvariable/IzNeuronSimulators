@@ -186,5 +186,13 @@ bool layer_neuron_group_neuron_synapse_get_selected(LayerNrnGrpNrnSynapseCombo *
 	*nrn_grp_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron_group));
 	*nrn_num =  gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_neuron));
 	*syn_num = gtk_combo_box_get_active (GTK_COMBO_BOX(combos->combo_synapse));
+	if ((int)(*layer_num) < 0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "LayerNrnGrpNrnSynapseCombo", "layer_neuron_group_neuron_synapse_get_selected", "Invalid *layer_num < 0.");		
+	if ((int)(*nrn_grp_num)  < 0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "LayerNrnGrpNrnSynapseCombo", "layer_neuron_group_neuron_synapse_get_selected", "Invalid *nrn_grp_num < 0.");	
+	if ((int)(*nrn_num)  < 0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "LayerNrnGrpNrnSynapseCombo", "layer_neuron_group_neuron_synapse_get_selected", "Invalid *nrn_num < 0.");	
+	if ((int)(*syn_num)  < 0)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "LayerNrnGrpNrnSynapseCombo", "layer_neuron_group_neuron_synapse_get_selected", "Invalid *syn_num < 0.");	
 	return TRUE;
 }

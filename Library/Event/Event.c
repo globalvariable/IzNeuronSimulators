@@ -423,6 +423,11 @@ void reset_neuron_event_buffer(Neuron *neuron)
 	NeuronTrialEventBuffer	*trial_event_buffer = neuron->trial_event_buffer;
 	SynapseIndex		i, num_of_synapses = neuron->syn_list->num_of_synapses; 
 
+	if (neuron->trial_event_buffer == NULL)	// maybe not an izhikevich neuron (or a neuron that can accept events, e.g. poisson neuron)
+		return;
+
+	num_of_synapses = neuron->syn_list->num_of_synapses;
+
 	trial_event_buffer->read_idx = trial_event_buffer->write_idx;
 	sorted_event_buffer->read_idx = sorted_event_buffer->write_idx;
 	for (i = 0; i < num_of_synapses; i++)

@@ -4,6 +4,7 @@ static bool increment_number_of_layers(Network *network);
 static bool increment_number_of_neuron_group_in_layer(Network *network, int layer);
 static bool add_iz_neuron_group_to_layer(Network *network, unsigned int layer, unsigned int  num_of_neuron, double a, double b, double c, double d, double k, double C, double v_resting, double v_threshold, double v_peak, bool inhibitory, double E_excitatory, double E_inhibitory, double tau_excitatory, double tau_inhibitory);
 static bool add_neuron_node_group_to_layer(Network *network, unsigned int layer, unsigned int num_of_neuron, bool inhibitory);
+static bool add_poisson_neuron_group_to_layer(Network *network, unsigned int layer, unsigned int num_of_neuron, bool inhibitory, double firing_rate);
 
 Network* allocate_network(Network *network)
 {
@@ -117,6 +118,36 @@ bool add_neuron_nodes_to_layer(Network *network, unsigned int num_of_neuron, uns
 	return TRUE;
 }
 
+bool add_poisson_neurons_to_layer(Network *network, unsigned int num_of_neuron, unsigned int layer, bool inhibitory, double firing_rate)
+{
+	if (network == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "add_node_neurons_to_layer", "network == NULL.");	
+
+	if ((layer > network->layer_count) || (layer < 0) )
+	{
+		printf ("Network: ERROR: Couldn't add layer %d to network.\n", layer);
+		printf ("Network: ERROR: Layer number shouldn't be larger than %d or smaller than 0\n", network->layer_count);
+		return FALSE;
+	}
+
+	if (num_of_neuron <= 0)
+	{
+		printf("Network: ERROR: Num of neurons to add should be greater than ZERO\n");
+		return FALSE;
+	}
+	
+	if (layer == network->layer_count)		// New & valid layer request from user
+	{
+		if (!increment_number_of_layers(network))
+			return FALSE;
+	}	
+	
+	if (!add_poisson_neuron_group_to_layer(network, layer, num_of_neuron, inhibitory, firing_rate))
+		return FALSE;
+
+	return TRUE;
+}
+
 static bool increment_number_of_layers(Network *network)
 {
 	unsigned int i;
@@ -195,6 +226,37 @@ static bool add_neuron_node_group_to_layer(Network *network, unsigned int layer,
 	for (i=0; i<num_of_neuron; i++)
 	{
 		if( !initialize_neuron_node(&(ptr_neuron_group->neurons[i]), network, layer, ptr_layer->neuron_group_count-1, i, inhibitory))
+			return FALSE;
+	}
+	all_neurons = g_new0(Neuron*, network->num_of_neurons + num_of_neuron);
+	for (i = 0; i < network->num_of_neurons; i++)
+		all_neurons[i] = network->all_neurons[i];
+	g_free(network->all_neurons);
+	network->all_neurons = all_neurons;
+	for (i = network->num_of_neurons; i < network->num_of_neurons + num_of_neuron; i++)
+		network->all_neurons[i] = &(ptr_neuron_group->neurons[i-network->num_of_neurons]);
+	network->num_of_neurons = network->num_of_neurons + num_of_neuron;
+	printf("Network: Additon of %d neurons to layer %d is successful\n", num_of_neuron, layer);
+	return TRUE;
+}
+
+static bool add_poisson_neuron_group_to_layer(Network *network, unsigned int layer, unsigned int num_of_neuron, bool inhibitory, double firing_rate)
+{
+	unsigned int i;
+	Layer		*ptr_layer = NULL;
+	NeuronGroup	*ptr_neuron_group = NULL;
+	Neuron			**all_neurons;	
+	if (!increment_number_of_neuron_group_in_layer(network, layer))
+		return FALSE;
+
+	ptr_layer = network->layers[layer];			
+	ptr_neuron_group = ptr_layer->neuron_groups[ptr_layer->neuron_group_count-1];
+
+	ptr_neuron_group->neurons = g_new0(Neuron, num_of_neuron);
+	ptr_neuron_group->neuron_count = num_of_neuron;
+	for (i=0; i<num_of_neuron; i++)
+	{
+		if( !initialize_poisson_neuron(&(ptr_neuron_group->neurons[i]), network, layer, ptr_layer->neuron_group_count-1, i, inhibitory, firing_rate))
 			return FALSE;
 	}
 	all_neurons = g_new0(Neuron*, network->num_of_neurons + num_of_neuron);
@@ -400,6 +462,8 @@ void reset_all_network_iz_neuron_dynamics (Network *network)
 			for (k=0; k<ptr_neuron_group->neuron_count; k++)
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
+				if (ptr_neuron->iz_params == NULL)	// not an izhikevich neuron. maybe possion neuron.
+					continue;
 				ptr_neuron->iz_params->v = 0;	// according to ParkerSochacki method.   v_resting is accepted as 0;  // Take a look at initialize_neuron
 				ptr_neuron->iz_params->u = 0;
 				ptr_neuron->iz_params->conductance_excitatory = 0;
@@ -574,3 +638,22 @@ bool set_layer_type_of_the_neurons_in_layer(Network *network, unsigned int layer
 	}
 	return TRUE;			
 }
+
+unsigned int get_num_of_poisson_neurons_in_network_slow(Network *network)  // for faster implementation, create a variable in network main structure which saves the number of poisson neurons during addition of them to the net.
+{
+	unsigned int num_of_poisson_neurons = 0;
+	int i, j;
+	Layer		*ptr_layer = NULL;
+	
+	for (i=0; i<network->layer_count; i++)
+	{
+		ptr_layer = network->layers[i];
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			if (ptr_layer->neuron_groups[j]->neurons[0].poisson_params != NULL)
+				num_of_poisson_neurons = num_of_poisson_neurons + ptr_layer->neuron_groups[j]->neuron_count;
+		}
+	}	
+	return num_of_poisson_neurons;
+}
+

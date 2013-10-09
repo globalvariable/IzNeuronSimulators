@@ -19,8 +19,14 @@ bool update_neuron_synaptic_weights(Neuron *neuron, double reward)
 	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
-	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
+	double	*eligibility_saved;
 	double weight_change;
+
+	if (neuron->syn_list->num_of_synapses) // no synapse, no need to go further. moreover,  this can be a poisson neuron with no eligibility etc.
+		return TRUE;
+
+	eligibility_saved = neuron->eligibility_list->eligibility_saved;
+
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);
@@ -59,8 +65,13 @@ bool update_neuron_synaptic_weights_with_history(Neuron *neuron, double reward, 
 	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
 	Synapse	*synapses = neuron->syn_list->synapses;
 	Synapse	*synapse;
-	double	*eligibility_saved = neuron->eligibility_list->eligibility_saved;
+	double	*eligibility_saved;
 	double weight_change;
+	
+	if (neuron->syn_list->num_of_synapses) // no synapse, no need to go further. moreover,  this can be a poisson neuron with no eligibility etc.
+		return TRUE;
+	
+	eligibility_saved = neuron->eligibility_list->eligibility_saved;
 	for (i = 0; i < num_of_synapses; i++)
 	{
 		synapse = &(synapses[i]);

@@ -49,7 +49,7 @@ struct  __NetworkSpikePatternGraphScroll		// when one needs real time scrolling 
 	TrialStatusEvents			*trial_status_events;
 	unsigned int				trial_status_event_buffer_read_idx;
 	StatusMarkers 			*status_markers;
-
+	unsigned int				num_of_network_layers_to_be_handled; // it is placed here to exclude unnecessary network layers's plotting(e.g. layers with poisson neurons. these layers should be placed at end of layer array)
 };
 
 NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData **source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, unsigned int	num_of_spike_data_buffer);  // this height should be adjusted manually so that the graph size will be determined.
@@ -61,7 +61,8 @@ bool scroll_network_spike_pattern_graph(Network* network, NetworkSpikePatternGra
 bool set_total_limits_network_spike_pattern_graph(Network* network, NetworkSpikePatternGraphScroll *graph);
 bool clear_network_spike_pattern_graph_w_scroll(Network* network, NetworkSpikePatternGraphScroll *graph);
 
-
+NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll_exclude_poisson(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData **source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, unsigned int	num_of_spike_data_buffer);
+// This function is used to exclude plotting of the network layers consisting of poisson neurons. To use this function, the layers with poisson neurons should take place at the end of the layered network structure. So that this funciton skips allocation of graphs for these layers and during plotting the layer counter cannot reach the layers with possion neurons.
 
 
 

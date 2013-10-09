@@ -52,7 +52,9 @@ static bool allocate_and_initialize_parker_sochacki_pol_vals_for_all_neurons(Net
 			{
 				ptr_neuron = &(ptr_neuron_group->neurons[k]);
 				ptr_ps_vals = ptr_neuron->ps_vals;
-
+				
+				if (ptr_ps_vals == NULL)	// it is not a neuron evaluated via PS method. maybe it is a poisson neuron.
+					continue;
 				g_free(ptr_ps_vals->v_pol_vals);			
 				g_free(ptr_ps_vals->u_pol_vals);
 				g_free(ptr_ps_vals->conductance_excitatory_pol_vals);

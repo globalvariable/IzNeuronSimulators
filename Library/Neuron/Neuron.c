@@ -73,9 +73,24 @@ bool initialize_neuron_node(Neuron *nrn, Network *network, unsigned int layer, u
 	if (nrn->axon_list != NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->axon_list = g_new0(NeuronAxonList,1);
-	if (nrn->ps_vals != NULL)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
-	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
+	return TRUE;
+}
+
+bool initialize_poisson_neuron(Neuron *nrn, Network *network, unsigned int layer, unsigned int neuron_group, unsigned int neuron_num, bool inhibitory, double firing_rate)
+{
+	nrn->network = network;
+	nrn->layer = layer;
+	nrn->neuron_group = neuron_group;
+	nrn->neuron_num = neuron_num;
+	nrn->inhibitory = inhibitory;
+	if (nrn->axon_list != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
+	nrn->axon_list = g_new0(NeuronAxonList,1);
+	if (nrn->poisson_params != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->poisson_params was allocated before. Re-use of initialize_neuron_params");		
+	nrn->poisson_params = g_new0(PoissonNeuronParams,1);
+	nrn->poisson_params->firing_rate = firing_rate;
+	nrn->syn_list = g_new0(SynapseList,1);	// so that num of synapses will be zero.
 	return TRUE;
 }
 
