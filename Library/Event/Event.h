@@ -23,6 +23,7 @@ typedef TimeStamp NeuronSynapticEventBufferItem;
 #define NEURON_EVENT_TYPE_TRIAL_START_EVENT				2
 #define NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD			3	// it is sent to neurons when the mov obj reaches threshold.
 #define NEURON_EVENT_TYPE_TRIAL_END_WITH_PUNISHMENT		4	// it is sent to neurons when the mov obj reaches target led.
+#define NEURON_EVENT_TYPE_REINFORCEMENT_SIGNAL			5
 
 #include "../Neuron/Neuron.h"
 #include "../Network/Network.h"

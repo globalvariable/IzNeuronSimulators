@@ -14,9 +14,6 @@ typedef unsigned int LayerType;
 #include "../Network/Network.h"
 #include "../ParkerSochacki/ParkerSochacki.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
-#include "../STDP/STDP.h"
-#include "../Eligibility/Eligibility.h"
-#include "../Eligibility/DepolEligibility.h"
 #include "PoissonNeuron.h"
 
 #define MAX_V_VALUE	150
@@ -77,9 +74,6 @@ struct __Neuron
 //	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
 	SynapseList					*syn_list;
-	STDPList					*stdp_list;
-	EligibilityList					*eligibility_list;
-//	DepolEligibilityList				*depol_eligibility_list;
 	NeuronTrialEventBuffer			*trial_event_buffer;
 	NeuronSortedEventBuffer		*sorted_event_buffer;
 	PoissonNeuronParams			*poisson_params;

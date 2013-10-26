@@ -55,6 +55,7 @@ bool push_eligibility_to_eligibility_buffer_limited(Network *network, Eligibilit
 	unsigned int i;
 	unsigned int neuron_id;
 	SelectedEligibility	*selected_eligibility;
+	Synapse *synapse;
 
 	for (i = 0; i < buffer->num_of_selected_synapses; i++)
 	{
@@ -64,7 +65,12 @@ bool push_eligibility_to_eligibility_buffer_limited(Network *network, Eligibilit
 		selected_eligibility = &(buffer->selected_eligibility[i]);
 		pthread_mutex_lock(&(selected_eligibility->mutex));   //  // it is within mutex for getting valid synapse_num for the specified neuron_id  // re-get neuron_id for simultaneous submit_selected_synapse_to_eligibility_buffer_limited
 
-		selected_eligibility->eligibility[selected_eligibility->buff_write_idx] = network->all_neurons[selected_eligibility->neuron_id]->eligibility_list->eligibility[selected_eligibility->synapse_num];
+		synapse = &(network->all_neurons[selected_eligibility->neuron_id]->syn_list->synapses[selected_eligibility->synapse_num]);
+		if (synapse->plastic)
+ 			selected_eligibility->eligibility[selected_eligibility->buff_write_idx] = synapse->ps_eligibility->now;
+		else
+			selected_eligibility->eligibility[selected_eligibility->buff_write_idx] = 0;
+
 		if ((selected_eligibility->buff_write_idx + 1) == selected_eligibility->buffer_size)
 			selected_eligibility->buff_write_idx = 0;
 		else

@@ -16,8 +16,7 @@ struct __PoissonNeuronParams
 	double 		firing_rate;	// firing per rt task period
 };
 
-
-void evaluate_poisson_neuron (Neuron *nrn, bool *spike_generated, TimeStamp *spike_time, TimeStamp time_ns);
-
+bool evaluate_poisson_neuron (Neuron *nrn, bool *spike_generated, TimeStamp *spike_time, TimeStamp time_ns);
+void submit_firing_rate_to_poisson_neuron (Neuron *nrn, double firing_rate);
 
 #endif

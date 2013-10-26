@@ -2,8 +2,8 @@
 #define STDP_H
 
 
-typedef struct 	__STDPList		STDPList;
-
+typedef struct 	__PsStdpPrePost	PsStdpPrePost;
+typedef struct 	__PsStdpPostPre	PsStdpPostPre;
 
 #define STDP_TYPE_PRE_POST	0
 #define STDP_TYPE_POST_PRE	1
@@ -11,35 +11,45 @@ typedef struct 	__STDPList		STDPList;
 
 #include "../Network/Network.h"
 
-struct __STDPList
+
+struct __PsStdpPrePost
 {
-	double		*stdp_pre_post; 					// num_of_synapses
-	double		*change_stdp_pre_post;			// num_of_synapses       // should be less than 'max_eligibility'
-	double		*decay_rate_stdp_pre_post;			// num_of_synapses
-	double 		*stdp_pre_post_iter_prev;			// num_of_synapses 
-	double 		*stdp_pre_post_iter_curr;			// num_of_synapses 
-	double 		**stdp_pre_post_pol_vals;			// num_of_synapses * size should be parker_sochacki_max_order + 1
-	double		**stdp_pre_post_decay_rate_pol_vals;	// num_of_synapses * size should be parker_sochacki_max_order + 1
-	double		*stdp_post_pre;					// num_of_synapses
-	double		*change_stdp_post_pre;			// num_of_synapses	// should be less than 'max_eligibility'
-	double		*decay_rate_stdp_post_pre;			// num_of_synapses
-	double 		*stdp_post_pre_iter_prev;			// num_of_synapses 
-	double 		*stdp_post_pre_iter_curr;			// num_of_synapses 
-	double 		**stdp_post_pre_pol_vals;			// num_of_synapses * size should be parker_sochacki_max_order + 1
-	double		**stdp_post_pre_decay_rate_pol_vals;	// num_of_synapses * size should be parker_sochacki_max_order + 1	
+	double		now; 					
+	double		change_amount;				
+	double		decay_rate;			
+	double 		iter_prev;			
+	double 		iter_curr;			
+	double 		*ps_pol_vals;			// size should be parker_sochacki_max_order + 1
+	double		*decay_rate_ps_pol_vals;	//  size should be parker_sochacki_max_order + 1
 };
 
-bool create_ps_stdp_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
+struct __PsStdpPostPre
+{
+	double		now; 					
+	double		change_amount;				
+	double		decay_rate;			
+	double 		iter_prev;			
+	double 		iter_curr;			
+	double 		*ps_pol_vals;			// size should be parker_sochacki_max_order + 1
+	double		*decay_rate_ps_pol_vals;	//  size should be parker_sochacki_max_order + 1
+};
 
-bool create_ps_stdp_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
+bool create_ps_pre_post_stdp_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, double change_min, double change_max, double tau_min, double tau_max);
+bool create_ps_post_pre_stdp_for_neuron_group(Network *network, unsigned int layer, unsigned int nrn_grp, double change_min, double change_max, double tau_min, double tau_max);
 
-bool allocate_ps_stdp_for_neuron(Neuron* neuron , int parker_sochacki_max_order);
-bool submit_ps_stdp_for_synapse(Neuron* neuron , unsigned int syn_idx, double STDP_pre_post_change, double STDP_pre_post_tau, double  STDP_post_pre_change, double STDP_post_pre_tau);
+bool create_ps_pre_post_stdp_for_neuron(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max);
+bool create_ps_post_pre_stdp_for_neuron(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max);
 
-bool submit_new_ps_stdp_vals_for_neuron(Neuron* neuron , unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
+bool create_ps_pre_post_stdp_for_synapse(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max, unsigned int synapse);
+bool create_ps_post_pre_stdp_for_synapse(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max, unsigned int synapse);
 
-bool submit_new_ps_stdp_vals_for_synapse(Neuron* neuron , unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min, unsigned int synapse);
+bool allocate_ps_pre_post_stdp_for_neuron(Neuron* neuron);
+bool allocate_ps_post_pre_stdp_for_neuron(Neuron* neuron);
 
-bool submit_new_ps_stdp_vals_for_neuron_according_to_pre_synaptic_neuron_group(Neuron* neuron , Network *axon_from_network, unsigned int axon_from_layer, unsigned int axon_from_nrn_grp, unsigned int parker_sochacki_max_order, double STDP_pre_post_change_max, double STDP_pre_post_change_min, double STDP_pre_post_tau_min, double STDP_pre_post_tau_max, double  STDP_post_pre_change_max, double  STDP_post_pre_change_min, double STDP_post_pre_tau_max, double  STDP_post_pre_tau_min);
+bool submit_new_ps_pre_post_stdp_vals_for_neuron(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max);
+
+bool submit_new_ps_pre_post_stdp_vals_for_synapse(Neuron* neuron , double change_min, double change_max, double tau_min, double tau_max, unsigned int synapse);
+
+bool submit_new_ps_pre_post_stdp_vals_for_neuron_according_to_pre_synaptic_neuron_group(Neuron* neuron , Network *axon_from_network, unsigned int axon_from_layer, unsigned int axon_from_nrn_grp, double change_min, double change_max, double tau_min, double tau_max);
 
 #endif

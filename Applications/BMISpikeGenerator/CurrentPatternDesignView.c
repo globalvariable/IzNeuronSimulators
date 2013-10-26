@@ -1042,8 +1042,10 @@ static void copy_drawn_to_template_in_trial_button_func(void)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "! layer_neuron_group_neuron_get_selected().");
 	if (current_num >= current_templates->num_of_in_trial_currents)
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "CurrentPatternDesignView", "copy_drawn_to_template_in_trial_button_func", "current_num >= num_of_in_trial_currents.");	 
+
 	for (i = 0; i < current_templates->in_trial_currents[target_num_idx][current_num].num_of_template_samples; i++)
 		current_templates->in_trial_currents[target_num_idx][current_num].template_samples[i].current_sample[layer_num][nrn_grp_num][nrn_num] = current_pattern_graph->y[i];
+	
 }
 static void copy_drawn_to_template_trial_available_button_func(void)
 {

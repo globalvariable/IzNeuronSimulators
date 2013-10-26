@@ -58,7 +58,7 @@ bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffe
 	unsigned int i;
 	unsigned int neuron_id;
 	SelectedSTDP	*selected_stdp;
-
+	Synapse *synapse;
 	for (i = 0; i < buffer->num_of_selected_synapses; i++)
 	{
 		neuron_id = buffer->selected_stdp[i].neuron_id;   // re-get neuron id for writing into buffer. invalid synapse id due to simulatenous submit_selected_synapse_to_stdp_buffer_limited leads to TRAP.
@@ -69,10 +69,18 @@ bool push_stdp_to_stdp_buffer_limited(Network *network, STDPBufferLimited* buffe
 		switch (selected_stdp->stdp_type)
 		{
 			case STDP_TYPE_PRE_POST:
- 				selected_stdp->stdp[selected_stdp->buff_write_idx] = network->all_neurons[selected_stdp->neuron_id]->stdp_list->stdp_pre_post[selected_stdp->synapse_num];
+				synapse = &(network->all_neurons[selected_stdp->neuron_id]->syn_list->synapses[selected_stdp->synapse_num]);
+				if (synapse->plastic)
+ 					selected_stdp->stdp[selected_stdp->buff_write_idx] = synapse->ps_stdp_pre_post->now;
+				else
+					selected_stdp->stdp[selected_stdp->buff_write_idx] = 0;
 				break;
 			case STDP_TYPE_POST_PRE:
-				selected_stdp->stdp[selected_stdp->buff_write_idx] = network->all_neurons[selected_stdp->neuron_id]->stdp_list->stdp_post_pre[selected_stdp->synapse_num];
+				synapse = &(network->all_neurons[selected_stdp->neuron_id]->syn_list->synapses[selected_stdp->synapse_num]);
+				if (synapse->plastic)
+ 					selected_stdp->stdp[selected_stdp->buff_write_idx] = synapse->ps_stdp_post_pre->now;
+				else
+					selected_stdp->stdp[selected_stdp->buff_write_idx] = 0;
 				break;
 			default: 
 				pthread_mutex_unlock(&(selected_stdp->mutex));

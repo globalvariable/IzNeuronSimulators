@@ -39,16 +39,9 @@ bool initialize_iz_neuron_params(Neuron *nrn, Network *network, unsigned int lay
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->ps_vals was allocated before. Re-use of initialize_neuron_params");		
 	nrn->ps_vals = g_new0(ParkerSochackiPolynomialVals,1);
 	nrn->syn_list = g_new0(SynapseList,1);
-	if (nrn->stdp_list != NULL)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->stdp_list was allocated before. Re-use of initialize_neuron_params");	
-	nrn->stdp_list = g_new0(STDPList, 1);
-	if (nrn->eligibility_list != NULL)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->eligibility_list was allocated before. Re-use of initialize_neuron_params");	
-	nrn->eligibility_list = g_new0(EligibilityList, 1);
-/*	if (nrn->depol_eligibility_list != NULL)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->depol_eligibility_list was allocated before. Re-use of initialize_neuron_params");	
-	nrn->depol_eligibility_list = g_new0(DepolEligibilityList, 1);
-*/	if (nrn->trial_event_buffer != NULL)
+
+
+	if (nrn->trial_event_buffer != NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
 	nrn->trial_event_buffer = allocate_neuron_trial_event_buffer(MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY);
 	if (nrn->trial_event_buffer == NULL)
