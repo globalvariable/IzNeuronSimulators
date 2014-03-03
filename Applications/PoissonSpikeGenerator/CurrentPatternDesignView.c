@@ -553,6 +553,37 @@ bool create_current_pattern_view_gui(void)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_target_num), "Right");    // ignore uncessary string part
 	gtk_combo_box_set_active (GTK_COMBO_BOX(combo_target_num), 0);
 
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
+
+ 	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	lbl = gtk_label_new("Firing Rate: ");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
+        entry_firing_rate = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox),entry_firing_rate, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_firing_rate), "10");
+	gtk_widget_set_size_request(entry_firing_rate, 40, 25) ;
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_apply_firing_rate_to_all = gtk_button_new_with_label("Apply to ALL");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_to_all, TRUE, TRUE, 0);
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_apply_firing_rate_in_trial = gtk_button_new_with_label("InTrial");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_in_trial, TRUE, TRUE, 0);
+	btn_apply_firing_rate_trial_available = gtk_button_new_with_label("TrialAvail");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_trial_available, TRUE, TRUE, 0);
+	btn_apply_firing_rate_in_refractory = gtk_button_new_with_label("InRefrac");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_in_refractory, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 	lbl = gtk_label_new("Trial Status Current Number: ");
@@ -650,35 +681,6 @@ bool create_current_pattern_view_gui(void)
 	gtk_box_pack_start (GTK_BOX (hbox), btn_add_noise_trial_available, TRUE, TRUE, 0);
 	btn_add_noise_in_refractory = gtk_button_new_with_label("InRefrac");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_add_noise_in_refractory, TRUE, TRUE, 0);
-
-        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
-
-
- 	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	lbl = gtk_label_new("Firing Rate: ");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_firing_rate = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox),entry_firing_rate, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_firing_rate), "10");
-	gtk_widget_set_size_request(entry_firing_rate, 40, 25) ;
-
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_apply_firing_rate_to_all = gtk_button_new_with_label("Apply to ALL");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_to_all, TRUE, TRUE, 0);
-
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_apply_firing_rate_in_trial = gtk_button_new_with_label("InTrial");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_in_trial, TRUE, TRUE, 0);
-	btn_apply_firing_rate_trial_available = gtk_button_new_with_label("TrialAvail");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_trial_available, TRUE, TRUE, 0);
-	btn_apply_firing_rate_in_refractory = gtk_button_new_with_label("InRefrac");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_apply_firing_rate_in_refractory, TRUE, TRUE, 0);
 
 
         gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);

@@ -66,6 +66,19 @@ bool initialize_neuron_node(Neuron *nrn, Network *network, unsigned int layer, u
 	if (nrn->axon_list != NULL)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->axon_list was allocated before. Re-use of initialize_neuron_params");	
 	nrn->axon_list = g_new0(NeuronAxonList,1);
+	nrn->syn_list = g_new0(SynapseList,1);
+	if (nrn->trial_event_buffer != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
+	nrn->trial_event_buffer = allocate_neuron_trial_event_buffer(MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY);
+	if (nrn->trial_event_buffer == NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->trial_event_buffer couldn' t be allocated.");	
+	nrn->trial_event_buffer->buff = g_new0(NeuronTrialEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);
+	if (nrn->sorted_event_buffer != NULL)
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Neuron", "initialize_neuron_params", "nrn->sorted_event_buffer  was allocated before. Re-use of initialize_neuron_params");	
+	nrn->sorted_event_buffer = g_new0(NeuronSortedEventBuffer, 1);
+	nrn->sorted_event_buffer->buff = g_new0(NeuronSortedEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);  // It is on purpose, allocate buffer for trial eventsn ow.
+	nrn->sorted_event_buffer->buff_size = NEURON_TRIAL_EVENT_BUFFER_SIZE;
+
 	return TRUE;
 }
 

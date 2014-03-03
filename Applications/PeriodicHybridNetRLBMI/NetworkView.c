@@ -744,13 +744,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "10");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "0.3");
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "10");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "0.3");	
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -790,13 +790,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "50");
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "150");
 	gtk_widget_set_size_request(entry_eligibility_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "50");	
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "150");	
 	gtk_widget_set_size_request(entry_eligibility_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -810,13 +810,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_max_eligibility_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_max_eligibility_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_min), "20");
+	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_min), "1.8");
 	gtk_widget_set_size_request(entry_max_eligibility_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_max_eligibility_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_max_eligibility_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_max), "20");	
+	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_max), "1.8");	
 	gtk_widget_set_size_request(entry_max_eligibility_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);

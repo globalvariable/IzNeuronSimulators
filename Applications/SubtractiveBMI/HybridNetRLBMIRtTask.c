@@ -13,8 +13,6 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args);
 static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args); 
 static void *trial_hand_2_neural_net_msgs_handler(void *args); 
 
-static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, HybridNetRLBMIRewardData *reward_data);
-
 
 void hybrid_net_rl_bmi_create_rt_threads(void)
 {
@@ -54,9 +52,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	RT_TASK *handler;
         RTIME period;
 	unsigned int prev_time, curr_time;
-	TimeStamp integration_start_time, integration_end_time, time_ns;
-	TimeStamp spike_time;
-	bool spike_generated;
+	TimeStamp integration_start_time, integration_end_time;
+
 	unsigned int task_num = *((unsigned int*)args);
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data(); 
 	RtTasksData *rt_tasks_data = bmi_data->rt_tasks_data;
@@ -67,12 +64,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	unsigned int	num_of_all_neurons =  in_silico_network->num_of_neurons;
 	Neuron 		*nrn;
 
-	NeuronDynamicsBufferLimited *neuron_dynamics_buffer_limited = bmi_data->neuron_dynamics_limited_buffer;
-	STDPBufferLimited *stdp_buffer_limited = bmi_data->stdp_limited_buffer;
-	EligibilityBufferLimited *eligibility_buffer_limited = bmi_data->eligibility_limited_buffer;
-	SpikeData	**in_silico_spike_data_for_graph = bmi_data->in_silico_spike_data_for_graph ;
-	SpikeData	**in_silico_spike_data_for_recording = bmi_data->in_silico_spike_data_for_recording ;
-	unsigned int i; 
+
+	unsigned int i, j; 
 	unsigned int num_of_dedicated_cpu_threads;
 	unsigned int cpu_id, cpu_thread_id, cpu_thread_task_id;
 	char task_name[10];
@@ -81,9 +74,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	MovObjHand2NeuralNetMsg *msgs_mov_obj_hand_2_neural_net;
 	MovObjHand2NeuralNetMsgItem msg_item;
 
-	HybridNetRLBMIRewardData *reward_data = &(bmi_data->reward_data);
-	unsigned int target_idx;
-	double reward;
+	unsigned int num_of_rxed_spikes;
 
 	/// share the neurons in between rt_threads;    ie.g there are 21 neurons and 4 dedicated cpu threads. then the cpu threads will have 6 + 6 + 6 + 3 neurons to handle
 	num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
@@ -139,40 +130,13 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_REINFORCEMENT:
-					printf("reinf %d\n", msg_item.additional_data.binary_reward_add.reward);
-					target_idx = msg_item.additional_data.binary_reward_add.target_idx;	// target idx is sent to neural net throughout the trial.
-					if (msg_item.additional_data.binary_reward_add.reward > 0)  // LTP
-					{					
-						reward_data->R[target_idx] = (1.0/REWARD_WINDOW_SIZE) + (reward_data->R[target_idx]*((REWARD_WINDOW_SIZE-1)/REWARD_WINDOW_SIZE));
-						reward = reward_data->R[target_idx] * reward_data->R_prediction_reward[target_idx];
-						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, reward_data);
-					}
-					else	if (msg_item.additional_data.binary_reward_add.reward < 0)	// LTD
-					{
-						reward_data->R[target_idx] = (-1.0/REWARD_WINDOW_SIZE) + (reward_data->R[target_idx]*((REWARD_WINDOW_SIZE-1)/REWARD_WINDOW_SIZE));		
-						reward = reward_data->R[target_idx] * reward_data->R_prediction_reward[target_idx];
-						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, reward_data);
-					}		
-					else
-					{
-						// do nothing, no significant change in robot position.
-					}	
+	
 					break;	
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_END_TRIAL_W_REWARD:
-					printf("end w rew\n");
-					target_idx = msg_item.additional_data.binary_reward_add.target_idx;	// target idx is sent to neural net throughout the trial.
-					reward_data->R[0] = 0;
-					reward_data->R[1] = 0;
-					reward_data->R_prediction_error[target_idx] = (1.0/PREDICTION_ERROR_WINDOW_SIZE) + (reward_data->R_prediction_error[target_idx]*((PREDICTION_ERROR_WINDOW_SIZE-1)/PREDICTION_ERROR_WINDOW_SIZE));
-					reward_data->R_prediction_reward[target_idx] = 1- reward_data->R_prediction_error[target_idx];
+
 					break;	
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_END_TRIAL_W_PUNISH:
-					printf("end w pnsh\n");
-					target_idx = msg_item.additional_data.binary_reward_add.target_idx;	// target idx is sent to neural net throughout the trial.
-					reward_data->R[0] = 0;
-					reward_data->R[1] = 0;
-					reward_data->R_prediction_error[target_idx] = reward_data->R_prediction_error[target_idx]*((PREDICTION_ERROR_WINDOW_SIZE-1)/PREDICTION_ERROR_WINDOW_SIZE);
-					reward_data->R_prediction_reward[target_idx] = 1- reward_data->R_prediction_error[target_idx];
+
 					break;	
 				default:
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "mov_obj_hand_2_neural_net_msgs_handler", "Invalid message.");	
@@ -182,41 +146,22 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 
 		// start integrations
 		integration_end_time =  ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
-		for (time_ns = integration_start_time; time_ns < integration_end_time; time_ns+= PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)   // integrate remaining part in the next task period
+
+		for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
 		{
-			for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
+			nrn = all_neurons[i];
+			if (! evaluate_node_inputs (nrn, &num_of_rxed_spikes, integration_start_time, integration_end_time)) {
+				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_node_inputs()."); exit(1); }	
+			for (j =0; j < num_of_rxed_spikes; j++)
 			{
-				nrn = all_neurons[i];
-				if (nrn->iz_params == NULL)
+				if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
 				{
-					if (! evaluate_poisson_neuron(nrn, &spike_generated, &spike_time, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE)) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_poisson_neuron()."); exit(1); }	
-					if (spike_generated)
-					{
-						write_to_spike_data(in_silico_spike_data_for_graph[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);  // since exluding poisson neurons via using allocate_network_spike_pattern_graph_scroll_exclude_poisson
-						write_to_spike_data(in_silico_spike_data_for_recording[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
-					}
-				}
-				else
-				{
-					if (! evaluate_neuron_dyn_pre_post_stdp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_psddp_elig()."); exit(1); }	
-					if (spike_generated)
-					{
-						write_to_spike_data(in_silico_spike_data_for_graph[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
-						write_to_spike_data(in_silico_spike_data_for_recording[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
-						if (nrn->layer_type == NEURON_LAYER_TYPE_OUTPUT)
-						{
-							if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time)) {
-								print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_to_neural_net_2_mov_obj_hand_msg_buffer()."); exit(1); }	
-						}
-					}	
-					push_neuron_dynamics_to_neuron_dynamics_buffer_limited(in_silico_network, neuron_dynamics_buffer_limited, time_ns, i);
-					push_stdp_to_stdp_buffer_limited(in_silico_network, stdp_buffer_limited, time_ns, i);
-					push_eligibility_to_eligibility_buffer_limited(in_silico_network, eligibility_buffer_limited, time_ns, i);
+					if (! write_to_neural_net_2_mov_obj_hand_msg_buffer((*msgs_neural_net_2_mov_obj_hand_multi_thread)[task_num], integration_start_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_SPIKE_OUTPUT, nrn->layer, nrn->neuron_group, nrn->neuron_num, integration_end_time)) {
+						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! write_to_neural_net_2_mov_obj_hand_msg_buffer()."); exit(1); }	
 				}
 			}
 		}
+
 		integration_start_time = integration_end_time;
 		// routines	
 		evaluate_and_save_period_run_time(rt_tasks_data, cpu_id, cpu_thread_id, cpu_thread_task_id, curr_time, rt_get_cpu_time_ns());		
@@ -274,6 +219,7 @@ static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args)
 			unit_or_neuron = spike_time_stamp_item->unit_or_neuron;
 			spike_time = spike_time_stamp_item->peak_time;
 			blue_spike_neuron = get_neuron_address(blue_spike_network, mwa_or_layer, channel_or_neuron_group, unit_or_neuron);
+
 			if (!schedule_synaptic_event(blue_spike_neuron, spike_time)) {
 				print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_blue_spike_rt_handler", "! schedule_event()."); exit(1); }
 			write_to_spike_data(blue_spike_spike_data_for_graph[0], mwa_or_layer, channel_or_neuron_group, unit_or_neuron, spike_time);	
@@ -509,47 +455,4 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 }
 */
 
-static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, HybridNetRLBMIRewardData *reward_data)
-{
-	unsigned int i, j;
-	Neuron *nrn;
-	Synapse			*synapses;
-	SynapseIndex		num_of_synapses; 
-	double	E, dw, E_max, E_ltp, E_ltd;  // eligibility
-	double weight;
-	for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
-	{
-		nrn = all_neurons[i];
-		if (nrn->iz_params == NULL)
-			continue;
-		synapses = nrn->syn_list->synapses;
-		num_of_synapses = nrn->syn_list->num_of_synapses;
-		for (j = 0; j < num_of_synapses; j++)
-		{
-			if (! synapses[j].plastic)
-				continue;
-			E = synapses[j].ps_eligibility->now;
-			E_max = synapses[j].ps_eligibility->max_eligibility;
-			if (reward > 0)    // LTP
-			{
-				E_ltp = E;
-				dw = (reward * E_ltp);
-				dw = synapses[j].weight * dw * reward_data->learning_rate;
-				synapses[j].weight += dw; 
-			}
-			else
-			{
-				E_ltd = pow (E, 3.0);
-				dw = (reward * E_ltd);		// E_ltd is always positive.  reward <=0 for ltd then dw is always negative.
-				dw = synapses[j].weight * dw * reward_data->learning_rate;
-				weight = synapses[j].weight + dw;
-				if (weight < 0.1)
-					synapses[j].weight = 0.1; 
-				else
-					synapses[j].weight = weight; 
-			}
-		}
 
-	}
-	return;
-}

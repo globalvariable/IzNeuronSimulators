@@ -166,7 +166,7 @@ static bool add_neurons_to_network(Network *network)
 	{
 		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
 		{
-			if (!add_poisson_neurons_to_layer(network, 1, i, FALSE,  0))
+			if (!add_poisson_neurons_to_layer(network, 2, i, FALSE,  0))
 				return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorConfig", "add_neurons_to_network", "! add_poisson_neurons_to_layer().");					
 		}
 	}

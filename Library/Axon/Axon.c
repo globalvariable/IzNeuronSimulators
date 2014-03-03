@@ -40,6 +40,8 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 	if (weight_inhibitory_max<=0)
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "weight_excitatory_max<=0.");
  	
+	if (search_identical_axon (this_neuron, target_neuron))	// this neurons is previously connected to target neuron. no re-connection is allowed.
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon", "search_identical_axon (this_neuron, target_neuron).");
 
 	if (this_neuron->inhibitory)
 	{
@@ -82,7 +84,6 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 
 			ptr_neuron_axon_list->to[i] = target_neuron;
 			ptr_neuron_axon_list->delay[i]  = (AxonalDelay) ((IPSP_delay_max-IPSP_delay_min) * get_rand_number() + IPSP_delay_min); 
-			printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
 			ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
 			ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
 			ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
@@ -161,7 +162,6 @@ bool create_axon(Neuron *this_neuron, Neuron *target_neuron, SynapticWeight weig
 	
 			ptr_neuron_axon_list->to[i] = target_neuron;
 			ptr_neuron_axon_list->delay[i]  = (AxonalDelay)  ((EPSP_delay_max-EPSP_delay_min) * get_rand_number() + EPSP_delay_min); 
-			printf ("%u\n", ptr_neuron_axon_list->delay[i]);	
 			ptr_neuron_axon_list->syn_idx[i] = ptr_post_neuron_synapse_list->num_of_synapses;    // connected to which synapse (dendrite) of the post synaptic neuron
 			ptr_neuron_axon_list->target_layer[i] = target_neuron->layer;
 			ptr_neuron_axon_list->target_neuron_group[i] = target_neuron->neuron_group;
@@ -223,6 +223,9 @@ bool create_axon_with_values(Neuron *this_neuron, Neuron *target_neuron, Synapti
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "(this_neuron->inhibitory) && (weight >= 0).");
 	if ((! this_neuron->inhibitory) && (weight <= 0))
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "(! this_neuron->inhibitory) && (weight <= 0).");
+
+	if (search_identical_axon (this_neuron, target_neuron))	// this neurons is previously connected to target neuron. no re-connection is allowed.
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Axon", "create_axon_with_values", "search_identical_axon (this_neuron, target_neuron).");
 
 	if (this_neuron->inhibitory)
 	{
@@ -384,4 +387,18 @@ void destroy_neuron_axon_list(Neuron *neuron)
 	return;
 }
 
+bool search_identical_axon (Neuron *this_neuron, Neuron *target_neuron)
+{
+	unsigned int		i, num_of_axons;	
+	Neuron 			**to;
 
+	num_of_axons = this_neuron->axon_list->num_of_axons;
+	to = this_neuron->axon_list->to;
+
+	for (i = 0; i < num_of_axons; i++)
+	{
+		if (to[i] == target_neuron)
+			return TRUE;		// this neuron is connected to target neuron previously.
+	}
+	return FALSE;
+}

@@ -65,11 +65,12 @@ bool set_output_layers(HybridNetRLBMIData *bmi_data)
 bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 {
 	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
-	unsigned int i;
+	unsigned int i, j, k, cntr = 0;
+	TemplateMatchingData			*template_matching_data = bmi_data->template_matching_data;
 
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_probability = 0.7;
-	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 3;
-	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min = 3;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 7;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min = 7;
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 
@@ -81,17 +82,33 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
 	{
-		if (! connect_layers(bmi_data->blue_spike_network, i, bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, synapse_data->blue_spike_2_in_silico_excitatory_connection_probability, synapse_data->blue_spike_2_in_silico_inhibitory_connection_probability, TRUE, FALSE))
-			return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_layers().");
+		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
+		{
+			for (k = 0; k < 2; k++)
+			{
+				if (! ((*template_matching_data)[i][j][k].include_unit))
+					continue;
+				if ((cntr % 3) == 0)
+				{
+					if (! connect_neurons(bmi_data->blue_spike_network, i, j, k, bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, 0, 0, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, TRUE, FALSE))
+						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_neurons().");
+				}
+				else if ((cntr % 3) == 1)
+				{
+					if (! connect_neurons(bmi_data->blue_spike_network, i, j, k, bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, 0, 0, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, TRUE, FALSE))
+						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_neurons().");
+				}
+				else if ((cntr % 3) == 2)
+				{
+					if (! connect_neurons(bmi_data->blue_spike_network, i, j, k, bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, 0, 0, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, TRUE, FALSE))
+						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_neurons().");
+					if (! connect_neurons(bmi_data->blue_spike_network, i, j, k, bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, 0, 0, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, TRUE, FALSE))
+						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_neurons().");
+				}
+				cntr++;
+			}
+		}
 	}
-
-	for (i=0; i < MAX_NUM_OF_MWA; i++)
-	{
-		if (! connect_layers(bmi_data->blue_spike_network, i, bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, synapse_data->blue_spike_2_in_silico_excitatory_connection_probability, synapse_data->blue_spike_2_in_silico_inhibitory_connection_probability, TRUE, FALSE))
-			return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_layers().");
-	}
-
-
 	return TRUE;
 }
 
@@ -108,8 +125,8 @@ bool connect_medium_spiny_neurons(HybridNetRLBMIData *bmi_data)
 	synapse_data->spiny_2_spiny_neuron_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_probability = 1;
-	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_max = 75;
-	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_min = 75;
+	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_max = 100;
+	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_min = 100;
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 
@@ -128,8 +145,8 @@ bool connect_babling_2_medium_spiny_neurons(HybridNetRLBMIData *bmi_data)
 	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
 
 	synapse_data->babling_2_spiny_neuron_excitatory_connection_probability = 1;
-	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_max = 6;
-	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_min = 6;
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_max = 7;
+	synapse_data->babling_2_spiny_neuron_excitatory_connection_weight_min = 7;
 	synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->babling_2_spiny_neuron_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 

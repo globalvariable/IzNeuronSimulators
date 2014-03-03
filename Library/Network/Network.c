@@ -657,3 +657,27 @@ unsigned int get_num_of_poisson_neurons_in_network_slow(Network *network)  // fo
 	return num_of_poisson_neurons;
 }
 
+
+
+bool connect_neurons(Network *this_network, unsigned int this_layer, unsigned int this_neuron_group, unsigned int this_neuron_num, Network *target_network, unsigned int target_layer, unsigned int target_neuron_group, unsigned int target_neuron_num, SynapticWeight weight_excitatory_max, SynapticWeight weight_excitatory_min, SynapticWeight weight_inhibitory_max, SynapticWeight weight_inhibitory_min, AxonalDelay EPSP_delay_max, AxonalDelay EPSP_delay_min, AxonalDelay IPSP_delay_max, AxonalDelay IPSP_delay_min, AxonalDelay delay_hard_max, AxonalDelay delay_hard_min, bool excitatory_plastic, bool inhibitory_plastic)
+{
+	Neuron * this_neuron, *target_neuron;
+	bool neuron_connected;
+
+	this_neuron = get_neuron_address(this_network, this_layer, this_neuron_group, this_neuron_num);
+	target_neuron = get_neuron_address(target_network, target_layer, target_neuron_group, target_neuron_num);			
+	
+
+	if (!create_axon(this_neuron, target_neuron, weight_excitatory_max, weight_excitatory_min, weight_inhibitory_max, weight_inhibitory_min, EPSP_delay_min, EPSP_delay_max, IPSP_delay_min, IPSP_delay_max, delay_hard_min, delay_hard_max, 1.0, 1.0, &neuron_connected, excitatory_plastic, inhibitory_plastic))
+		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Network", "connect_neurons", "! create_axon().");		
+	if (neuron_connected)
+	{
+		printf ("Connected --- Layer: %u\tNeuron Group:%u\tNeuron:%u\t----->Layer: %u\tNeuron Group:%u\tNeuron:%u\n", this_layer, this_neuron_group, this_neuron_num, target_layer, target_neuron_group,  target_neuron_num);
+	}
+	else
+	{
+		return print_message(BUG_MSG ,"IzNeuronSimulators", "Network", "connect_neurons", "! neuron_connected.");			
+	}
+
+	return TRUE;
+}

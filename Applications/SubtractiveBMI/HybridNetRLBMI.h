@@ -40,52 +40,6 @@ struct __HybridNetRLBMISynapseData
 	double						blue_spike_2_in_silico_inhibitory_connection_weight_min;
 	double						blue_spike_2_in_silico_inhibitory_connection_delay_max;
 	double						blue_spike_2_in_silico_inhibitory_connection_delay_min;
-
-	double						spiny_2_spiny_neuron_excitatory_connection_probability;
-	double						spiny_2_spiny_neuron_excitatory_connection_weight_max;
-	double						spiny_2_spiny_neuron_excitatory_connection_weight_min;
-	double						spiny_2_spiny_neuron_excitatory_connection_delay_max;
-	double						spiny_2_spiny_neuron_excitatory_connection_delay_min;
-
-	double						spiny_2_spiny_neuron_inhibitory_connection_probability;
-	double						spiny_2_spiny_neuron_inhibitory_connection_weight_max;
-	double						spiny_2_spiny_neuron_inhibitory_connection_weight_min;
-	double						spiny_2_spiny_neuron_inhibitory_connection_delay_max;
-	double						spiny_2_spiny_neuron_inhibitory_connection_delay_min;
-
-
-	double						poisson_2_babling_neuron_excitatory_connection_probability;
-	double						poisson_2_babling_neuron_excitatory_connection_weight_max;
-	double						poisson_2_babling_neuron_excitatory_connection_weight_min;
-	double						poisson_2_babling_neuron_excitatory_connection_delay_max;
-	double						poisson_2_babling_neuron_excitatory_connection_delay_min;
-
-	double						poisson_2_babling_neuron_inhibitory_connection_probability;
-	double						poisson_2_babling_neuron_inhibitory_connection_weight_max;
-	double						poisson_2_babling_neuron_inhibitory_connection_weight_min;
-	double						poisson_2_babling_neuron_inhibitory_connection_delay_max;
-	double						poisson_2_babling_neuron_inhibitory_connection_delay_min;
-
-	double						babling_2_spiny_neuron_excitatory_connection_probability;
-	double						babling_2_spiny_neuron_excitatory_connection_weight_max;
-	double						babling_2_spiny_neuron_excitatory_connection_weight_min;
-	double						babling_2_spiny_neuron_excitatory_connection_delay_max;
-	double						babling_2_spiny_neuron_excitatory_connection_delay_min;
-
-	double						babling_2_spiny_neuron_inhibitory_connection_probability;
-	double						babling_2_spiny_neuron_inhibitory_connection_weight_max;
-	double						babling_2_spiny_neuron_inhibitory_connection_weight_min;
-	double						babling_2_spiny_neuron_inhibitory_connection_delay_max;
-	double						babling_2_spiny_neuron_inhibitory_connection_delay_min;
-};
-
-struct __HybridNetRLBMIRewardData		
-{
-	unsigned int		num_of_targets;
-	double			*R;		// num_of_targets;
-	double			*R_prediction_error;		// num_of_targets;
-	double			*R_prediction_reward;		// num_of_targets;
-	double			learning_rate;
 };
 
 struct __HybridNetRLBMIData		
@@ -95,9 +49,6 @@ struct __HybridNetRLBMIData
 	TemplateMatchingData			*template_matching_data;
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
-	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;
-	STDPBufferLimited			*stdp_limited_buffer;
-	EligibilityBufferLimited			*eligibility_limited_buffer;
 	SpikeData					**blue_spike_spike_data_for_graph;   // for visualization
 	SpikeData					**in_silico_spike_data_for_graph;  // for visualization  // each thread writes to one buffer.
 	SpikeData					**in_silico_spike_data_for_recording;  // for recording to hdd // each thread writes to one buffer.
@@ -109,10 +60,7 @@ struct __HybridNetRLBMIData
 	TrialStatusEvents				*trial_status_events;   // to show status changed in graphs
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
-	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
-	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	HybridNetRLBMISynapseData	synapse_data;
-	HybridNetRLBMIRewardData	reward_data;
 };
 
 

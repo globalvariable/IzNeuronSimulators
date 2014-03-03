@@ -37,11 +37,6 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->in_silico_spike_data_for_graph = g_new0(SpikeData*, hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads);	// allocate the array of buffers here. 
 	hybrid_net_rl_bmi_data->in_silico_spike_data_for_recording = g_new0(SpikeData*, hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads); // allocate the array of buffers here.  a recording message which is received before "ready_for_simulation" button can lead to segfault. since read_idx and write_idx are zero here, they will not try to access the buffers (refer to get_next_spike_data_item())
 
-	hybrid_net_rl_bmi_data->reward_data.num_of_targets = 2;
-	hybrid_net_rl_bmi_data->reward_data.R = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.R_prediction_error = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.R_prediction_reward = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-
 	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }
 
@@ -51,20 +46,14 @@ int main( int argc, char *argv[])
 	if (! add_neurons_for_external_and_in_silico_network(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! prepare_external_and_in_silico_network()."); return -1; }	
 
-	if (! submit_parker_sochacki_integration_precision(hybrid_net_rl_bmi_data)) {
+/*	if (! submit_parker_sochacki_integration_precision(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! submit_parker_sochacki_integration_precision()."); return -1; }
-
+*/
 	if (! set_output_layers(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! set_output_layers()."); return -1; }
 
 	if (! connect_external_to_in_silico_network(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_external_to_in_silico_network()."); return -1; }
-
-	if (! connect_medium_spiny_neurons(hybrid_net_rl_bmi_data)) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_medium_spiny_neurons()."); return -1; }
-
-	if (! connect_babling_2_medium_spiny_neurons(hybrid_net_rl_bmi_data)) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_babling_2_medium_spiny_neurons()."); return -1; }
 
 	initialize_data_read_write_handlers();
 
