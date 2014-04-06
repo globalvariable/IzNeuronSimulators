@@ -11,7 +11,7 @@
 bool create_spike_pattern_buffer_view_gui(void);
 NetworkSpikePatternGraphScroll* get_generated_spike_pattern_graph_ptr(void);
 
-
+void send_global_pause_button_sensitive_request(void);
 
 
 

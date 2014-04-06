@@ -6,11 +6,13 @@ static bool bmi_simulation_spike_generator_rt_task_stay_alive = 1;
 static void *bmi_simulation_spike_generator_rt_handler(void *args); 
 static bool bmi_simulation_spike_generator_integration_handler(TimeStamp integration_start_time, TimeStamp integration_end_time, unsigned int num_of_neurons);
 
+static bool write_generated_spike_to_blue_spike_buffer(SortedSpikes *sorted_spike_time_stamp, unsigned int layer_num, unsigned int neuron_grp_num, unsigned int neuron_num, TimeStamp spike_time);
+
 static SpikeData **generated_spike_data;
 static TrialHandParadigmRobotReach *paradigm = NULL;
 static TrialStatusEvents *trial_status_events = NULL;
 static Network *network = NULL;
-static SpikeTimeStamp *spike_time_stamp = NULL;
+static SortedSpikes *spike_time_stamp = NULL;
 static CurrentTemplate *current_templates = NULL;
 static CurrentPatternBufferLimited *limited_current_pattern_buffer = NULL;
 static NeuronDynamicsBufferLimited *limited_neuron_dynamics_buffer = NULL;
@@ -51,22 +53,22 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 	trial_status_events = spike_gen_data->trial_status_events;
 	trial_status_change_msg_add.new_trial_status = TRIAL_STATUS_TRIALS_DISABLED;
 	trial_status_change_msg_add.new_robot_target_position_idx = 0;
-	schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, trial_status_change_msg_add) ; 
+	schedule_trial_status_event(trial_status_events, rt_tasks_data->current_periodic_system_time, trial_status_change_msg_add) ; 
 
 
 	g_free(message);
 	message = g_new0(char, 200);
-	if (! check_rt_task_specs_to_init(rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, SPIKE_GENERATOR_PERIOD))  {
+	if (! check_rt_task_specs_to_init(rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, SPIKE_GENERATOR_PERIOD, FALSE))  {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
         if (! (handler = rt_task_init_schmod(SPIKE_GENERATOR_TASK_NAME, SPIKE_GENERATOR_TASK_PRIORITY, SPIKE_GENERATOR_STACK_SIZE, SPIKE_GENERATOR_MSG_SIZE,SPIKE_GENERATOR_POLICY, 1 << ((SPIKE_GENERATOR_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU)+SPIKE_GENERATOR_CPU_THREAD_ID)))) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "handler = rt_task_init_schmod()."); exit(1); }
-	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, SPIKE_GENERATOR_PERIOD, SPIKE_GENERATOR_POSITIVE_JITTER_THRES, SPIKE_GENERATOR_NEGATIVE_JITTER_THRES, "SpikeGenerator"))  {
+	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, SPIKE_GENERATOR_PERIOD, SPIKE_GENERATOR_POSITIVE_JITTER_THRES, SPIKE_GENERATOR_NEGATIVE_JITTER_THRES, "SpikeGenerator", FALSE))  {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! write_rt_task_specs_to_rt_tasks_data()."); exit(1); }	
 
         period = nano2count(SPIKE_GENERATOR_PERIOD);
         rt_task_make_periodic(handler, rt_get_time() + period, period);
 	prev_time = rt_get_cpu_time_ns();	
-	integration_start_time = ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	integration_start_time = ((rt_tasks_data->current_periodic_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	reset_all_network_iz_neuron_dynamics (network);
 	num_of_neurons = get_num_of_neurons_in_network(network);
         mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -78,7 +80,7 @@ static void *bmi_simulation_spike_generator_rt_handler(void *args)
 		evaluate_and_save_jitter(rt_tasks_data, SPIKE_GENERATOR_CPU_ID, SPIKE_GENERATOR_CPU_THREAD_ID, SPIKE_GENERATOR_CPU_THREAD_TASK_ID, prev_time, curr_time);
 		prev_time = curr_time;
 		// routines
-		integration_end_time =  ((rt_tasks_data->current_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+		integration_end_time =  ((rt_tasks_data->current_periodic_system_time)/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 		if(! bmi_simulation_spike_generator_integration_handler(integration_start_time, integration_end_time, num_of_neurons)) {
 			print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "bmi_simulation_spike_generator_rt_handler", "! bmi_simulation_spike_generator_integration_handler()."); exit(1); }
 		integration_start_time = integration_end_time;
@@ -384,4 +386,21 @@ void bmi_simulation_spike_generator_kill_rt_task(void)
 	bmi_simulation_spike_generator_rt_task_stay_alive = 0;
 }
 
+static bool write_generated_spike_to_blue_spike_buffer(SortedSpikes *sorted_spike_time_stamp, unsigned int layer_num, unsigned int neuron_grp_num, unsigned int neuron_num, TimeStamp spike_time)
+{
+	SortedSpikeItem	*sorted_spike_chan_buff;
+	int sorted_spike_buff_idx_write;
 
+	sorted_spike_chan_buff = (*sorted_spike_time_stamp)[layer_num][neuron_grp_num].buffer;
+	sorted_spike_buff_idx_write = (*sorted_spike_time_stamp)[layer_num][neuron_grp_num].buff_idx_write;
+
+	sorted_spike_chan_buff[sorted_spike_buff_idx_write].peak_time = spike_time;
+	sorted_spike_chan_buff[sorted_spike_buff_idx_write].unit = neuron_num;
+
+	if ((sorted_spike_buff_idx_write +1) ==  BLUESPIKE_SORTED_SPIKE_BUFF_SIZE )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
+		(*sorted_spike_time_stamp)[layer_num][neuron_grp_num].buff_idx_write = 0;
+	else
+		((*sorted_spike_time_stamp)[layer_num][neuron_grp_num].buff_idx_write)++;	
+	
+	return TRUE;			
+}

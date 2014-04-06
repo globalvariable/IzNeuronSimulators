@@ -7,14 +7,11 @@
 #define GRAPH_LENGTHS				3000000000ULL	
 #define GRAPH_SCROLL_LENGTHS		1000000000ULL	
 
-#include "NeuronDynamicsCurrentBufferView.h"
 #include "SpikePatternBufferView.h"
 
 bool buffer_view_handler(void);
 void send_global_resume_request_to_buffer_view_handler(void);
 void send_global_pause_request_to_buffer_view_handler(void);
-bool send_current_pattern_graph_resume_request_to_buffer_view_handler(void);
-bool send_neuron_dynamics_graph_resume_request_to_buffer_view_handler(void);
 bool send_spike_pattern_graph_resume_request_to_buffer_view_handler(void);
 bool is_buffer_view_handler_paused(void);
 

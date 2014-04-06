@@ -3,7 +3,7 @@
 static Network *blue_spike_network = NULL;
 static Network *in_silico_network = NULL;
 
-static RtTasksData *rt_tasks_data = NULL;
+static RtTasksData *static_rt_tasks_data = NULL;
 
 
 static NetworkSpikePatternGraphScroll *blue_spike_spike_graph;
@@ -23,7 +23,7 @@ bool buffer_view_handler(void)
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
 	blue_spike_network = bmi_data->blue_spike_network;
 	in_silico_network = bmi_data->in_silico_network;
-	rt_tasks_data = bmi_data->rt_tasks_data;
+	static_rt_tasks_data = bmi_data->rt_tasks_data;
 
 	if (!create_blue_spike_spike_pattern_view_gui())
 		return  print_message(ERROR_MSG ,"IzNeuronSimulators", "HybridNetRLBMI", "buffer_view_handler","! create_blue_spike_spike_pattern_view_gui().");
@@ -40,7 +40,7 @@ static gboolean timeout_callback(gpointer user_data)
 {
 	TimeStamp current_system_time;
 
-	current_system_time = (rt_tasks_data->current_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	current_system_time = ((*(get_hybrid_net_rl_bmi_data()->sys_time_ptr))/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	if (buffer_visualization_global_pause_request)
 	{
 		buffer_view_handler_paused_global = TRUE;

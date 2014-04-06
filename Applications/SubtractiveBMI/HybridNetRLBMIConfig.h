@@ -20,7 +20,7 @@
 bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data);
 bool submit_parker_sochacki_integration_precision(HybridNetRLBMIData *bmi_data);
 bool set_output_layers(HybridNetRLBMIData *bmi_data);
-bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data);
+
 
 
 #endif

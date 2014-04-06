@@ -6,10 +6,10 @@
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 typedef struct __HybridNetRLBMISynapseData HybridNetRLBMISynapseData;
 typedef struct __HybridNetRLBMIRewardData HybridNetRLBMIRewardData;
+#include "Compile.h"
 #include "Gui.h"
 #include "HybridNetRLBMIConfig.h"
-#include "../../../BlueSpike/TemplateMatchingData.h"
-#include "../../../BlueSpike/SpikeTimeStamp.h"
+#include "../../../BlueSpike/Applications/PCIe6259/SortedSpikes.h"
 #include "../../../BlueSpike/System/ShmSemNum/ShmSemNum.h"
 #include "../../../BlueSpike/System/RtTasksData/RtTasksData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
@@ -90,9 +90,8 @@ struct __HybridNetRLBMIRewardData
 
 struct __HybridNetRLBMIData		
 {
-	SpikeTimeStamp				*sorted_spike_time_stamp;    /// spike time stamps from biological neurons // sorted according to unit, not according to spike time.
+	SortedSpikes 					*sorted_spike_time_stamp;    /// spike time stamps from biological neurons // sorted according to unit, not according to spike time.
 	RtTasksData					*rt_tasks_data;
-	TemplateMatchingData			*template_matching_data;
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
 	NeuronDynamicsBufferLimited	*neuron_dynamics_limited_buffer;
@@ -113,6 +112,7 @@ struct __HybridNetRLBMIData
 	ExponentialAngularSpindleGroup	*angle_sensitive_spindles[THREE_DOF_ROBOT_NUM_OF_SERVOS];
 	HybridNetRLBMISynapseData	synapse_data;
 	HybridNetRLBMIRewardData	reward_data;
+	TimeStamp					*sys_time_ptr;
 };
 
 

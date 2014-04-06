@@ -48,7 +48,7 @@ static gboolean timeout_callback(gpointer user_data)
 	unsigned int buffer_write_idx;
 	TimeStamp last_sample_time;
 
-	current_system_time = (rt_tasks_data->current_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
+	current_system_time = (rt_tasks_data->current_periodic_system_time/PARKER_SOCHACKI_INTEGRATION_STEP_SIZE) *PARKER_SOCHACKI_INTEGRATION_STEP_SIZE;
 	if (buffer_visualization_global_pause_request)
 	{
 		buffer_view_handler_paused_global = TRUE;

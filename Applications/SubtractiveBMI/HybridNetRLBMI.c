@@ -17,15 +17,22 @@ int main( int argc, char *argv[])
 
 	hybrid_net_rl_bmi_data = g_new0(HybridNetRLBMIData, 1);
 
-	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_KERNEL_SPIKE_SPIKE_TIME_STAMP, 0);
+	hybrid_net_rl_bmi_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_BLUESPIKE_SORTED_SPIKES, 0);
 	if (hybrid_net_rl_bmi_data->sorted_spike_time_stamp == NULL) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->sorted_spike_time_stamp == NULL."); return -1; }
+
 	hybrid_net_rl_bmi_data->rt_tasks_data = rtai_malloc(SHM_NUM_RT_TASKS_DATA, 0);
 	if (hybrid_net_rl_bmi_data->rt_tasks_data == NULL) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->rt_tasks_data == NULL."); return -1; }
-	hybrid_net_rl_bmi_data->template_matching_data = rtai_malloc(SHM_NUM_KERNEL_SPIKE_TEMPLATE_MATCHING, 0);
-	if (hybrid_net_rl_bmi_data->template_matching_data == NULL) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "hybrid_net_rl_bmi_data->template_matching_data == NULL."); return -1; }
+
+#ifdef	SIMULATION_MODE
+	hybrid_net_rl_bmi_data->sys_time_ptr = &(hybrid_net_rl_bmi_data->rt_tasks_data->current_periodic_system_time);
+#else
+	hybrid_net_rl_bmi_data->sys_time_ptr = &(hybrid_net_rl_bmi_data->rt_tasks_data->current_daq_system_time);
+	if (*(hybrid_net_rl_bmi_data->sys_time_ptr) == 0) {
+		return print_message(ERROR_MSG ,"ExpEnviHandler", "ExpEnviHandler", "main", "    *  (hybrid_net_rl_bmi_data->sys_time_ptr) == 0.");return -1; }
+#endif	
+
 	hybrid_net_rl_bmi_data->blue_spike_network = allocate_network(hybrid_net_rl_bmi_data->blue_spike_network);
 	hybrid_net_rl_bmi_data->in_silico_network = allocate_network(hybrid_net_rl_bmi_data->in_silico_network);
 	hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net = allocate_shm_server_trial_hand_2_neural_net_msg_buffer(hybrid_net_rl_bmi_data->msgs_trial_hand_2_neural_net);
@@ -52,8 +59,6 @@ int main( int argc, char *argv[])
 	if (! set_output_layers(hybrid_net_rl_bmi_data)) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! set_output_layers()."); return -1; }
 
-	if (! connect_external_to_in_silico_network(hybrid_net_rl_bmi_data)) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_external_to_in_silico_network()."); return -1; }
 
 	initialize_data_read_write_handlers();
 
@@ -88,7 +93,7 @@ static bool connect_to_trial_hand(void )
 					sleep(1);
 					if (hybrid_net_rl_bmi_data->msgs_neural_net_2_trial_hand == NULL)
 						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_trial_hand", "msgs_neural_net_2_trial_hand == NULL.");	
-					if (!write_to_neural_net_2_trial_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_trial_hand, hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_TRIAL_HAND_MSG_I_AM_ALIVE, 0))
+					if (!write_to_neural_net_2_trial_hand_msg_buffer(hybrid_net_rl_bmi_data->msgs_neural_net_2_trial_hand, *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_TRIAL_HAND_MSG_I_AM_ALIVE, 0))
 						return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_trial_hand", "write_to_neural_net_2_trial_hand_msg_buffer().");	
 					print_message(INFO_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_trial_hand", "Connection to TRIAL_HANDLER is successful!!!");	
 					return TRUE;		
@@ -122,7 +127,7 @@ static bool connect_to_mov_obj_hand(void )
 						usleep(1000);
 						if (((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i]) == NULL)
 							return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "msgs_neural_net_2_mov_obj_hand == NULL.");	
-						if (!write_to_neural_net_2_mov_obj_hand_msg_buffer((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i], hybrid_net_rl_bmi_data->rt_tasks_data->current_system_time, NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, 0, 0, 0, 0))
+						if (!write_to_neural_net_2_mov_obj_hand_msg_buffer((*(hybrid_net_rl_bmi_data->msgs_neural_net_2_mov_obj_hand_multi_thread))[i], *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_MOV_OBJ_HAND_MSG_I_AM_ALIVE, 0, 0, 0, 0))
 							return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "connect_to_mov_obj_hand", "write_to_neural_net_2_mov_obj_hand_msg_buffer().");	
 						num_of_alive_responses++;
 						if (num_of_alive_responses == (NUM_OF_NEURAL_NET_2_MOV_OBJ_HAND_MSG_BUFFERS))

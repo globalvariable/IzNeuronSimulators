@@ -74,6 +74,8 @@ static GtkWidget *btn_connect_external_layer_to_internal_layer;
 static GtkWidget *entry_external_layer_num_to_connect;
 static GtkWidget *entry_internal_layer_num_to_connect_external_layer_to;
 
+static GtkWidget *btn_create_default_network;
+
 // SECOND COLUMN
 static GtkWidget *entry_STDP_layer;
 static GtkWidget *entry_STDP_neuron_group;
@@ -129,6 +131,8 @@ static void make_output_button_func(void);
 
 static void connect_internal_layer_to_internal_layer_button_func(void);
 static void connect_external_layer_to_internal_layer_button_func(void);
+
+static void create_default_network_button_func(void);
 // SECOND COLUMN
 static void submit_stdp_and_eligibility_button_func(void);
 static void submit_learning_rate_button_func (void);
@@ -716,6 +720,13 @@ bool create_network_view_gui(void)
 	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect_external_layer_to), "0");	
 	gtk_widget_set_size_request(entry_internal_layer_num_to_connect_external_layer_to, 30, 25);
 
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_create_default_network = gtk_button_new_with_label("Create Default Network");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_create_default_network, FALSE, FALSE, 0);
+
+
 ///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
 
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -851,7 +862,7 @@ bool create_network_view_gui(void)
         entry_learning_rate = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_learning_rate, FALSE,FALSE,0);
 	gtk_entry_set_text(GTK_ENTRY(entry_learning_rate), "1.0");	
-	gtk_widget_set_size_request(entry_learning_rate, 50, 25) ;
+	gtk_widget_set_size_request(entry_learning_rate, 80, 25) ;
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  
 
@@ -985,6 +996,8 @@ bool create_network_view_gui(void)
       	g_signal_connect(G_OBJECT(btn_make_output), "clicked", G_CALLBACK(make_output_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_internal_layer_to_internal_layer), "clicked", G_CALLBACK(connect_internal_layer_to_internal_layer_button_func), NULL);
       	g_signal_connect(G_OBJECT(btn_connect_external_layer_to_internal_layer), "clicked", G_CALLBACK(connect_external_layer_to_internal_layer_button_func), NULL);
+
+      	g_signal_connect(G_OBJECT(btn_create_default_network), "clicked", G_CALLBACK(create_default_network_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_submit_stdp_and_eligibility), "clicked", G_CALLBACK(submit_stdp_and_eligibility_button_func), NULL);
 
@@ -1499,7 +1512,7 @@ static gboolean timeout_callback(gpointer user_data)
 				path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_save));
 				path = &path_temp[7];   // since     uri returns file:///home/....	
 				recording_number = msg_item.additional_data.recording_number;
-				if (!(*create_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(3, path, &rt_tasks_data->current_system_time, recording_number))	
+				if (!(*create_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(3, path, *(static_bmi_data->sys_time_ptr), recording_number))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", " *create_data_directory().");		
 					exit(1);
@@ -1507,7 +1520,7 @@ static gboolean timeout_callback(gpointer user_data)
 				recording = TRUE;	
 				break;
 			case NEURAL_NET_2_GUI_MSG_STOP_RECORDING:
-				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, &rt_tasks_data->current_system_time))	
+				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, *(static_bmi_data->sys_time_ptr)))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", " *fclose_all_data_file().");		
 					exit(1);
@@ -1520,7 +1533,7 @@ static gboolean timeout_callback(gpointer user_data)
 				path = &path_temp[7];   // since     uri returns file:///home/....		
 
 				recording_number = msg_item.additional_data.recording_number;
-				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, &rt_tasks_data->current_system_time))	
+				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, *(static_bmi_data->sys_time_ptr)))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", "! *fclose_all_data_files().");
 					exit(1);
@@ -1566,6 +1579,7 @@ static gboolean timeout_callback(gpointer user_data)
 
 static void load_data_button_func (void)
 {
+	char temp[200];
 	unsigned int path_len, data_folder_num;
 	char *path_temp = NULL, *path = NULL;
 	path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_load));
@@ -1578,7 +1592,9 @@ static void load_data_button_func (void)
 	{
 		print_message(INFO_MSG ,"HybridNetRLBMI", "Gui", "load_data_button_func", "Successfully loaded data");	
 		gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);		
-		gtk_widget_set_sensitive(btn_submit_learning_rate, TRUE);				
+		gtk_widget_set_sensitive(btn_submit_learning_rate, TRUE);
+		sprintf(temp, "%.6f", get_hybrid_net_rl_bmi_data()->reward_data.learning_rate);	
+		gtk_entry_set_text(GTK_ENTRY(entry_learning_rate), temp);	
 	}
 	else
 	{
@@ -1587,4 +1603,27 @@ static void load_data_button_func (void)
 }
 
 
+static void create_default_network_button_func(void)
+{
 
+	if (! add_neurons_for_external_and_in_silico_network(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! prepare_external_and_in_silico_network()."); return; }	
+
+	if (! submit_parker_sochacki_integration_precision(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! submit_parker_sochacki_integration_precision().");return; }
+
+	if (! set_output_layers(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! set_output_layers().");return; }
+
+	if (! connect_external_to_in_silico_network(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_external_to_in_silico_network().");return; }
+
+	if (! connect_medium_spiny_neurons(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_medium_spiny_neurons().");return; }
+
+	if (! connect_babling_2_medium_spiny_neurons(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_babling_2_medium_spiny_neurons().");return; }
+
+
+
+}

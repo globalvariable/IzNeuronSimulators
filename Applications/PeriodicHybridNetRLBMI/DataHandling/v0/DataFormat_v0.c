@@ -65,13 +65,13 @@ int create_main_directory_v0(int num, ...)
 int create_data_directory_v0(int num, ...)
 {
 	char *path_chooser;
-	TimeStamp *rec_start;
+	TimeStamp rec_start;
 	unsigned int recording_number;
 
   	va_list arguments;
 	va_start ( arguments, num );   
     	path_chooser = va_arg ( arguments, char *); 
-	rec_start = va_arg ( arguments, TimeStamp*); 
+	rec_start = va_arg ( arguments, TimeStamp); 
 	recording_number = va_arg ( arguments, unsigned int); 
 	va_end ( arguments );
 
@@ -89,7 +89,7 @@ int create_data_directory_v0(int num, ...)
 	{
 		reset_spike_data_read_idx(in_silico_spike_data_for_recording[i]);
 	}	
-	recording_start_time = *rec_start;		//  ACCORDING TO THIS DESIGN, RECORDING START TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
+	recording_start_time = rec_start;		//  ACCORDING TO THIS DESIGN, RECORDING START TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
 
 	meta_data_file_ptr = NULL;
 	in_silico_spike_data_file_ptr = NULL;
@@ -158,11 +158,11 @@ int create_data_directory_v0(int num, ...)
 }
 int fclose_all_data_files_v0(int num, ...)
 {
-	TimeStamp *rec_end;
+	TimeStamp rec_end;
 
   	va_list arguments;
 	va_start ( arguments, num );   
-	rec_end = va_arg ( arguments, TimeStamp*); 
+	rec_end = va_arg ( arguments, TimeStamp); 
 	va_end ( arguments );
 
 	TimeStamp recording_end_time;
@@ -172,7 +172,7 @@ int fclose_all_data_files_v0(int num, ...)
 	{
 		in_silico_spike_data_end_idx[i] = in_silico_spike_data_for_recording[i]->buff_idx_write;
 	}	
-	recording_end_time = *rec_end;		//  ACCORDING TO THIS DESIGN, RECORDING END TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
+	recording_end_time = rec_end;		//  ACCORDING TO THIS DESIGN, RECORDING END TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
 
 
 	if (! close_meta_data(recording_end_time))
@@ -331,65 +331,8 @@ static int create_main_meta_file(char *main_directory_path)
 	timeinfo = localtime (&rawtime);
 	fprintf(fp,"CREATION_DATE\t%s", asctime (timeinfo)); 	
 
-/*	fprintf(fp,"LAYER_BASE_SERVO_EXTENSOR_MOTOR\t%u\n",  LAYER_BASE_SERVO_EXTENSOR_MOTOR);
-	fprintf(fp,"LAYER_BASE_SERVO_EXTENSOR_INTER\t%u\n", LAYER_BASE_SERVO_EXTENSOR_INTER);
-//	fprintf(fp,"LAYER_BASE_SERVO_EXTENSOR_SPINDLE_IA\t%u\n", LAYER_BASE_SERVO_EXTENSOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_BASE_SERVO_FLEXOR_MOTOR\t%u\n", LAYER_BASE_SERVO_FLEXOR_MOTOR);
-	fprintf(fp,"LAYER_BASE_SERVO_FLEXOR_INTER\t%u\n", LAYER_BASE_SERVO_FLEXOR_INTER);
-//	fprintf(fp,"LAYER_BASE_SERVO_FLEXOR_SPINDLE_IA\t%u\n", LAYER_BASE_SERVO_FLEXOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_BASE_SERVO_ANGLE_SENS_SPINDLE\t%u\n", LAYER_BASE_SERVO_ANGLE_SENS_SPINDLE);
-
-	fprintf(fp,"LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR\t%u\n",  LAYER_SHOULDER_SERVO_EXTENSOR_MOTOR);
-	fprintf(fp,"LAYER_SHOULDER_SERVO_EXTENSOR_INTER\t%u\n", LAYER_SHOULDER_SERVO_EXTENSOR_INTER);
-//	fprintf(fp,"LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_IA\t%u\n", LAYER_SHOULDER_SERVO_EXTENSOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_SHOULDER_SERVO_FLEXOR_MOTOR\t%u\n", LAYER_SHOULDER_SERVO_FLEXOR_MOTOR);
-	fprintf(fp,"LAYER_SHOULDER_SERVO_FLEXOR_INTER\t%u\n", LAYER_SHOULDER_SERVO_FLEXOR_INTER);
-//	fprintf(fp,"LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_IA\t%u\n", LAYER_SHOULDER_SERVO_FLEXOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_SHOULDER_SERVO_ANGLE_SENS_SPINDLE\t%u\n", LAYER_SHOULDER_SERVO_ANGLE_SENS_SPINDLE);
-
-	fprintf(fp,"LAYER_ELBOW_SERVO_EXTENSOR_MOTOR\t%u\n",  LAYER_ELBOW_SERVO_EXTENSOR_MOTOR);
-	fprintf(fp,"LAYER_ELBOW_SERVO_EXTENSOR_INTER\t%u\n", LAYER_ELBOW_SERVO_EXTENSOR_INTER);
-//	fprintf(fp,"LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_IA\t%u\n", LAYER_ELBOW_SERVO_EXTENSOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_ELBOW_SERVO_FLEXOR_MOTOR\t%u\n", LAYER_ELBOW_SERVO_FLEXOR_MOTOR);
-	fprintf(fp,"LAYER_ELBOW_SERVO_FLEXOR_INTER\t%u\n", LAYER_ELBOW_SERVO_FLEXOR_INTER);
-//	fprintf(fp,"LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_IA\t%u\n", LAYER_ELBOW_SERVO_FLEXOR_SPINDLE_IA);
-	fprintf(fp,"LAYER_ELBOW_SERVO_ANGLE_SENS_SPINDLE\t%u\n", LAYER_ELBOW_SERVO_ANGLE_SENS_SPINDLE);
-
-	fprintf(fp,"NUM_OF_IN_SILICO_NETWORK_LAYERS\t%u\n",  NUM_OF_IN_SILICO_NETWORK_LAYERS);
-
-	fprintf(fp,"NUM_OF_ANGULAR_SPINDLES\t%u\n", NUM_OF_ANGULAR_SPINDLES);
-
-	fprintf(fp,"NUM_OF_FLEXOR_IA_SPINDLES\t%u\n", NUM_OF_FLEXOR_IA_SPINDLES);
-	fprintf(fp,"NUM_OF_EXTENSOR_IA_SPINDLES\t%u\n", NUM_OF_EXTENSOR_IA_SPINDLES);
-*/
 	fprintf(fp,"learning_rate\t%.15f\n", get_hybrid_net_rl_bmi_data()->reward_data.learning_rate);
-	fprintf(fp,"servo_angle_min_max[BASE_SERVO].min\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[BASE_SERVO].min);
-	fprintf(fp,"servo_angle_min_max[BASE_SERVO].max\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[BASE_SERVO].max);
-	fprintf(fp,"servo_angle_min_max[SHOULDER_SERVO].min\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[SHOULDER_SERVO].min);
-	fprintf(fp,"servo_angle_min_max[SHOULDER_SERVO].max\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[SHOULDER_SERVO].max);
-	fprintf(fp,"servo_angle_min_max[ELBOW_SERVO].min\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[ELBOW_SERVO].min);
-	fprintf(fp,"servo_angle_min_max[ELBOW_SERVO].max\t%.15f\n", get_hybrid_net_rl_bmi_data()->servo_angle_min_max[ELBOW_SERVO].max);
 
-/*	fprintf(fp,"angle_sensitive_spindles..........\n");
-	for (i = 0; i < NUM_OF_ANGULAR_SPINDLES; i++)
-	{
-		fprintf(fp,"angle_sensitive_spindles[BASE_SERVO]->spindles[%u]->center_angle\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[BASE_SERVO]->spindles[i].center_angle);
-		fprintf(fp,"angle_sensitive_spindles[BASE_SERVO]->spindles[%u]->I_max\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[BASE_SERVO]->spindles[i].I_max);
-		fprintf(fp,"angle_sensitive_spindles[BASE_SERVO]->spindles[%u]->I_decay_rate\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[BASE_SERVO]->spindles[i].I_decay_rate);
-	}
-	for (i = 0; i < NUM_OF_ANGULAR_SPINDLES; i++)
-	{
-		fprintf(fp,"angle_sensitive_spindles[SHOULDER_SERVO]->spindles[%u]->center_angle\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[SHOULDER_SERVO]->spindles[i].center_angle);
-		fprintf(fp,"angle_sensitive_spindles[SHOULDER_SERVO]->spindles[%u]->I_max\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[SHOULDER_SERVO]->spindles[i].I_max);
-		fprintf(fp,"angle_sensitive_spindles[SHOULDER_SERVO]->spindles[%u]->I_decay_rate\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[SHOULDER_SERVO]->spindles[i].I_decay_rate);
-	}
-	for (i = 0; i < NUM_OF_ANGULAR_SPINDLES; i++)
-	{
-		fprintf(fp,"angle_sensitive_spindles[ELBOW_SERVO]->spindles[%u]->center_angle\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[ELBOW_SERVO]->spindles[i].center_angle);
-		fprintf(fp,"angle_sensitive_spindles[ELBOW_SERVO]->spindles[%u]->I_max\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[ELBOW_SERVO]->spindles[i].I_max);
-		fprintf(fp,"angle_sensitive_spindles[ELBOW_SERVO]->spindles[%u]->I_decay_rate\t%.15f\n", i, get_hybrid_net_rl_bmi_data()->angle_sensitive_spindles[ELBOW_SERVO]->spindles[i].I_decay_rate);
-	}
-*/
 	fprintf(fp,".PARKER_SOCHACKI_ERROR_TOLERANCE\t%E\n", get_maximum_parker_sochacki_error_tolerance());
 	fprintf(fp,".PARKER_SOCHACKI_MAX_ORDER\t%d\n", get_maximum_parker_sochacki_order());
 
@@ -440,26 +383,34 @@ static int create_main_meta_file(char *main_directory_path)
 			{
 				fprintf(fp,"neuron_num\t%u\n", k);			
 				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].inhibitory);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params.............\n", i, j, k);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->u\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->u);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->a\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->a);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->b\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->b);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->c\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->c);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->d\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->d);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->k);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_resting\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_resting);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_threshold\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_threshold);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_peak\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_peak);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->I_inject\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->I_inject);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E_excitatory);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E_inhibitory);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->decay_rate_excitatory);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->decay_rate_inhibitory);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->conductance_excitatory);
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->conductance_inhibitory);	
-				fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k_v_threshold\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->k_v_threshold);	
+				if (in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params != NULL)
+				{
+					fprintf(fp,"IzhikevichNeuron\n");	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->u\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->u);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->a\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->a);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->b\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->b);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->c\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->c);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->d\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->d);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->k);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_resting\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_resting);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_threshold\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_threshold);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_peak\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->v_peak);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->I_inject\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->I_inject);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E_excitatory);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->E_inhibitory);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->decay_rate_excitatory);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->decay_rate_inhibitory);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_excitatory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->conductance_excitatory);
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_inhibitory\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->conductance_inhibitory);	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k_v_threshold\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].iz_params->k_v_threshold);	
+				}
+				if (in_silico_network->layers[i]->neuron_groups[j]->neurons[k].poisson_params != NULL)
+				{
+					fprintf(fp,"PoissonNeuron\n");	
+					fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].poisson_params->firing_rate\t%.15f\n", i, j, k, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].poisson_params->firing_rate);		
+				}
 			}		
 		}
 	}
@@ -553,6 +504,7 @@ static int create_main_meta_file(char *main_directory_path)
 						fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].ps_stdp_pre_post->change_amount\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->synapses[m].ps_stdp_pre_post->change_amount);
 						fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].ps_stdp_pre_post->decay_rate\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->synapses[m].ps_stdp_pre_post->decay_rate);
 						fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].ps_eligibility->decay_rate\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->synapses[m].ps_eligibility->decay_rate);
+						fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].syn_list->synapses[%u].ps_eligibility->decay_rate\t%.15f\n", i, j, k, m, in_silico_network->layers[i]->neuron_groups[j]->neurons[k].syn_list->synapses[m].ps_eligibility->max_eligibility);
 					}
 				}
 			}		
@@ -574,69 +526,9 @@ static int create_main_meta_file(char *main_directory_path)
 		}
 	}	
 
-	fprintf(fp,"............HybridNetRLBMISynapseData.............\n");
-/*	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_probability);
-	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_weight_max);
-	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_weight_min);
-	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_delay_max);
-	fprintf(fp,"blue_spike_2_in_silico_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_excitatory_connection_delay_min);
-
-	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_probability);
-	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_weight_max);
-	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_weight_min);
-	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_delay_max);
-	fprintf(fp,"blue_spike_2_in_silico_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.blue_spike_2_in_silico_inhibitory_connection_delay_min);
-
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_probability);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_max);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_weight_min);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_max);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_excitatory_connection_delay_min);
-
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_probability);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_max);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_weight_min);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_max);
-	fprintf(fp,"extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_motor_2_flexor_inter_neuron_inhibitory_connection_delay_min);
-
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_probability);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_max);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_weight_min);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_max);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_excitatory_connection_delay_min);
-
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_probability);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_max);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_weight_min);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_max);
-	fprintf(fp,"flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_motor_2_extensor_inter_neuron_inhibitory_connection_delay_min);
-
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_probability);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_max);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_weight_min);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_max);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_excitatory_connection_delay_min);
-
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_probability);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_max);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_weight_min);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_max);
-	fprintf(fp,"extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.extensor_inter_2_extensor_motor_neuron_inhibitory_connection_delay_min);
-
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_probability);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_max);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_weight_min);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_max);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_excitatory_connection_delay_min);
-
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_probability\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_probability);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_max);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_weight_min);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_max\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_max);
-	fprintf(fp,"flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_min\t%.15f\n", get_hybrid_net_rl_bmi_data()->synapse_data.flexor_inter_2_flexor_motor_neuron_inhibitory_connection_delay_min);
-*/
 	fprintf(fp,"----------HybridNetRLBMI - End of Main Meta File----------\n");
 	fclose(fp);
+	print_message(INFO_MSG ,"HybridNetRLBMI", "DataFormat_v0", "create_main_meta_file", "created Main Meta File successfully");
 	return 1;
 }
 
@@ -837,7 +729,7 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 	FILE *fp;
 	unsigned int i, j, k_iter, m;
 	double learning_rate;	
-	ServoAngularLimit				servo_angle_min_max[THREE_DOF_ROBOT_NUM_OF_SERVOS];
+
 	double parker_sochacki_error_tolerance;
 	double parker_sochacki_max_order;
 	unsigned int 		layer_count, neuron_group_count, neuron_count, num_of_connections;
@@ -859,6 +751,8 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 	double eligibility_decay_rate, max_eligibility;
 	bool first;
 	unsigned int randomize_params = 0;
+
+	double firing_rate;
 	
 	Neuron *this_neuron, *target_neuron;
 
@@ -882,32 +776,6 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 		{ fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "Not learning_rate line."); }
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 	learning_rate = atof(word);
-
-	bmi_data->reward_data.learning_rate = learning_rate;
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[BASE_SERVO].min = atof(word);
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[BASE_SERVO].max = atof(word);
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[SHOULDER_SERVO].min = atof(word);
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[SHOULDER_SERVO].max = atof(word);
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[ELBOW_SERVO].min = atof(word);
-
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-	servo_angle_min_max[ELBOW_SERVO].max = atof(word);
 
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // PARKER_SOCHACKI_ERROR_TOLERANCE	
 	if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
@@ -990,98 +858,10 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
 			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }   // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
 			inhibitory = strtoull(word, &end_ptr, 10);
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params.
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			v = atof(word);
 
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->u\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			u = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->a\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			a = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->b\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			b = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->c\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			c = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->d\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			d = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			k = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			E = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_resting\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			v_resting = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_threshold\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			v_threshold = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_peak\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			v_peak = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->I_inject\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			I_inject = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_excitatory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			E_excitatory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_inhibitory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			E_inhibitory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_excitatory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			decay_rate_excitatory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_inhibitory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			decay_rate_inhibitory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_excitatory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			conductance_excitatory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_inhibitory\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			conductance_inhibitory = atof(word);
-
-			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k_v_threshold\t%.15f\n
-			if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
-			k_v_threshold = atof(word);
-
-			if (!add_iz_neurons_to_layer(in_silico_network, neuron_count, i, a, b, c+v_resting, d, k, 1.0/E, v_resting, v_threshold+v_resting, v_peak+v_resting, inhibitory, E_excitatory+v_resting, E_inhibitory+v_resting, -1.0/decay_rate_excitatory, -1.0/decay_rate_inhibitory, randomize_params))
-				return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");	
-			first = TRUE;
-			for (k_iter = 0; k_iter < neuron_count; k_iter++)
+			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // IzhikevichNeuron   /// Poisson Neuron.
+			if (strcmp(line, "IzhikevichNeuron\n") == 0)
 			{
-				if (first)
-				{
-					first = FALSE;
-					continue;
-				}
-				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // neuron_num\t%u\n
-				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
-				if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }   // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
-				inhibitory = strtoull(word, &end_ptr, 10);
-				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // fprintf(fp,"in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params.
 				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v\t%.15f\n
 				if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 				v = atof(word);
@@ -1158,9 +938,126 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 				if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
 				k_v_threshold = atof(word);
 
+				if (!add_iz_neurons_to_layer(in_silico_network, neuron_count, i, a, b, c+v_resting, d, k, 1.0/E, v_resting, v_threshold+v_resting, v_peak+v_resting, inhibitory, E_excitatory+v_resting, E_inhibitory+v_resting, -1.0/decay_rate_excitatory, -1.0/decay_rate_inhibitory, randomize_params))
+					return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "load_main_meta_file", "! add_iz_neurons_to_layer().");	
+			}
+			if (strcmp(line, "PoissonNeuron\n") == 0)
+			{
+				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  //  in_silico_network->layers[i]->neuron_groups[j]->neurons[k].poisson_params->firing_rate);		
+				if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+				firing_rate = atof(word);
+
+				if (! add_poisson_neurons_to_layer(in_silico_network, neuron_count, i, inhibitory, firing_rate))	
+					return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "load_main_meta_file", "! add_poisson_neurons_to_layer().");	
+			}			
+
+			first = TRUE;
+
+			for (k_iter = 0; k_iter < neuron_count; k_iter++)
+			{
+				if (first)
+				{
+					first = FALSE;
+					continue;
+				}
+				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // neuron_num\t%u\n
+				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
+				if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }   // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].inhibitory\t%u\n
+				inhibitory = strtoull(word, &end_ptr, 10);
+				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // IzhikevichNeuron   /// Poisson Neuron.
+				if (strcmp(line, "IzhikevichNeuron\n") == 0)
+				{
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					v = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->u\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					u = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->a\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					a = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->b\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					b = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->c\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					c = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->d\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					d = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					k = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					E = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_resting\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					v_resting = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_threshold\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					v_threshold = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->v_peak\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					v_peak = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->I_inject\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					I_inject = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_excitatory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					E_excitatory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->E_inhibitory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					E_inhibitory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_excitatory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					decay_rate_excitatory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->decay_rate_inhibitory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					decay_rate_inhibitory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_excitatory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					conductance_excitatory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->conductance_inhibitory\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					conductance_inhibitory = atof(word);
+
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // in_silico_network->layers[%u]->neuron_groups[%u]->neurons[%u].iz_params->k_v_threshold\t%.15f\n
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					k_v_threshold = atof(word);
+				
+				}
+				if (strcmp(line, "PoissonNeuron\n") == 0)
+				{
+					if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  //  in_silico_network->layers[i]->neuron_groups[j]->neurons[k].poisson_params->firing_rate);		
+					if(!get_word_in_line('\t', 1, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "!get_word_in_line."); }
+					firing_rate = atof(word);
+					
+				}			
+
+
 			}		
 		}
 	}
+
+	get_hybrid_net_rl_bmi_data()->reward_data.learning_rate = learning_rate;
 
 	if (! parker_sochacki_set_order_tolerance(in_silico_network, parker_sochacki_max_order, parker_sochacki_error_tolerance))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "! parker_sochacki_set_order_tolerance().");
@@ -1392,12 +1289,6 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 		}
 	}	
 
-	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  // ............HybridNetRLBMISynapseData......
-/*	for (i = 0; i < 50; i++)    // HybridNetRLBMISynapseData
-	{
-		if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }  
-	}
-*/
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "fgets() == NULL."); }
 	if (strcmp(line, "----------HybridNetRLBMI - End of Main Meta File----------\n") != 0) 
 		{ fclose(fp); return print_message(ERROR_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "Not a HybridNetRLBMI - Main Meta File. Not end of meta file."); }
@@ -1408,6 +1299,8 @@ static int load_main_meta_file(char *path_chooser, Network *in_silico_network, N
 	
 
 	fclose(fp);
+
+	print_message(INFO_MSG ,"HybridNetRLBMI", "DataFormat_v0", "load_main_meta_file", "Successfully read main meta file.");
 
 	return 1;
 }
@@ -1422,7 +1315,6 @@ static int load_data_folder(char *path_chooser, Network *in_silico_network, Netw
 	Neuron			*neuron;	
 	SynapseList		*syn_list;
 	Synapse			*synapses;
-	double dummy;
 	
 	data_directory_cntr = data_folder_num;
 
@@ -1489,11 +1381,6 @@ static int load_data_folder(char *path_chooser, Network *in_silico_network, Netw
 					if (! fread(&(synapses[m].weight), sizeof(SynapticWeight), 1, fp))   { printf ("ERROR: HybridNetRLBMI: Couldn't read weight info from file: %s\n\n", data_directory_path); fclose(fp); return 0; } 
 					printf("%f\n", synapses[m].weight);
 					count_size += sizeof(SynapticWeight);
-				}
-				for (m = 0; m < syn_list->num_of_synapses; m++)
-				{
-					if (! fread(&dummy, sizeof(double), 1, fp))   { printf ("ERROR: HybridNetRLBMI: Couldn't read eligibility info from file: %s\n\n", data_directory_path); fclose(fp); return 0; } // for eligibility which is not used to load.
-					count_size += sizeof(double);
 				}
 			}		
 		}

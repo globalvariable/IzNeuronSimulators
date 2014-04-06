@@ -40,10 +40,10 @@ bool add_neurons_for_external_and_in_silico_network(HybridNetRLBMIData *bmi_data
 	if (!add_iz_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_FLEXOR_SPINY, a, b, c, d, k, C, v_resting, v_threshold, v_peak, inhibitory, E_excitatory, E_inhibitory, tau_excitatory, tau_inhibitory, randomize_params))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_iz_neurons_to_layer().");
 
-	if (!add_poisson_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_EXTENSOR_BABBLE, FALSE,  150.0*  ((double)(PARKER_SOCHACKI_INTEGRATION_STEP_SIZE))/1000000000.0))
+	if (!add_poisson_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_EXTENSOR_BABBLE, FALSE,  120.0*  ((double)(PARKER_SOCHACKI_INTEGRATION_STEP_SIZE))/1000000000.0))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_poisson_neurons_to_layer().");	
 
-	if (!add_poisson_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_FLEXOR_BABBLE, FALSE,  150.0*  ((double)(PARKER_SOCHACKI_INTEGRATION_STEP_SIZE))/1000000000.0))
+	if (!add_poisson_neurons_to_layer(bmi_data->in_silico_network, 1, LAYER_BASE_SERVO_FLEXOR_BABBLE, FALSE,  120.0*  ((double)(PARKER_SOCHACKI_INTEGRATION_STEP_SIZE))/1000000000.0))
 		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "prepare_external_and_in_silico_network", "! add_poisson_neurons_to_layer().");		
 	return TRUE;
 }
@@ -66,7 +66,7 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 {
 	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
 	unsigned int i, j, k, cntr = 0;
-	TemplateMatchingData			*template_matching_data = bmi_data->template_matching_data;
+
 
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_probability = 0.7;
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 7;
@@ -84,9 +84,9 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 	{
 		for (j = 0; j < MAX_NUM_OF_CHAN_PER_MWA; j++)
 		{
-			for (k = 0; k < 2; k++)
+			for (k = 0; k < MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE; k++)
 			{
-				if (! ((*template_matching_data)[i][j][k].include_unit))
+				if (! (*bmi_data->sorted_spike_time_stamp)[i][j].included_units[k])
 					continue;
 				if ((cntr % 3) == 0)
 				{
@@ -109,6 +109,8 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 			}
 		}
 	}
+	if (cntr == 0)
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "No connections has been made. no included units in bmi_data->sorted_spike_time_stamp.");
 	return TRUE;
 }
 
@@ -125,8 +127,8 @@ bool connect_medium_spiny_neurons(HybridNetRLBMIData *bmi_data)
 	synapse_data->spiny_2_spiny_neuron_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_probability = 1;
-	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_max = 100;
-	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_min = 100;
+	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_max = 30;
+	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_weight_min = 30;
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->spiny_2_spiny_neuron_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 

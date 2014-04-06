@@ -67,7 +67,7 @@ ThreePhasePoissonFiring* allocate_three_phase_poisson_firing_data(Network *netwo
 		}
 	}
 
-	print_message(INFO_MSG ,"IzNeuronSimulators", "PoissonFiring", "allocate_three_phase_poisson_firing_data", "Created current_templates.");
+	print_message(INFO_MSG ,"IzNeuronSimulators", "PoissonFiring", "allocate_three_phase_poisson_firing_data", "Created three_phase_poisson_firing_data.");
 	return firing_data;
 
 }

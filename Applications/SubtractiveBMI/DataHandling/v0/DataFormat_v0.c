@@ -65,13 +65,13 @@ int create_main_directory_v0(int num, ...)
 int create_data_directory_v0(int num, ...)
 {
 	char *path_chooser;
-	TimeStamp *rec_start;
+	TimeStamp rec_start;
 	unsigned int recording_number;
 
   	va_list arguments;
 	va_start ( arguments, num );   
     	path_chooser = va_arg ( arguments, char *); 
-	rec_start = va_arg ( arguments, TimeStamp*); 
+	rec_start = va_arg ( arguments, TimeStamp); 
 	recording_number = va_arg ( arguments, unsigned int); 
 	va_end ( arguments );
 
@@ -89,7 +89,7 @@ int create_data_directory_v0(int num, ...)
 	{
 		reset_spike_data_read_idx(in_silico_spike_data_for_recording[i]);
 	}	
-	recording_start_time = *rec_start;		//  ACCORDING TO THIS DESIGN, RECORDING START TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
+	recording_start_time = rec_start;		//  ACCORDING TO THIS DESIGN, RECORDING START TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
 
 	meta_data_file_ptr = NULL;
 	in_silico_spike_data_file_ptr = NULL;
@@ -158,11 +158,11 @@ int create_data_directory_v0(int num, ...)
 }
 int fclose_all_data_files_v0(int num, ...)
 {
-	TimeStamp *rec_end;
+	TimeStamp rec_end;
 
   	va_list arguments;
 	va_start ( arguments, num );   
-	rec_end = va_arg ( arguments, TimeStamp*); 
+	rec_end = va_arg ( arguments, TimeStamp); 
 	va_end ( arguments );
 
 	TimeStamp recording_end_time;
@@ -172,7 +172,7 @@ int fclose_all_data_files_v0(int num, ...)
 	{
 		in_silico_spike_data_end_idx[i] = in_silico_spike_data_for_recording[i]->buff_idx_write;
 	}	
-	recording_end_time = *rec_end;		//  ACCORDING TO THIS DESIGN, RECORDING END TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
+	recording_end_time = rec_end;		//  ACCORDING TO THIS DESIGN, RECORDING END TIME AND THE CORRESPONDING SPIKE DATA SAMPLE MIGHT NOT COINCODE TO SAME TIME BUT THEY WILL BE ALMOST EQUAL. 
 
 
 	if (! close_meta_data(recording_end_time))

@@ -27,7 +27,7 @@ SpikeData* deallocate_spike_data(SpikeData *spike_data)
 	return NULL;
 }
 
-bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time)
+bool write_to_spike_data(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time)
 {
 	unsigned int *buff_idx_write;
 	SpikeTimeStampItem *item;
@@ -35,9 +35,9 @@ bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsig
 	buff_idx_write = &(spike_data->buff_idx_write);
 	item = &(spike_data->buff[*buff_idx_write]);
 	item->peak_time = spike_time;
-	item->mwa_or_layer = mwa_or_layer;
-	item->channel_or_neuron_group = channel_or_neuron_group;
-	item->unit_or_neuron = unit_or_neuron;	
+	item->layer = layer;
+	item->neuron_group = neuron_group;
+	item->neuron = neuron;	
 	if ((*buff_idx_write +1) ==  spike_data->buffer_size )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
 		*buff_idx_write = 0;
 	else
@@ -49,7 +49,7 @@ bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsig
 	return TRUE;
 }
 
-bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time)
+bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time)
 {
 	unsigned int *buff_idx_write;
 	SpikeTimeStampItem *item;
@@ -58,9 +58,9 @@ bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int mwa_
 	buff_idx_write = &(spike_data->buff_idx_write);
 	item = &(spike_data->buff[*buff_idx_write]);
 	item->peak_time = spike_time;
-	item->mwa_or_layer = mwa_or_layer;
-	item->channel_or_neuron_group = channel_or_neuron_group;
-	item->unit_or_neuron = unit_or_neuron;	
+	item->layer = layer;
+	item->neuron_group = neuron_group;
+	item->neuron = neuron;	
 	if ((*buff_idx_write +1) ==  spike_data->buffer_size )	   // first check then increment. if first increment and check end of buffer might lead to problem during reading.
 		*buff_idx_write = 0;
 	else
@@ -74,7 +74,7 @@ bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int mwa_
 	return TRUE;
 }
 
-bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time)
+bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time)
 {
 	SpikeTimeStampItem		*buff;
 	SpikeTimeStampItem		*item, *item_insert;
@@ -100,17 +100,17 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 			if (spike_time < item->peak_time)		// push buffered item to the next index
 			{
 				item_insert->peak_time = item->peak_time;
-				item_insert->mwa_or_layer = item->mwa_or_layer;
-				item_insert->channel_or_neuron_group = item->channel_or_neuron_group;
-				item_insert->unit_or_neuron = item->unit_or_neuron;
+				item_insert->layer = item->layer;
+				item_insert->neuron_group = item->neuron_group;
+				item_insert->neuron = item->neuron;
 				idx = buff_last_idx;
 			}
 			else
 			{
 				item_insert->peak_time = spike_time;		// insert here & break;
-				item_insert->mwa_or_layer = mwa_or_layer;
-				item_insert->channel_or_neuron_group = channel_or_neuron_group;
-				item_insert->unit_or_neuron = unit_or_neuron;
+				item_insert->layer = layer;
+				item_insert->neuron_group = neuron_group;
+				item_insert->neuron = neuron;
 				break;			
 			}
 		}
@@ -121,17 +121,17 @@ bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or
 			if (spike_time < item->peak_time)		// push buffered item to the next index
 			{
 				item_insert->peak_time = item->peak_time;
-				item_insert->mwa_or_layer = item->mwa_or_layer;
-				item_insert->channel_or_neuron_group = item->channel_or_neuron_group;
-				item_insert->unit_or_neuron = item->unit_or_neuron;
+				item_insert->layer = item->layer;
+				item_insert->neuron_group = item->neuron_group;
+				item_insert->neuron = item->neuron;
 				idx--;
 			}
 			else
 			{
 				item_insert->peak_time = spike_time;		// insert here & break;
-				item_insert->mwa_or_layer = mwa_or_layer;
-				item_insert->channel_or_neuron_group = channel_or_neuron_group;
-				item_insert->unit_or_neuron = unit_or_neuron;
+				item_insert->layer = layer;
+				item_insert->neuron_group = neuron_group;
+				item_insert->neuron = neuron;
 				break;			
 			}			
 		}
@@ -156,9 +156,9 @@ bool get_next_spike_data_item(SpikeData* spike_data, SpikeTimeStampItem *data_it
 		return FALSE;
 	buff_data_item = &(spike_data->buff[*idx]);	
 	data_item->peak_time = buff_data_item->peak_time;
-	data_item->mwa_or_layer = buff_data_item->mwa_or_layer;
-	data_item->channel_or_neuron_group = buff_data_item->channel_or_neuron_group;
-	data_item->unit_or_neuron = buff_data_item->unit_or_neuron;
+	data_item->layer = buff_data_item->layer;
+	data_item->neuron_group = buff_data_item->neuron_group;
+	data_item->neuron = buff_data_item->neuron;
 	if (((*idx) + 1) == spike_data->buffer_size)
 		(*idx) = 0;
 	else
@@ -171,9 +171,9 @@ void get_spike_data_item_by_idx(SpikeData* spike_data, unsigned int idx, SpikeTi
 	SpikeTimeStampItem *buff_data_item;
 	buff_data_item = &(spike_data->buff[idx]);	
 	data_item->peak_time = buff_data_item->peak_time;
-	data_item->mwa_or_layer = buff_data_item->mwa_or_layer;
-	data_item->channel_or_neuron_group = buff_data_item->channel_or_neuron_group;
-	data_item->unit_or_neuron = buff_data_item->unit_or_neuron;
+	data_item->layer = buff_data_item->layer;
+	data_item->neuron_group = buff_data_item->neuron_group;
+	data_item->neuron = buff_data_item->neuron;
 }
 
 void reset_spike_data_read_idx(SpikeData* spike_data)

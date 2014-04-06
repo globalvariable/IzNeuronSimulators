@@ -4,12 +4,21 @@
 
 
 typedef struct __SpikeData SpikeData;
+typedef struct __SpikeTimeStampItem SpikeTimeStampItem;
 
 #include <stdbool.h>
 #include <gtk/gtk.h>
 #include <pthread.h>
-#include "../../../BlueSpike/SpikeTimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
+#include "../../../BlueSpike/System/TimeStamp/TimeStamp.h"
+
+struct __SpikeTimeStampItem
+{
+	TimeStamp 		peak_time;				// spike peak time
+	unsigned int		layer;				
+	unsigned int		neuron_group;		
+	unsigned int		neuron;				
+};
 
 struct __SpikeData
 {
@@ -23,9 +32,9 @@ struct __SpikeData
 
 SpikeData* allocate_spike_data(SpikeData *spike_data, unsigned int buffer_size);
 SpikeData* deallocate_spike_data(SpikeData *spike_data);
-bool write_to_spike_data(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time);
-bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time);
-bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int mwa_or_layer, unsigned int channel_or_neuron_group, unsigned int unit_or_neuron, TimeStamp spike_time);
+bool write_to_spike_data(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time);
+bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time);
+bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time);
 bool get_next_spike_data_item(SpikeData* spike_data, SpikeTimeStampItem *data_item);
 void get_spike_data_item_by_idx(SpikeData* spike_data, unsigned int idx, SpikeTimeStampItem *data_item);
 void reset_spike_data_read_idx(SpikeData* spike_data);

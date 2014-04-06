@@ -3,7 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <stdbool.h>
-#include "CurrentPatternDesignView.h"
+#include "FiringPatternDesignView.h"
 
 // Functions
 void create_gui(void);

@@ -2,7 +2,7 @@
 
 static HybridNetRLBMIData *static_bmi_data = NULL;
 static NeuralNet2GuiMsg *static_msgs_neural_net_2_gui = NULL;
-static RtTasksData *rt_tasks_data = NULL;
+static RtTasksData *static_rt_tasks_data = NULL;
 static GtkWidget *btn_select_directory_to_save = NULL;
 static SpikeData **in_silico_spike_data_for_recording = NULL;
 static unsigned int num_of_dedicated_cpu_threads = 0;
@@ -11,6 +11,10 @@ static unsigned int static_num_of_neurons = 0;
 
 // FIRST COLUMN
 
+static LayerNrnGrpNeuronCombo *combos_select_bluespike_neuron;
+static LayerNrnGrpNeuronCombo *combos_select_in_silico_neuron;
+
+static GtkWidget *btn_connect_neurons;
 
 // SECOND COLUMN
 
@@ -28,8 +32,14 @@ static GtkWidget *entry_load_data_folder_num;
 
 // FIRST COLUMN
 
-
+static void combos_select_bluespike_neuron_func(GtkWidget *changed_combo);
+static void combos_select_in_silico_neuron_func(GtkWidget *changed_combo);
+static void connect_neurons_button_func(void);
 // SECOND COLUMN
+
+
+
+
 
 
 static void ready_for_simulation_button_func(void);
@@ -47,7 +57,7 @@ static gboolean timeout_callback(gpointer user_data) ;
 bool create_network_view_gui(void)
 {
 	static_msgs_neural_net_2_gui = get_hybrid_net_rl_bmi_data()->msgs_neural_net_2_gui;
-	rt_tasks_data = get_hybrid_net_rl_bmi_data()->rt_tasks_data;
+	static_rt_tasks_data = get_hybrid_net_rl_bmi_data()->rt_tasks_data;
 	in_silico_spike_data_for_recording = get_hybrid_net_rl_bmi_data()->in_silico_spike_data_for_recording;
 	num_of_dedicated_cpu_threads = get_hybrid_net_rl_bmi_data()->num_of_dedicated_cpu_threads;
 
@@ -70,7 +80,40 @@ bool create_network_view_gui(void)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 0,1, 0, 6);  
 
-  
+    	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	combos_select_bluespike_neuron = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_bluespike_neuron->combo_layer , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_bluespike_neuron->combo_neuron_group, TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_bluespike_neuron->combo_neuron , TRUE,TRUE,0);
+
+	if(!update_texts_of_combos_when_add_remove(combos_select_bluespike_neuron, get_hybrid_net_rl_bmi_data()->blue_spike_network))  // it is put here since main() adds neurons to the layers previously
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "create_network_view_gui(", "! update_texts_of_combos_when_add_remove().");	
+
+    	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	combos_select_in_silico_neuron = allocate_layer_neuron_group_neuron_combos();
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_in_silico_neuron->combo_layer , TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox), combos_select_in_silico_neuron->combo_neuron_group, TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(hbox),combos_select_in_silico_neuron->combo_neuron , TRUE,TRUE,0);
+
+	if(!update_texts_of_combos_when_add_remove(combos_select_in_silico_neuron, get_hybrid_net_rl_bmi_data()->in_silico_network))  // it is put here since main() adds neurons to the layers previously
+		return print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "create_network_view_gui(", "! update_texts_of_combos_when_add_remove().");	
+
+    	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_connect_neurons = gtk_button_new_with_label("Connect Neurons");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_connect_neurons, TRUE, TRUE, 0);
+
+
+
+
+
+
+
 
 ///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
 
@@ -134,6 +177,17 @@ bool create_network_view_gui(void)
  	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
 
+
+
+	g_signal_connect(G_OBJECT(combos_select_bluespike_neuron->combo_layer), "changed", G_CALLBACK(combos_select_bluespike_neuron_func), combos_select_bluespike_neuron->combo_layer);
+	g_signal_connect(G_OBJECT(combos_select_bluespike_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_bluespike_neuron_func), combos_select_bluespike_neuron->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_select_bluespike_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_bluespike_neuron_func), combos_select_bluespike_neuron->combo_neuron);
+
+	g_signal_connect(G_OBJECT(combos_select_in_silico_neuron->combo_layer), "changed", G_CALLBACK(combos_select_in_silico_neuron_func), combos_select_in_silico_neuron->combo_layer);
+	g_signal_connect(G_OBJECT(combos_select_in_silico_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_in_silico_neuron_func), combos_select_in_silico_neuron->combo_neuron_group);	
+	g_signal_connect(G_OBJECT(combos_select_in_silico_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_in_silico_neuron_func), combos_select_in_silico_neuron->combo_neuron);
+
+      	g_signal_connect(G_OBJECT(btn_connect_neurons), "clicked", G_CALLBACK(connect_neurons_button_func), NULL);
 
       	g_signal_connect(G_OBJECT(btn_ready_for_simulation), "clicked", G_CALLBACK(ready_for_simulation_button_func), NULL);
 
@@ -251,7 +305,7 @@ static gboolean timeout_callback(gpointer user_data)
 				path_temp = gtk_file_chooser_get_uri (GTK_FILE_CHOOSER (btn_select_directory_to_save));
 				path = &path_temp[7];   // since     uri returns file:///home/....	
 				recording_number = msg_item.additional_data.recording_number;
-				if (!(*create_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(3, path, &rt_tasks_data->current_system_time, recording_number))	
+				if (!(*create_data_directory[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(3, path, *(static_bmi_data->sys_time_ptr), recording_number))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", " *create_data_directory().");		
 					exit(1);
@@ -259,7 +313,7 @@ static gboolean timeout_callback(gpointer user_data)
 				recording = TRUE;	
 				break;
 			case NEURAL_NET_2_GUI_MSG_STOP_RECORDING:
-				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, &rt_tasks_data->current_system_time))	
+				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, *(static_bmi_data->sys_time_ptr)))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", " *fclose_all_data_file().");		
 					exit(1);
@@ -272,7 +326,7 @@ static gboolean timeout_callback(gpointer user_data)
 				path = &path_temp[7];   // since     uri returns file:///home/....		
 
 				recording_number = msg_item.additional_data.recording_number;
-				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, &rt_tasks_data->current_system_time))	
+				if (! (*fclose_all_data_files[MAX_NUMBER_OF_DATA_FORMAT_VER-1])(1, *(static_bmi_data->sys_time_ptr)))	
 				{
 					print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", "! *fclose_all_data_files().");
 					exit(1);
@@ -330,4 +384,49 @@ static void load_data_button_func (void)
 }
 
 
+static void combos_select_bluespike_neuron_func(GtkWidget *changed_combo)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	if (bmi_data == NULL)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_bluespike_neuron_func", "bmi_data == NULL.");
+	if(!update_texts_of_combos_when_change(combos_select_bluespike_neuron, bmi_data->blue_spike_network, changed_combo))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_bluespike_neuron_funcc", "!update_texts_of_combos_when_change().");
+}
+static void combos_select_in_silico_neuron_func(GtkWidget *changed_combo)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	if (bmi_data == NULL)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_bluespike_neuron_func", "bmi_data == NULL.");
+	if(!update_texts_of_combos_when_change(combos_select_in_silico_neuron, bmi_data->in_silico_network, changed_combo))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "combos_select_bluespike_neuron_funcc", "!update_texts_of_combos_when_change().");
+}
 
+static void connect_neurons_button_func(void)
+{
+	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
+	HybridNetRLBMISynapseData	*synapse_data = &(bmi_data->synapse_data);
+	unsigned int bs_layer_num, bs_nrn_grp_num, bs_nrn_num;
+	unsigned int is_layer_num, is_nrn_grp_num, is_nrn_num;
+
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 7;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min = 7;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max = 7;
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min = 7;
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
+
+
+	if (! layer_neuron_group_neuron_get_selected(combos_select_bluespike_neuron, &bs_layer_num, &bs_nrn_grp_num, &bs_nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "EligibilityView", "connect_neurons_button_func", "! layer_neuron_group_neuron_get_selected().");	
+
+	if (! layer_neuron_group_neuron_get_selected(combos_select_in_silico_neuron, &is_layer_num, &is_nrn_grp_num, &is_nrn_num))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "EligibilityView", "connect_neurons_button_func", "! layer_neuron_group_neuron_get_selected().");	
+
+	if (! connect_neurons(bmi_data->blue_spike_network, bs_layer_num, bs_nrn_grp_num, bs_nrn_num, bmi_data->in_silico_network, is_layer_num, is_nrn_grp_num, is_nrn_num, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max, synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max, synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min, MAXIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, MINIMUM_BLUE_SPIKE_TO_IN_SILICO_AXONAL_DELAY, TRUE, FALSE))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIConfig", "connect_external_to_in_silico_network", "! connect_neurons().");
+
+
+}

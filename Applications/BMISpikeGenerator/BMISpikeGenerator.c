@@ -13,7 +13,7 @@ int main( int argc, char *argv[])
 
 	bmi_simulation_spike_gen_data = g_new0(SpikeGenData, 1);
 
-	bmi_simulation_spike_gen_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_KERNEL_SPIKE_SPIKE_TIME_STAMP, 0);
+	bmi_simulation_spike_gen_data->sorted_spike_time_stamp = rtai_malloc(SHM_NUM_BLUESPIKE_SORTED_SPIKES, 0);
 	if (bmi_simulation_spike_gen_data->sorted_spike_time_stamp == NULL) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "main", "bmi_simulation_spike_gen_data->blue_spike_data == NULL."); return -1; }
 
@@ -71,7 +71,7 @@ static bool connect_to_trial_hand(void )
 					sleep(1);
 					if (bmi_simulation_spike_gen_data->msgs_spike_gen_2_trial_hand == NULL)
 						return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "connect_to_trial_hand", "msgs_spike_gen_2_trial_hand == NULL.");	
-					if (!write_to_spike_gen_2_trial_hand_msg_buffer(bmi_simulation_spike_gen_data->msgs_spike_gen_2_trial_hand, bmi_simulation_spike_gen_data->rt_tasks_data->current_system_time, SPIKE_GEN_2_TRIAL_HAND_MSG_I_AM_ALIVE, 0))
+					if (!write_to_spike_gen_2_trial_hand_msg_buffer(bmi_simulation_spike_gen_data->msgs_spike_gen_2_trial_hand, bmi_simulation_spike_gen_data->rt_tasks_data->current_periodic_system_time, SPIKE_GEN_2_TRIAL_HAND_MSG_I_AM_ALIVE, 0))
 						return print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "connect_to_trial_hand", "write_to_spike_gen_2_trial_hand_msg_buffer().");	
 					print_message(INFO_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "connect_to_trial_hand", "Connection to TRIAL_HANDLER is successful!!!");	
 					return TRUE;		
@@ -101,11 +101,11 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 	trial_status_events = bmi_simulation_spike_gen_data->trial_status_events;
 	rt_tasks_data = bmi_simulation_spike_gen_data->rt_tasks_data;
 
-	if (! check_rt_task_specs_to_init(rt_tasks_data, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_PERIOD))  {
+	if (! check_rt_task_specs_to_init(rt_tasks_data, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_PERIOD, FALSE))  {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "trial_hand_2_spike_gen_msgs_handler", "! check_rt_task_specs_to_init()."); exit(1); }	
         if (! (handler = rt_task_init_schmod(TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_TASK_NAME, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_TASK_PRIORITY, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_STACK_SIZE, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_MSG_SIZE, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_POLICY, 1 << ((TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU)+TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_ID)))) {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "trial_hand_2_spike_gen_msgs_handler", "handler = rt_task_init_schmod()."); exit(1); }
-	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_PERIOD, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_POSITIVE_JITTER_THRES, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_NEGATIVE_JITTER_THRES, "TrialHand2SpikeGenMssHand"))  {
+	if (! write_rt_task_specs_to_rt_tasks_data(rt_tasks_data, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_CPU_THREAD_TASK_ID, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_PERIOD, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_POSITIVE_JITTER_THRES, TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_NEGATIVE_JITTER_THRES, "TrialHand2SpikeGenMssHand", FALSE))  {
 		print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGenerator", "trial_hand_2_spike_gen_msgs_handler", "! write_rt_task_specs_to_rt_tasks_data()."); exit(1); }	
         period = nano2count(TRIAL_HAND_2_SPIKE_GEN_MSGS_HANDLER_PERIOD);
 
@@ -128,7 +128,7 @@ static void *trial_hand_2_spike_gen_msgs_handler(void *args)
 			switch (msg_item.msg_type)
 			{
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_TRIAL_STATUS_CHANGED:
-					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_system_time, msg_item.additional_data.trial_status_change_msg_add) ; 
+					schedule_trial_status_event(trial_status_events, rt_tasks_data->current_periodic_system_time, msg_item.additional_data.trial_status_change_msg_add) ; 
 					break;	
 				case TRIAL_HAND_2_SPIKE_GEN_MSG_START_RECORDING:	
 					break;

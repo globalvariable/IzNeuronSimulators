@@ -2,8 +2,10 @@
 
 static NetworkSpikePatternGraphScroll *spike_pattern_graph = NULL;
 static GtkWidget *btn_pause;
+static GtkWidget *btn_global_pause;
 
 static void pause_button_func (void);
+static void global_pause_button_func (void);
 
 bool create_spike_pattern_buffer_view_gui(void)
 {
@@ -14,11 +16,12 @@ bool create_spike_pattern_buffer_view_gui(void)
    
         gtk_notebook_append_page (GTK_NOTEBOOK (get_gui_tabs()), frame, frame_label);  
 
- 	hbox = gtk_hbox_new(TRUE, 0);
-        gtk_container_add (GTK_CONTAINER (frame), hbox);
+ 	vbox = gtk_vbox_new(FALSE, 0);
+        gtk_container_add (GTK_CONTAINER (frame), vbox);
 
-	vbox = gtk_vbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(hbox),vbox, TRUE,TRUE,0);
+	btn_global_pause = gtk_button_new_with_label("Paused");
+	gtk_box_pack_start (GTK_BOX (vbox), btn_global_pause, FALSE, FALSE, 0);
+	gtk_widget_set_sensitive(btn_global_pause, FALSE);	
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, TRUE,TRUE,0);
@@ -29,6 +32,8 @@ bool create_spike_pattern_buffer_view_gui(void)
 
 
 	g_signal_connect(G_OBJECT(btn_pause), "clicked", G_CALLBACK(pause_button_func), NULL);
+
+	g_signal_connect(G_OBJECT(btn_global_pause), "clicked", G_CALLBACK(global_pause_button_func), NULL);
 
 	gtk_widget_show_all(get_gui_tabs());
 
@@ -55,4 +60,23 @@ static void pause_button_func(void)
 NetworkSpikePatternGraphScroll* get_generated_spike_pattern_graph_ptr(void)
 {
 	return spike_pattern_graph;
+}
+
+void send_global_pause_button_sensitive_request(void)
+{
+	gtk_widget_set_sensitive(btn_global_pause, TRUE);			
+}
+
+static void global_pause_button_func (void)
+{
+	if (is_buffer_view_handler_paused())
+	{
+		send_global_resume_request_to_buffer_view_handler();
+		gtk_button_set_label (GTK_BUTTON(btn_global_pause),"Resumed");
+	}
+	else
+	{		
+		send_global_pause_request_to_buffer_view_handler();
+		gtk_button_set_label (GTK_BUTTON(btn_global_pause),"Paused");
+	}
 }

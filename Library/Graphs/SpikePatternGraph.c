@@ -173,9 +173,9 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 					continue;				
 				}
 				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					neuron_graphs[spike_item.layer][spike_item.neuron_group][spike_item.neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
-					write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);
+					write_to_spike_data(spike_handling_buffer, spike_item.layer, spike_item.neuron_group, spike_item.neuron, spike_time);
 				idx++;
 				if (idx == spike_handling_buffer_size)
 					idx = 0;
@@ -194,9 +194,9 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 						continue;		
 					}
 					if (spike_time < new_part_end_time)
-						neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+						neuron_graphs[spike_item.layer][spike_item.neuron_group][spike_item.neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 					else
-						write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);	
+						write_to_spike_data(spike_handling_buffer, spike_item.layer, spike_item.neuron_group, spike_item.neuron, spike_time);	
 				}
 			}
 			while (graph->trial_status_event_buffer_read_idx != graph->trial_status_events->buff_write_idx)
@@ -253,9 +253,9 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 					continue;		
 				}
 				if (spike_time < new_part_end_time)
-					neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+					neuron_graphs[spike_item.layer][spike_item.neuron_group][spike_item.neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 				else
-					write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);
+					write_to_spike_data(spike_handling_buffer, spike_item.layer, spike_item.neuron_group, spike_item.neuron, spike_time);
 				idx++;
 				if (idx == spike_handling_buffer_size)
 					idx = 0;
@@ -274,9 +274,9 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 						continue;				
 					}
 					if (spike_time < new_part_end_time)
-						neuron_graphs[spike_item.mwa_or_layer][spike_item.channel_or_neuron_group][spike_item.unit_or_neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
+						neuron_graphs[spike_item.layer][spike_item.neuron_group][spike_item.neuron].y[((spike_time - new_part_start_time) / sampling_interval) + data_point_placement_start_idx] = 1;
 					else
-						write_to_spike_data(spike_handling_buffer, spike_item.mwa_or_layer, spike_item.channel_or_neuron_group, spike_item.unit_or_neuron, spike_time);	
+						write_to_spike_data(spike_handling_buffer, spike_item.layer, spike_item.neuron_group, spike_item.neuron, spike_time);	
 				}
 			}
 		}	

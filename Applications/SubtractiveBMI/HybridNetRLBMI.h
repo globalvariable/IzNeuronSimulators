@@ -6,10 +6,11 @@
 typedef struct __HybridNetRLBMIData HybridNetRLBMIData;
 typedef struct __HybridNetRLBMISynapseData HybridNetRLBMISynapseData;
 typedef struct __HybridNetRLBMIRewardData HybridNetRLBMIRewardData;
+
+#include "Compile.h"
 #include "Gui.h"
 #include "HybridNetRLBMIConfig.h"
-#include "../../../BlueSpike/TemplateMatchingData.h"
-#include "../../../BlueSpike/SpikeTimeStamp.h"
+#include "../../../BlueSpike/Applications/PCIe6259/SortedSpikes.h"
 #include "../../../BlueSpike/System/ShmSemNum/ShmSemNum.h"
 #include "../../../BlueSpike/System/RtTasksData/RtTasksData.h"
 #include "../../Library/NeuronDynamicsData/NeuronDynamicsData.h"
@@ -44,9 +45,8 @@ struct __HybridNetRLBMISynapseData
 
 struct __HybridNetRLBMIData		
 {
-	SpikeTimeStamp				*sorted_spike_time_stamp;    /// spike time stamps from biological neurons // sorted according to unit, not according to spike time.
+	SortedSpikes 					*sorted_spike_time_stamp;    /// spike time stamps from biological neurons // sorted according to unit, not according to spike time.
 	RtTasksData					*rt_tasks_data;
-	TemplateMatchingData			*template_matching_data;
 	Network						*in_silico_network;
 	Network						*blue_spike_network;
 	SpikeData					**blue_spike_spike_data_for_graph;   // for visualization
@@ -61,6 +61,7 @@ struct __HybridNetRLBMIData
 	unsigned int					num_of_dedicated_cpu_threads;
 	bool						simulation_in_progress;    // not to allow offline simulations while rt simulation is in progress
 	HybridNetRLBMISynapseData	synapse_data;
+	TimeStamp					*sys_time_ptr;
 };
 
 
