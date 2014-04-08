@@ -69,14 +69,14 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data)
 
 
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_probability = 0.7;
-	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 7;
-	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min = 7;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_max = 12;
+	synapse_data->blue_spike_2_in_silico_excitatory_connection_weight_min = 12;
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->blue_spike_2_in_silico_excitatory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 
 	synapse_data->blue_spike_2_in_silico_inhibitory_connection_probability = 0;
-	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max = 7;
-	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min = 7;
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_max = 12;
+	synapse_data->blue_spike_2_in_silico_inhibitory_connection_weight_min = 12;
 	synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_max = (AxonalDelay)(7.0 * 1000000);
 	synapse_data->blue_spike_2_in_silico_inhibitory_connection_delay_min = (AxonalDelay)(7.0 * 1000000);
 

@@ -7,6 +7,7 @@ static bool connect_to_mov_obj_hand(void);
 
 int main( int argc, char *argv[])
 {
+	unsigned int i;
 	cpu_set_t  mask;
 	CPU_ZERO(&mask);
 	CPU_SET(IZ_PS_NETWORK_SIM_USER_SPACE_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU+IZ_PS_NETWORK_SIM_USER_SPACE_CPU_THREAD_ID, &mask);
@@ -48,8 +49,14 @@ int main( int argc, char *argv[])
 
 	hybrid_net_rl_bmi_data->reward_data.num_of_targets = 2;
 	hybrid_net_rl_bmi_data->reward_data.R = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.R_prediction_error = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.R_prediction_reward = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
+	hybrid_net_rl_bmi_data->reward_data.apply_R = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
+	hybrid_net_rl_bmi_data->reward_data.trial_success_average = g_new0(AveragingStruct*, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
+	for (i = 0; i < hybrid_net_rl_bmi_data->reward_data.num_of_targets; i++)
+	{
+		hybrid_net_rl_bmi_data->reward_data.trial_success_average[i] = allocate_averaging_struct(hybrid_net_rl_bmi_data->reward_data.trial_success_average[i], TRIAL_SUCCESS_AVERAGING_MEM);
+	}
+
+
 
 	if (! connect_to_mov_obj_hand()) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "connect_to_mov_obj_hand()."); return -1; }

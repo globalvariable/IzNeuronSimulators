@@ -308,7 +308,10 @@ static void parker_sochacki_step_for_synapses_w_spike (Neuron *nrn, double dt)
 			now = synapse->ps_eligibility->now;
 			max_eligibility = synapse->ps_eligibility->max_eligibility;
 			now = ((max_eligibility - now) / max_eligibility) * synapse->ps_stdp_pre_post->now;
-			synapse->ps_eligibility->now += now;
+			if ((synapse->ps_eligibility->now + now) > max_eligibility)
+				synapse->ps_eligibility->now = max_eligibility;
+			else
+				synapse->ps_eligibility->now += now;
 		}
 	}
 	return;

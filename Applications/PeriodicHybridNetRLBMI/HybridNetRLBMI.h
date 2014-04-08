@@ -25,7 +25,7 @@ typedef struct __HybridNetRLBMIRewardData HybridNetRLBMIRewardData;
 #include "../../../ExperimentHandlers/Library/Messages/NeuralNet2Gui.h"
 #include "../../../ExperimentHandlers/Library/Status/TrialStatus.h"
 #include "../../Library/Spindle/Spindle.h"
-
+#include "../../../BlueSpike/Library/Misc/Averaging.h"
 
 struct __HybridNetRLBMISynapseData		
 {
@@ -83,9 +83,9 @@ struct __HybridNetRLBMIRewardData
 {
 	unsigned int		num_of_targets;
 	double			*R;		// num_of_targets;
-	double			*R_prediction_error;		// num_of_targets;
-	double			*R_prediction_reward;		// num_of_targets;
+	double			*apply_R;		// num_of_targets;
 	double			learning_rate;
+	AveragingStruct	**trial_success_average; // num_of_targets;
 };
 
 struct __HybridNetRLBMIData		

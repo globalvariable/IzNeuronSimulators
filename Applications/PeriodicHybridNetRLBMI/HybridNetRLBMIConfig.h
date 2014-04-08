@@ -14,7 +14,9 @@
 #define PS_INTEGRATION_ERR_TOL			1e-3
 
 #define REWARD_WINDOW_SIZE	4.0   /// keep it floating point
-#define PREDICTION_ERROR_WINDOW_SIZE	3.0   /// keep it floating point
+
+#define TRIAL_SUCCESS_AVERAGING_MEM		8
+#define TRIAL_SUCCESS_THRESHOLD_TO_APPLY_REINF		0.75		//    %70 
 
 #include "HybridNetRLBMI.h"
 

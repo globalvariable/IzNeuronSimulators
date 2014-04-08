@@ -282,6 +282,16 @@ bool handle_spike_pattern_graph_scrolling_and_plotting(NetworkSpikePatternGraphS
 		}	
 			
 	}
+	else
+	{
+		spike_handling_buffer = graph->spike_handling_buffer;
+		source_spike_data_to_plot = graph->source_spike_data_to_plot;
+		for (i = 0; i < graph->num_of_source_spike_data_to_plot; i++)
+		{			
+			reset_spike_data_read_idx(source_spike_data_to_plot[i]);
+		}
+		reset_spike_data_read_idx(spike_handling_buffer);
+	}
 	return TRUE;
 }
 
