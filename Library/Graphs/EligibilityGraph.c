@@ -228,10 +228,8 @@ bool set_total_limits_limited_eligibility_graph_scroll(EligibilityGraphScrollLim
 	else 
 		max_y = max_y+100;
 
-	if (min_y >= 0)
-		min_y = 0;
-	else if (min_y > -200)
-		min_y = -200;
+	if (min_y > -2.1)
+		min_y = -2;
 	else if (min_y > -300)
 		min_y = -300;
 	else

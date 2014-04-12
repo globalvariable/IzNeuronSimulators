@@ -88,8 +88,6 @@ static GtkWidget *entry_eligibility_tau_min;
 static GtkWidget *entry_eligibility_tau_max;
 static GtkWidget *entry_max_eligibility_min;
 static GtkWidget *entry_max_eligibility_max;
-static GtkWidget *entry_depol_eligibility_min;
-static GtkWidget *entry_depol_eligibility_max;
 
 static GtkWidget *btn_submit_stdp_and_eligibility;
 
@@ -757,13 +755,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "0.5");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_min), "1.0");
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_change_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_change_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "0.5");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_change_max), "1.0");	
 	gtk_widget_set_size_request(entry_STDP_pre_post_change_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -777,13 +775,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_min), "30");
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_min), "40");
 	gtk_widget_set_size_request(entry_STDP_pre_post_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_STDP_pre_post_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_pre_post_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_max), "30");	
+	gtk_entry_set_text(GTK_ENTRY(entry_STDP_pre_post_tau_max), "40");	
 	gtk_widget_set_size_request(entry_STDP_pre_post_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -803,13 +801,13 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "100");
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_min), "40");
 	gtk_widget_set_size_request(entry_eligibility_tau_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_eligibility_tau_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_eligibility_tau_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "100");	
+	gtk_entry_set_text(GTK_ENTRY(entry_eligibility_tau_max), "40");	
 	gtk_widget_set_size_request(entry_eligibility_tau_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
@@ -823,34 +821,14 @@ bool create_network_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_max_eligibility_min = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_max_eligibility_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_min), "2.0");
+	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_min), "1.0");
 	gtk_widget_set_size_request(entry_max_eligibility_min, 50, 25) ;
 	lbl = gtk_label_new("Max:");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
         entry_max_eligibility_max = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_max_eligibility_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_max), "2.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_max_eligibility_max), "1.0");	
 	gtk_widget_set_size_request(entry_max_eligibility_max, 50, 25) ;
-
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	lbl = gtk_label_new("Dep Elig:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-	lbl = gtk_label_new("");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
-	lbl = gtk_label_new("Min:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_depol_eligibility_min = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_min , FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_min), "0.2");
-	gtk_widget_set_size_request(entry_depol_eligibility_min, 50, 25) ;
-	lbl = gtk_label_new("Max:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_depol_eligibility_max = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_depol_eligibility_max, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_depol_eligibility_max), "0.2");	
-	gtk_widget_set_size_request(entry_depol_eligibility_max, 50, 25) ;
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -1273,8 +1251,8 @@ static void submit_stdp_and_eligibility_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double max_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_min)));
 	double max_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_max)));
-	double depol_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_min)));
-	double depol_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_max)));
+	double depol_eligibility_min = 0;
+	double depol_eligibility_max = 0;
 
 	if (! create_ps_pre_post_stdp_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, STDP_pre_post_change_min, STDP_pre_post_change_max, STDP_pre_post_tau_min, STDP_pre_post_tau_max))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_stdp_for_neuron_group().");	
@@ -1343,8 +1321,8 @@ static void submit_new_stdp_and_eligibility_for_neuron_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double max_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_min)));
 	double max_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_max)));
-	double depol_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_min)));
-	double depol_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_max)));
+	double depol_eligibility_min = 0;
+	double depol_eligibility_max = 0;
 
 	if (! submit_new_ps_eligibility_vals_for_neuron(neuron, eligibility_tau_min, eligibility_tau_max, max_eligibility_min, max_eligibility_max, depol_eligibility_min, depol_eligibility_max))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");	
@@ -1391,8 +1369,8 @@ static void submit_new_stdp_and_eligibility_for_synapse_button_func(void)
 	double eligibility_tau_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_eligibility_tau_max)));
 	double max_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_min)));
 	double max_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_max_eligibility_max)));
-	double depol_eligibility_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_min)));
-	double depol_eligibility_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_depol_eligibility_max)));
+	double depol_eligibility_min = 0;
+	double depol_eligibility_max = 0;
 
 	if (! submit_new_ps_eligibility_vals_for_synapse(neuron, eligibility_tau_min, eligibility_tau_max, syn_num, max_eligibility_min, max_eligibility_max, depol_eligibility_min, depol_eligibility_max))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_new_stdp_and_eligibility_for_neuron_button_func", "! submit_new_ps_eligibility_vals_for_neuron().");
@@ -1649,9 +1627,8 @@ static void create_default_network_button_func(void)
 	if (! connect_medium_spiny_neurons(get_hybrid_net_rl_bmi_data())) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_medium_spiny_neurons().");return; }
 
-	if (! connect_babling_2_medium_spiny_neurons(get_hybrid_net_rl_bmi_data())) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_babling_2_medium_spiny_neurons().");return; }
 
-
+	if (! adjust_plastic_synaptic_weights(get_hybrid_net_rl_bmi_data())) {
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! adjust_plastic_synaptic_weights().");return; }
 
 }

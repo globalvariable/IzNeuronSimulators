@@ -5,10 +5,10 @@
 
 #define LAYER_BASE_SERVO_EXTENSOR_SPINY 			0		//   decreasing pulse width for servo)   ///  TURN TO RIGHT
 #define LAYER_BASE_SERVO_FLEXOR_SPINY				1		//   incresing pulse width for servo)   ///  TURN TO LEFT
-#define LAYER_BASE_SERVO_EXTENSOR_BABBLE			2		//   to be suitable for mov obj handler output layer
-#define LAYER_BASE_SERVO_FLEXOR_BABBLE				3		//   to be suitable for mov obj handler output layer
+//#define LAYER_BASE_SERVO_EXTENSOR_BABBLE			2		//   to be suitable for mov obj handler output layer
+//#define LAYER_BASE_SERVO_FLEXOR_BABBLE			3		//   to be suitable for mov obj handler output layer
 
-#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				4	
+#define NUM_OF_IN_SILICO_NETWORK_LAYERS 				2	
 
 #define PS_INTEGRATION_MAX_ORDER			40
 #define PS_INTEGRATION_ERR_TOL			1e-3
@@ -20,6 +20,8 @@
 
 #define NUM_OF_OUTPUT_SPINY_PROJECTION_NEURONS	1
 
+#define	TOTAL_SYNAPTIC_WEIGHTS	110.0
+
 #include "HybridNetRLBMI.h"
 
 
@@ -29,5 +31,5 @@ bool set_output_layers(HybridNetRLBMIData *bmi_data);
 bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data);
 bool connect_medium_spiny_neurons(HybridNetRLBMIData *bmi_data);
 bool connect_babling_2_medium_spiny_neurons(HybridNetRLBMIData *bmi_data);
-
+bool adjust_plastic_synaptic_weights(HybridNetRLBMIData *bmi_data);
 #endif

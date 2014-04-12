@@ -233,8 +233,8 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 				}
 				else
 				{
-					if (! evaluate_neuron_dyn_pre_post_stdp_elig_depol(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_stdp_psddp_elig()."); exit(1); }	
+					if (! evaluate_neuron_dyn_pre_post_w_resetting_stdp_elig(nrn, time_ns, time_ns+PARKER_SOCHACKI_INTEGRATION_STEP_SIZE, &spike_generated, &spike_time)) {
+						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMIRtTask", "hybrid_net_rl_bmi_internal_network_handler", "! evaluate_neuron_dyn_pre_post_w_resetting_stdp_elig()."); exit(1); }	
 					if (spike_generated)
 					{
 						write_to_spike_data(in_silico_spike_data_for_graph[task_num], nrn->layer, nrn->neuron_group, nrn->neuron_num, spike_time);
@@ -567,6 +567,7 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 	Synapse			*synapses;
 	SynapseIndex		num_of_synapses; 
 	double	E, dw, E_ltp, E_ltd;  // eligibility
+	double sum_weights, diff_weights;
 
 	for (i = task_num; i < num_of_all_neurons; i+=num_of_dedicated_cpu_threads)  // simulate the neurons for which this thread is responsible
 	{
@@ -575,11 +576,15 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 			continue;
 		synapses = nrn->syn_list->synapses;
 		num_of_synapses = nrn->syn_list->num_of_synapses;
+
 		for (j = 0; j < num_of_synapses; j++)
 		{
 			if (! synapses[j].plastic)
 				continue;
-			E = synapses[j].ps_eligibility->now;
+			if (synapses[j].ps_eligibility->now > (exp(-1.0)*synapses[j].ps_eligibility->max_eligibility))
+				E = 1;
+			else
+				E = 0;
 			if (reward > 0)    // LTP
 			{
 				E_ltp = E;
@@ -602,7 +607,20 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 					synapses[j].weight += dw; 
 			}
 		}
-
+		sum_weights = 0;
+		for (j = 0; j < num_of_synapses; j++)
+		{
+			if (! synapses[j].plastic)
+				continue;
+			sum_weights += synapses[j].weight;
+		}
+		diff_weights = sum_weights - TOTAL_SYNAPTIC_WEIGHTS;
+		for (j = 0; j < num_of_synapses; j++)
+		{
+			if (! synapses[j].plastic)
+				continue;
+			synapses[j].weight = synapses[j].weight - ((synapses[j].weight/sum_weights)*diff_weights);
+		}		
 	}
 	return;
 }

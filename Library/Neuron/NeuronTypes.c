@@ -145,7 +145,7 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*E_excitatory = 0;
 		*E_inhibitory = -110;
 		*tau_excitatory = 5;
-		*tau_inhibitory = 10;
+		*tau_inhibitory = 20;
 	}
 	return;
 }

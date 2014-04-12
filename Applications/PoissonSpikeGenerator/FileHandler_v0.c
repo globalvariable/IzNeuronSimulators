@@ -101,10 +101,23 @@ int write_spike_gen_config_data_v0(int num, ...)
 		}
 	}
 	fprintf(fp, "------------------End of InTrialFiringRates---------------------\n");
+	fprintf(fp, "------------------IncludeUnits---------------------\n");
+	for (i=0; i < MAX_NUM_OF_MWA; i++)
+	{
+		for (j=0; j<MAX_NUM_OF_CHAN_PER_MWA; j++)
+		{
+			fprintf(fp,"Layer %u NeuronGroup:%u\n", i, j);		
+			for (k=0; k<MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE; k++)
+			{
+				fprintf(fp, "%u\n", (*spike_gen_data->sorted_spike_time_stamp)[i][j].included_units[k]);
+			}
+		}
+	}
+	fprintf(fp, "------------------End of IncludeUnits---------------------\n");
 
 	fprintf(fp, "----------End of SpikeGenConfig Data----------\n");	
 	fclose(fp);
-	print_message(INFO_MSG ,"BMISpikeGenerator", "FileHandler", "read_config_daq_data_v0", "Succesuflly wrote BMISpikeGenerator data file.");	
+	print_message(INFO_MSG ,"BMISpikeGenerator", "FileHandler", "write_spike_gen_config_data_v0", "Succesuflly wrote BMISpikeGenerator data file.");	
 	return 1;
 }
 int read_spike_gen_config_data_v0(int num, ...)
@@ -221,10 +234,6 @@ int read_spike_gen_config_data_v0(int num, ...)
 			if (!add_poisson_neurons_to_layer(spike_gen_data->network, max_num_of_units_per_chan_to_handle, i, FALSE,  0))
 				{ fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "! add_poisson_neurons_to_layer."); }
 
-			for (k = 0; k < max_num_of_units_per_chan_to_handle; k++)
-			{
-				(*spike_gen_data->sorted_spike_time_stamp)[i][j].included_units[k] = TRUE;	
-			}	
 		}		
 	}
 	print_message(INFO_MSG ,"BMISpikeGenerator", "FileHandler", "read_config_daq_data_v0", "Succesuflly read network structure.");	
@@ -359,6 +368,38 @@ int read_spike_gen_config_data_v0(int num, ...)
 		fclose(fp); 
 		return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_in_trial_current_pattern_templates", "End of InTrialFiringRates file mismatch."); 
 	}
+
+	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); } 
+	if (strcmp(line, "------------------IncludeUnits---------------------\n") != 0)
+	{
+		fclose(fp);
+		return print_message(ERROR_MSG ,"BMISpikeGenerator", "FileHandler_v0", "read_config_daq_data_v0", "strcmp(line, ------------------IncludeUnits---------------------) != 0.");	
+	}  
+
+
+	for (i=0; i < spike_gen_data->network->layer_count; i++)
+	{
+		ptr_layer = spike_gen_data->network->layers[i];	
+		for (j=0; j<ptr_layer->neuron_group_count; j++)
+		{
+			if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); } // fprintf(fp,"Layer %u NeuronGroup:%u\n", i, j);		
+			ptr_neuron_group = ptr_layer->neuron_groups[j];
+			for (k=0; k<ptr_neuron_group->neuron_count; k++)
+			{
+				if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); } 
+				if(!get_word_in_line('\t', 0, word, line, TRUE)) { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_trial_start_available_current_pattern_templates", "!get_word_in_line."); }	
+				(*spike_gen_data->sorted_spike_time_stamp)[i][j].included_units[k] = (bool)atof(word);
+			}
+		}
+	}
+
+	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); } 
+	if (strcmp(line, "------------------End of IncludeUnits---------------------\n") != 0)
+	{
+		fclose(fp);
+		return print_message(ERROR_MSG ,"BMISpikeGenerator", "FileHandler_v0", "read_config_daq_data_v0", "strcmp(line, ------------------End of IncludeUnits---------------------) != 0.");	
+	}  
+
 
 	if (fgets(line, sizeof line, fp ) == NULL)   { fclose(fp); return print_message(ERROR_MSG ,"IzNeuronSimulators", "SpikeGenDataSaveLoad_v0", "load_main_meta_file", "fgets() == NULL."); } 
 	if (strcmp(line, "----------End of SpikeGenConfig Data----------\n") != 0)

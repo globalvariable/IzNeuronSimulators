@@ -7,6 +7,8 @@
 static LayerNrnGrpNeuronCombo *combos_select_neuron;
 static GtkWidget *combo_target_num;
 
+static GtkWidget *btn_include_unit;
+
 static GtkWidget *btn_create_default_network;
 
 static GtkWidget *entry_firing_rate;
@@ -41,6 +43,8 @@ static void start_spike_generation_button_func(void);
 static void create_default_network_button_func(void);
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void combo_select_target_func(void);
+static void include_unit_button_func(void);
+
 
 static void apply_firing_rate_to_all_button_func(void);
 static void apply_firing_rate_in_trial_button_func(void);
@@ -94,6 +98,16 @@ bool create_current_pattern_view_gui(void)
         gtk_box_pack_start(GTK_BOX(hbox), combos_select_neuron->combo_neuron_group, TRUE,TRUE,0);
         gtk_box_pack_start(GTK_BOX(hbox),combos_select_neuron->combo_neuron , TRUE,TRUE,0);
 
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
+  	hbox = gtk_hbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_include_unit = gtk_button_new_with_label("Include Unit : ON");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_include_unit, TRUE, TRUE, 0);
+
+        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
   	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
@@ -103,7 +117,8 @@ bool create_current_pattern_view_gui(void)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(combo_target_num), "Right");    // ignore uncessary string part
 	gtk_combo_box_set_active (GTK_COMBO_BOX(combo_target_num), 0);
 
-        gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE,5);
 
 
  	hbox = gtk_hbox_new(FALSE, 0);
@@ -227,6 +242,8 @@ bool create_current_pattern_view_gui(void)
 	g_signal_connect(G_OBJECT(btn_apply_firing_rate_trial_available), "clicked", G_CALLBACK(apply_firing_rate_trial_available_button_func), NULL);
 	g_signal_connect(G_OBJECT(btn_apply_firing_rate_in_refractory), "clicked", G_CALLBACK(apply_firing_rate_in_refractory_button_func), NULL);
 
+	g_signal_connect(G_OBJECT(btn_include_unit), "clicked", G_CALLBACK(include_unit_button_func), NULL);
+
 
 	g_signal_connect(G_OBJECT(btn_save), "clicked", G_CALLBACK(save_button_func), NULL);		
 	g_signal_connect(G_OBJECT(btn_load), "clicked", G_CALLBACK(load_button_func), NULL);	
@@ -270,6 +287,15 @@ static void combos_select_neuron_func(GtkWidget *changed_combo)
 
 	sprintf (temp, "%.2f", spike_gen_data->firing_rate_data->in_trial_firing[target_num].rates[mwa][chan][unit]);
 	gtk_entry_set_text(GTK_ENTRY(entry_firing_rate), temp);
+
+	if ((*spike_gen_data->sorted_spike_time_stamp)[mwa][chan].included_units[unit])
+	{
+		gtk_button_set_label (GTK_BUTTON(btn_include_unit),"Include Unit: ON");
+	}
+	else
+	{
+		gtk_button_set_label (GTK_BUTTON(btn_include_unit),"Include Unit: OFF");
+	}
 }
 
 static void combo_select_target_func(void)
@@ -470,7 +496,7 @@ static void apply_firing_rate_in_refractory_button_func(void)
 
 static void create_default_network_button_func(void)
 {
-	unsigned int i, j, k;
+	unsigned int i, j;
 	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
 	for (i=0; i < MAX_NUM_OF_MWA; i++)
 	{
@@ -478,10 +504,6 @@ static void create_default_network_button_func(void)
 		{
 			if (!add_poisson_neurons_to_layer(spike_gen_data->network, MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE, i, FALSE,  0))
 				return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "BMISimulationSpikeGeneratorConfig", "add_neurons_to_network", "! add_poisson_neurons_to_layer().");
-			for (k = 0; k < MAX_NUM_OF_UNIT_PER_CHAN_TO_HANDLE; k++)
-			{
-				(*spike_gen_data->sorted_spike_time_stamp)[i][j].included_units[k] = TRUE;	
-			}				
 		}
 	}
 	spike_gen_data->firing_rate_data = allocate_three_phase_poisson_firing_data(spike_gen_data->network, spike_gen_data->trial_hand_paradigm, spike_gen_data->firing_rate_data);
@@ -500,5 +522,29 @@ static void create_default_network_button_func(void)
 
 	if (! buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "FiringPatternDesignView", "generate_current_injection_graphs_button_func", "! buffer_view_handler()");	
+
+}
+
+static void include_unit_button_func(void)
+{
+	SpikeGenData *spike_gen_data = get_bmi_simulation_spike_generator_data();
+
+	unsigned int layer_num;
+	unsigned int nrn_grp_num;
+	unsigned int nrn_num;
+
+	if (! layer_neuron_group_neuron_get_selected(combos_select_neuron, &layer_num, &nrn_grp_num, &nrn_num))
+		return (void)print_message(ERROR_MSG ,"BMISimulationSpikeGenerator", "FiringPatternDesignView", "include_unit_button_func", "! layer_neuron_group_neuron_get_selected().");
+
+	if ((*spike_gen_data->sorted_spike_time_stamp)[layer_num][nrn_grp_num].included_units[nrn_num])
+	{
+		(*spike_gen_data->sorted_spike_time_stamp)[layer_num][nrn_grp_num].included_units[nrn_num] = FALSE;	
+		gtk_button_set_label (GTK_BUTTON(btn_include_unit),"Include Unit: OFF");
+	}
+	else
+	{
+		(*spike_gen_data->sorted_spike_time_stamp)[layer_num][nrn_grp_num].included_units[nrn_num] = TRUE;	
+		gtk_button_set_label (GTK_BUTTON(btn_include_unit),"Include Unit: ON");
+	}
 
 }
