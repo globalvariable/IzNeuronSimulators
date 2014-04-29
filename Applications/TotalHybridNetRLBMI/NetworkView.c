@@ -77,8 +77,6 @@ static GtkWidget *entry_internal_layer_num_to_connect_external_layer_to;
 static GtkWidget *btn_create_default_network;
 
 // SECOND COLUMN
-static GtkWidget *entry_STDP_layer;
-static GtkWidget *entry_STDP_neuron_group;
 static GtkWidget *entry_STDP_pre_post_change_min;
 static GtkWidget *entry_STDP_pre_post_change_max;
 static GtkWidget *entry_STDP_pre_post_tau_min;
@@ -93,6 +91,9 @@ static GtkWidget *btn_submit_stdp_and_eligibility;
 
 static GtkWidget *entry_learning_rate;
 static GtkWidget *btn_submit_learning_rate;
+
+static GtkWidget *entry_total_synaptic_weights;
+static GtkWidget *btn_submit_total_synaptic_weights;
 
 
 static LayerNrnGrpNeuronCombo *combos_select_neuron;
@@ -136,6 +137,7 @@ static void create_default_network_button_func(void);
 // SECOND COLUMN
 static void submit_stdp_and_eligibility_button_func(void);
 static void submit_learning_rate_button_func (void);
+static void submit_total_synaptic_weights_button_func (void);
 
 static void combos_select_neuron_func(GtkWidget *changed_combo);
 static void combos_select_synapse_func(GtkWidget *changed_combo);
@@ -156,6 +158,9 @@ static void create_recording_folder_button_func (void);
 static void load_data_button_func (void);
 
 static void set_directory_btn_select_directory_to_save(void);
+
+static void update_synaptic_weight_history_of_neuron(Neuron *neuron);
+static void update_synaptic_weight_history_of_network(Network *network);
 
 static gboolean timeout_callback(gpointer user_data) ;
 
@@ -720,19 +725,20 @@ bool create_network_view_gui(void)
 	gtk_entry_set_text(GTK_ENTRY(entry_internal_layer_num_to_connect_external_layer_to), "0");	
 	gtk_widget_set_size_request(entry_internal_layer_num_to_connect_external_layer_to, 30, 25);
 
-  	hbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
-
-	btn_create_default_network = gtk_button_new_with_label("Create Default Network");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_create_default_network, FALSE, FALSE, 0);
-
-
 ///////////////////////////////////////////// SECOND COLUMN  ///////////////////////////////////////////////////////////////
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_table_attach_defaults(GTK_TABLE(table), vbox, 1,2, 0, 6);  
 
- 	hbox = gtk_hbox_new(FALSE, 0);
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_create_default_network = gtk_button_new_with_label("Create Default Network");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_create_default_network, TRUE, TRUE, 0);
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
+
+  	hbox = gtk_hbox_new(TRUE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
  	lbl = gtk_label_new("---------- STDP ----------");
@@ -833,38 +839,39 @@ bool create_network_view_gui(void)
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	btn_submit_stdp_and_eligibility = gtk_button_new_with_label("Submit");
-	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_stdp_and_eligibility, FALSE, FALSE, 0);
-	lbl = gtk_label_new("");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
-        lbl = gtk_label_new("Layer:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-        entry_STDP_layer = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_layer, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_layer), "0");
-	gtk_widget_set_size_request(entry_STDP_layer, 25, 25) ;	
-        lbl = gtk_label_new("NrnGrp:");
-        gtk_box_pack_start(GTK_BOX(hbox),lbl, FALSE,FALSE,0);
-	entry_STDP_neuron_group = gtk_entry_new();
-        gtk_box_pack_start(GTK_BOX(hbox), entry_STDP_neuron_group, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_STDP_neuron_group), "0");
-	gtk_widget_set_size_request(entry_STDP_neuron_group, 25, 25) ;	
+	btn_submit_stdp_and_eligibility = gtk_button_new_with_label("Submit for Plastic Synapses");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_stdp_and_eligibility, TRUE, TRUE, 0);
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  	
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
 
-	btn_submit_learning_rate = gtk_button_new_with_label("Submit Learning Rate");
+	btn_submit_learning_rate = gtk_button_new_with_label("Learning Rate Scaler");
 	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_learning_rate, FALSE, FALSE, 0);
 	lbl = gtk_label_new("");
         gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
         entry_learning_rate = gtk_entry_new();
         gtk_box_pack_start(GTK_BOX(hbox), entry_learning_rate, FALSE,FALSE,0);
-	gtk_entry_set_text(GTK_ENTRY(entry_learning_rate), "1.0");	
+	gtk_entry_set_text(GTK_ENTRY(entry_learning_rate), "0.02");	
 	gtk_widget_set_size_request(entry_learning_rate, 80, 25) ;
 
 	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  
+
+  	hbox = gtk_hbox_new(FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
+
+	btn_submit_total_synaptic_weights = gtk_button_new_with_label("Total Synaptic Weights");
+	gtk_box_pack_start (GTK_BOX (hbox), btn_submit_total_synaptic_weights, FALSE, FALSE, 0);
+	lbl = gtk_label_new("");
+        gtk_box_pack_start(GTK_BOX(hbox),lbl, TRUE,TRUE,0);
+        entry_total_synaptic_weights = gtk_entry_new();
+        gtk_box_pack_start(GTK_BOX(hbox), entry_total_synaptic_weights, FALSE,FALSE,0);
+	gtk_entry_set_text(GTK_ENTRY(entry_total_synaptic_weights), "110.0");	
+	gtk_widget_set_size_request(entry_total_synaptic_weights, 60, 25) ;
+
+	gtk_box_pack_start(GTK_BOX(vbox),gtk_hseparator_new(), FALSE,FALSE, 5);  
+
 
   	hbox = gtk_hbox_new(FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox),hbox, FALSE,FALSE,0);
@@ -1003,6 +1010,8 @@ bool create_network_view_gui(void)
 
       	g_signal_connect(G_OBJECT(btn_submit_learning_rate), "clicked", G_CALLBACK(submit_learning_rate_button_func), NULL);
 
+      	g_signal_connect(G_OBJECT(btn_submit_total_synaptic_weights), "clicked", G_CALLBACK(submit_total_synaptic_weights_button_func), NULL);
+
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_layer), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_layer);
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron_group), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron_group);	
 	g_signal_connect(G_OBJECT(combos_select_neuron->combo_neuron), "changed", G_CALLBACK(combos_select_neuron_func), combos_select_neuron->combo_neuron);
@@ -1037,10 +1046,11 @@ bool create_network_view_gui(void)
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_neuron, FALSE);
 	gtk_widget_set_sensitive(btn_submit_new_stdp_and_eligibility_for_synapse, FALSE);
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
-	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, FALSE);	
 	gtk_widget_set_sensitive(btn_ready_for_simulation, FALSE);	
 	gtk_widget_set_sensitive(btn_create_recording_folder, FALSE);	
 	gtk_widget_set_sensitive(btn_submit_learning_rate, FALSE);	
+	gtk_widget_set_sensitive(btn_submit_total_synaptic_weights, FALSE);
 
 	return TRUE;
 }
@@ -1241,8 +1251,6 @@ static void connect_external_layer_to_internal_layer_button_func(void)
 static void submit_stdp_and_eligibility_button_func(void)
 {
 	HybridNetRLBMIData *bmi_data = get_hybrid_net_rl_bmi_data();
-	unsigned int layer = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_layer)));
-	unsigned int neuron_group = (unsigned int)atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_neuron_group)));
 	double STDP_pre_post_change_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_min)));
 	double STDP_pre_post_change_max = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_change_max)));
 	double STDP_pre_post_tau_min = atof(gtk_entry_get_text(GTK_ENTRY(entry_STDP_pre_post_tau_min)));
@@ -1254,14 +1262,20 @@ static void submit_stdp_and_eligibility_button_func(void)
 	double depol_eligibility_min = 0;
 	double depol_eligibility_max = 0;
 
-	if (! create_ps_pre_post_stdp_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, STDP_pre_post_change_min, STDP_pre_post_change_max, STDP_pre_post_tau_min, STDP_pre_post_tau_max))
+	if (! create_ps_pre_post_stdp_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, 0, STDP_pre_post_change_min, STDP_pre_post_change_max, STDP_pre_post_tau_min, STDP_pre_post_tau_max))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_stdp_for_neuron_group().");	
 
-	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, layer, neuron_group, eligibility_tau_min, eligibility_tau_max, max_eligibility_min, max_eligibility_max, depol_eligibility_min, depol_eligibility_max))
+	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_EXTENSOR_SPINY, 0, eligibility_tau_min, eligibility_tau_max, max_eligibility_min, max_eligibility_max, depol_eligibility_min, depol_eligibility_max))
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_eligibility_for_neuron_group().");	
 
+	if (! create_ps_pre_post_stdp_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, 0, STDP_pre_post_change_min, STDP_pre_post_change_max, STDP_pre_post_tau_min, STDP_pre_post_tau_max))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_stdp_for_neuron_group().");	
+
+	if (! create_ps_eligibility_for_neuron_group(bmi_data->in_silico_network, LAYER_BASE_SERVO_FLEXOR_SPINY, 0, eligibility_tau_min, eligibility_tau_max, max_eligibility_min, max_eligibility_max, depol_eligibility_min, depol_eligibility_max))
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_stdp_and_eligibility_button_func", "! create_ps_eligibility_for_neuron_group().");	
+
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, FALSE);	
 	gtk_widget_set_sensitive(btn_submit_learning_rate, TRUE);	
-	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
 	return;
 }
 
@@ -1384,6 +1398,7 @@ static void submit_new_stdp_and_eligibility_for_synapse_button_func(void)
 static void start_hybrid_network_button_func(void)
 {
 	gtk_widget_set_sensitive(btn_start_hybrid_network, FALSE);	
+
 	hybrid_net_rl_bmi_create_rt_threads();	
 	send_global_pause_button_sensitive_request();	 // enable pause/resume button to resume buffer visualization. resume adjusts buffer read indexes and start times. 
 }
@@ -1411,6 +1426,10 @@ static void ready_for_simulation_button_func(void)
 
 	if (!buffer_view_handler())
 		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "ready_for_simulation_button_func", "! create_buffers_view_gui().");	
+
+	if (! adjust_plastic_synaptic_weights(get_hybrid_net_rl_bmi_data())) {   // adjust_plastic_synaptic_weights according to total_synaptic weighs before starting. 
+		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "ready_for_simulation_button_func", "! adjust_plastic_synaptic_weights().");return; }
+
 	gtk_widget_set_sensitive(btn_start_hybrid_network, TRUE);	
 	gtk_widget_set_sensitive(btn_submit_synaptic_weight_for_neuron, TRUE);
 	gtk_widget_set_sensitive(btn_submit_excitatory_synaptic_weight_for_neuron, TRUE);	
@@ -1449,7 +1468,7 @@ static void submit_learning_rate_button_func (void)
 
 	get_hybrid_net_rl_bmi_data()->reward_data.learning_rate = learning_rate;
 
-	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
+	gtk_widget_set_sensitive(btn_submit_total_synaptic_weights, TRUE);
 }
 
 
@@ -1505,9 +1524,6 @@ static gboolean timeout_callback(gpointer user_data)
 	static bool recording = FALSE;
 	unsigned int i, recording_number;
 	NeuralNet2GuiMsgItem msg_item;
-	double reward, learning_rate;
-
-
 
 	while (get_next_neural_net_2_gui_msg_buffer_item(static_msgs_neural_net_2_gui, &msg_item))
 	{
@@ -1551,15 +1567,8 @@ static gboolean timeout_callback(gpointer user_data)
 				}
 				recording = FALSE;
 				break;
-			case NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS:
-				usleep(100000);  /// sleep 100 ms so that rt neural net simulator can save eligibility traces which is handled by all neurons received from trial handler. 
-				reward = msg_item.additional_data.reward;
-				learning_rate = static_bmi_data->reward_data.learning_rate;
-				for (i = 0; i < static_num_of_neurons; i++)
-				{
-					if (! write_neuron_synaptic_weights_to_history(static_all_neurons[i])) {
-						print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", "! update_neuron_synaptic_weights()"); exit(1); }
-				}
+			case NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS_HISTORY:
+				update_synaptic_weight_history_of_network(get_hybrid_net_rl_bmi_data()->in_silico_network);
 				break;
 			default:
 				return print_message(ERROR_MSG ,"HybridNetRLBMI", "Gui", "timeout_callback", "switch (msg_item.msg_type) - default");
@@ -1627,8 +1636,47 @@ static void create_default_network_button_func(void)
 	if (! connect_medium_spiny_neurons(get_hybrid_net_rl_bmi_data())) {
 		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! connect_medium_spiny_neurons().");return; }
 
+	gtk_widget_set_sensitive(btn_create_default_network, FALSE);	
+	gtk_widget_set_sensitive(btn_submit_stdp_and_eligibility, TRUE);	
+}
 
-	if (! adjust_plastic_synaptic_weights(get_hybrid_net_rl_bmi_data())) {
-		print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "main", "! adjust_plastic_synaptic_weights().");return; }
 
+static void submit_total_synaptic_weights_button_func (void)
+{
+
+	double total_synaptic_weights = atof(gtk_entry_get_text(GTK_ENTRY(entry_total_synaptic_weights)));
+	if (total_synaptic_weights < 0)
+		return (void)print_message(ERROR_MSG ,"HybridNetRLBMI", "NetworkView", "submit_total_synaptic_weights_button_func", "total_synaptic_weights <= 0.");
+
+	get_hybrid_net_rl_bmi_data()->total_synaptic_weights = total_synaptic_weights;
+
+	gtk_widget_set_sensitive(btn_ready_for_simulation, TRUE);	
+
+
+
+}
+
+static void update_synaptic_weight_history_of_network(Network *network)
+{
+	Neuron		**all_neurons;
+	unsigned int num_of_all_neurons, i;
+
+	all_neurons = network->all_neurons;
+	num_of_all_neurons = network->num_of_neurons;
+	for (i = 0; i < num_of_all_neurons; i++)
+	{
+		update_synaptic_weight_history_of_neuron(all_neurons[i]);	
+	}
+
+}
+
+static void update_synaptic_weight_history_of_neuron(Neuron *neuron)
+{
+	unsigned int i, num_of_synapses = neuron->syn_list->num_of_synapses;
+	Synapse	*synapses = neuron->syn_list->synapses;
+
+	for (i = 0; i < num_of_synapses; i++)
+	{
+		write_to_synapse_history_buffer(&(synapses[i]));
+	}
 }

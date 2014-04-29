@@ -7,7 +7,6 @@ static bool connect_to_mov_obj_hand(void);
 
 int main( int argc, char *argv[])
 {
-	unsigned int i;
 	cpu_set_t  mask;
 	CPU_ZERO(&mask);
 	CPU_SET(IZ_PS_NETWORK_SIM_USER_SPACE_CPU_ID*MAX_NUM_OF_CPU_THREADS_PER_CPU+IZ_PS_NETWORK_SIM_USER_SPACE_CPU_THREAD_ID, &mask);
@@ -46,17 +45,6 @@ int main( int argc, char *argv[])
 	hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads = IZ_PS_NETWORK_SIM_NUM_OF_DEDICATED_CPUS * MAX_NUM_OF_CPU_THREADS_PER_CPU;
 	hybrid_net_rl_bmi_data->in_silico_spike_data_for_graph = g_new0(SpikeData*, hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads);	// allocate the array of buffers here. 
 	hybrid_net_rl_bmi_data->in_silico_spike_data_for_recording = g_new0(SpikeData*, hybrid_net_rl_bmi_data->num_of_dedicated_cpu_threads); // allocate the array of buffers here.  a recording message which is received before "ready_for_simulation" button can lead to segfault. since read_idx and write_idx are zero here, they will not try to access the buffers (refer to get_next_spike_data_item())
-
-	hybrid_net_rl_bmi_data->reward_data.num_of_targets = 2;
-	hybrid_net_rl_bmi_data->reward_data.R = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.apply_R = g_new0(double, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	hybrid_net_rl_bmi_data->reward_data.trial_success_average = g_new0(AveragingStruct*, hybrid_net_rl_bmi_data->reward_data.num_of_targets);
-	for (i = 0; i < hybrid_net_rl_bmi_data->reward_data.num_of_targets; i++)
-	{
-		hybrid_net_rl_bmi_data->reward_data.trial_success_average[i] = allocate_averaging_struct(hybrid_net_rl_bmi_data->reward_data.trial_success_average[i], TRIAL_SUCCESS_AVERAGING_MEM);
-		reset_averaging_struct_elements(hybrid_net_rl_bmi_data->reward_data.trial_success_average[i], TRIAL_SUCCESS_THRESHOLD_TO_APPLY_REINF);
-	}
-
 
 
 	if (! connect_to_mov_obj_hand()) {

@@ -13,14 +13,9 @@
 #define PS_INTEGRATION_MAX_ORDER			40
 #define PS_INTEGRATION_ERR_TOL			1e-3
 
-#define REWARD_WINDOW_SIZE	4.0   /// keep it floating point
-
-#define TRIAL_SUCCESS_AVERAGING_MEM		8
-#define TRIAL_SUCCESS_THRESHOLD_TO_APPLY_REINF		0.75		//    %75 
+#define TRIAL_SUCCESS_AVERAGING_MEM		4
 
 #define NUM_OF_OUTPUT_SPINY_PROJECTION_NEURONS	1
-
-#define	TOTAL_SYNAPTIC_WEIGHTS	110.0
 
 #include "HybridNetRLBMI.h"
 
@@ -32,4 +27,5 @@ bool connect_external_to_in_silico_network(HybridNetRLBMIData *bmi_data);
 bool connect_medium_spiny_neurons(HybridNetRLBMIData *bmi_data);
 bool connect_babling_2_medium_spiny_neurons(HybridNetRLBMIData *bmi_data);
 bool adjust_plastic_synaptic_weights(HybridNetRLBMIData *bmi_data);
+
 #endif

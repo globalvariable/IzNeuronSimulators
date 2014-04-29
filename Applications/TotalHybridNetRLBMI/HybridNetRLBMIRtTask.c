@@ -13,7 +13,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args);
 static void *hybrid_net_rl_bmi_blue_spike_rt_handler(void *args); 
 static void *trial_hand_2_neural_net_msgs_handler(void *args); 
 
-static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, HybridNetRLBMIRewardData *reward_data);
+static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, double total_synaptic_weights);
 
 
 void hybrid_net_rl_bmi_create_rt_threads(void)
@@ -84,8 +84,7 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 	HybridNetRLBMIRewardData *reward_data = &(bmi_data->reward_data);
 	unsigned int target_idx;
 	double reward;
-
-	double success_ratio;
+	double sensory_reward = 0;
 
 	static int squential_reward_val = 0;
 
@@ -153,60 +152,44 @@ static void *hybrid_net_rl_bmi_internal_network_handler(void *args)
 							squential_reward_val = 0;
 						else
 							squential_reward_val++;
-						if (squential_reward_val >= 3)
-							reward_data->R[target_idx] = 1;
+						if (squential_reward_val >= 2)
+							sensory_reward = 1;
 						else
-							reward_data->R[target_idx] = -1;
-						printf("R R_A\t%.2f %d\n", reward_data->R[target_idx], (int)(reward_data->apply_R[target_idx])); 
-						reward = reward_data->R[target_idx] * reward_data->apply_R[target_idx];
-						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, reward_data);
+							sensory_reward = -1;
+						reward = bmi_data->reward_data.learning_rate *(1-reward_data->current_reward_prediction) * sensory_reward;  
+
+						printf("rew = %.3f\n", reward);
+						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, bmi_data->total_synaptic_weights);
 					}
 					else	if (msg_item.additional_data.binary_reward_add.reward < 0)	// LTD
 					{
 						if (squential_reward_val > 0)
 							squential_reward_val = 0;
-						else
-							squential_reward_val--;
-						if (squential_reward_val <= 3)
-							reward_data->R[target_idx] = -1;
-						else
-							reward_data->R[target_idx] = -1;
-						printf("R R_A\t%.2f %d\n", reward_data->R[target_idx], (int)(reward_data->apply_R[target_idx])); 
-						reward = reward_data->R[target_idx] * reward_data->apply_R[target_idx];
-						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, reward_data);
+						sensory_reward = -1;
+						reward = bmi_data->reward_data.learning_rate *(1-reward_data->current_reward_prediction) * sensory_reward; 
+						printf("rew = %.3f\n", reward);
+						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, bmi_data->total_synaptic_weights);
 					}		
 					else
 					{
-						reward_data->R[target_idx] = -1;
-						printf("R R_A\t%.2f %d\n", reward_data->R[target_idx], (int)(reward_data->apply_R[target_idx])); 
-						reward = reward_data->R[target_idx] * reward_data->apply_R[target_idx];
-						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, reward_data);
+						sensory_reward = -1;
+						reward = bmi_data->reward_data.learning_rate *(1-reward_data->current_reward_prediction) * sensory_reward;  
+						printf("rew = %.3f\n", reward);
+						update_synaptic_weights_all_neurons(all_neurons, num_of_all_neurons, task_num, num_of_dedicated_cpu_threads, reward, bmi_data->total_synaptic_weights);
 					}	
 					break;	
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_END_TRIAL_W_REWARD:
 
 					target_idx = msg_item.additional_data.binary_reward_add.target_idx;	// target idx is sent to neural net throughout the trial.
 					squential_reward_val = 0;
-					reward_data->R[0] = 0;
-					reward_data->R[1] = 0;
-					success_ratio = write_to_averaging_struct_and_get_mean(reward_data->trial_success_average[target_idx] , 1);
-					if (success_ratio >= TRIAL_SUCCESS_THRESHOLD_TO_APPLY_REINF)
-						reward_data->apply_R[target_idx] = 0;
-					else
-						reward_data->apply_R[target_idx] = 1;		
-					printf("end w rew %.2f\n", success_ratio);
+					sensory_reward = 0;
+		
 					break;	
 				case MOV_OBJ_HAND_2_NEURAL_NET_MSG_END_TRIAL_W_PUNISH:
 					target_idx = msg_item.additional_data.binary_reward_add.target_idx;	// target idx is sent to neural net throughout the trial.
 					squential_reward_val = 0;
-					reward_data->R[0] = 0;
-					reward_data->R[1] = 0;
-					success_ratio = write_to_averaging_struct_and_get_mean(reward_data->trial_success_average[target_idx] , 0);
-					if (success_ratio >= TRIAL_SUCCESS_THRESHOLD_TO_APPLY_REINF)
-						reward_data->apply_R[target_idx] = 0;
-					else
-						reward_data->apply_R[target_idx] = 1;
-					printf("end w pnsh %.2f\n", success_ratio);
+					sensory_reward= 0;
+
 					break;	
 				default:
 					print_message(BUG_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "mov_obj_hand_2_neural_net_msgs_handler", "Invalid message.");	
@@ -399,6 +382,10 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 					schedule_trial_status_event(trial_status_events, *(hybrid_net_rl_bmi_data->sys_time_ptr), msg_item.additional_data.trial_status_change_msg_add) ; 
 					break;	
 				case TRIAL_HAND_2_NEURAL_NET_MSG_TRIAL_START:   // not implemeted yet, for RL it will be required.
+					hybrid_net_rl_bmi_data->reward_data.current_reward_prediction = msg_item.additional_data.difficulty_reward_predict_add.reward_prediction;
+					
+					printf("msg = %.3f\t%.3f\n", hybrid_net_rl_bmi_data->reward_data.current_reward_prediction, hybrid_net_rl_bmi_data->reward_data.learning_rate);
+
 /*					current_sys_time = rt_tasks_data->current_system_time;
 					for (i = 0; i < num_of_neurons; i++)
 					{
@@ -418,11 +405,11 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
 					neural_net_2_gui_msg_add.reward = msg_item.additional_data.reward;
-*/
+
 
 					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
-					break;
+*/					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_PUNISHMENT_GIVEN:   
 /*					current_sys_time = rt_tasks_data->current_system_time;
 					for (i = 0; i < num_of_neurons; i++)
@@ -433,16 +420,13 @@ static void *trial_hand_2_neural_net_msgs_handler(void *args)
 							print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neuron_trial_event_buffer()."); exit(1); }	
 					}
 					neural_net_2_gui_msg_add.reward = msg_item.additional_data.reward;	/// THIS MESSAGE SHOULD BE SENT BEFORE TRIAL_HAND_2_NEURAL_NET_MSG_STOP_RECORDING which saves the synaptic weights.
-*/
+
 
 					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
-					break;
-				case TRIAL_HAND_2_NEURAL_NET_MSG_END_TRIAL_WITH_NOTHING:	// do nothing. this message received due to invalid behavior of rat in / during the trial (i.e. nose retract) 
-
-					neural_net_2_gui_msg_add.reward = 0;	// zero reward will not update synaptic weights. but the weight history will be kept for this trial in gui timeout callback (NetworkView.c)
-					// no need to send any message to neurons such as NEURON_EVENT_TYPE_TRIAL_END_WITH_REWARD etc since the weights will not be updated at the end of this trial. so no eligiility saving required for the neurons.			
-					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS, neural_net_2_gui_msg_add)) {
+*/					break;
+				case TRIAL_HAND_2_NEURAL_NET_MSG_END_TRIAL_WITH_NOTHING:   
+					if (! write_to_neural_net_2_gui_msg_buffer(msgs_neural_net_2_gui, *(hybrid_net_rl_bmi_data->sys_time_ptr), NEURAL_NET_2_GUI_MSG_UPDATE_SYNAPTIC_WEIGHTS_HISTORY, neural_net_2_gui_msg_add)) {
 						print_message(ERROR_MSG ,"HybridNetRLBMI", "HybridNetRLBMI", "trial_hand_2_neural_net_msgs_handler", "! write_to_neural_net_2_gui_msg_buffer()."); exit(1); }	
 					break;
 				case TRIAL_HAND_2_NEURAL_NET_MSG_START_RECORDING:	
@@ -560,7 +544,7 @@ static void *mov_obj_hand_2_neural_net_msgs_handler(void *args)
 }
 */
 
-static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, HybridNetRLBMIRewardData *reward_data)
+static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned int num_of_all_neurons, unsigned int task_num, unsigned int num_of_dedicated_cpu_threads, double reward, double total_synaptic_weights)
 {
 	unsigned int i, j;
 	Neuron *nrn;
@@ -585,11 +569,16 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 				E = 1;
 			else
 				E = 0;
-			if (reward > 0)    // LTP
+			
+			dw = reward * E * synapses[j].weight;
+
+			synapses[j].weight+=dw;
+
+/*			if (reward > 0)    // LTP
 			{
 				E_ltp = E;
 				dw = (reward * E_ltp);
-				dw = synapses[j].weight * dw * reward_data->learning_rate;
+				dw = synapses[j].weight * dw;
 				if ((synapses[j].weight + dw) < 0.1)
 					synapses[j].weight = 0.1; 
 				else
@@ -600,12 +589,13 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 				E_ltd = E;
 			//	E_ltd = pow (E, 2.0);		// do not think of (E_ltd = E) if (E >1), since high the system can be stuck in high firing mode when the synaptics weights are high. inhibition will not be enough. babbling of robot will lead o both LTP and LTD equally.  
 				dw = (reward * E_ltd);		// E_ltd is always positive.  reward <=0 for ltd then dw is always negative.
-				dw = synapses[j].weight * dw * reward_data->learning_rate;
+				dw = synapses[j].weight * dw * reward;
 				if ((synapses[j].weight + dw) < 0.1)
 					synapses[j].weight = 0.1; 
 				else
 					synapses[j].weight += dw; 
 			}
+*/
 		}
 		sum_weights = 0;
 		for (j = 0; j < num_of_synapses; j++)
@@ -614,7 +604,7 @@ static void update_synaptic_weights_all_neurons(Neuron	**all_neurons, unsigned i
 				continue;
 			sum_weights += synapses[j].weight;
 		}
-		diff_weights = sum_weights - TOTAL_SYNAPTIC_WEIGHTS;
+		diff_weights = sum_weights - total_synaptic_weights;
 		for (j = 0; j < num_of_synapses; j++)
 		{
 			if (! synapses[j].plastic)
