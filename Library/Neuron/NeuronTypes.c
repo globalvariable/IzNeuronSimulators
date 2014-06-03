@@ -144,8 +144,8 @@ void get_neuron_type_parameters(int neuron_type, double *v, double *a, double *b
 		*inhibitory = 1;
 		*E_excitatory = 0;		// Humphries et al 2009, Moyer et al. (2007)
 		*E_inhibitory = -60;		// Humphries et al 2009, Moyer et al. (2007)
-		*tau_excitatory = 5;
-		*tau_inhibitory = 20;
+		*tau_excitatory = 6;		// Humphries et al 2009, Moyer et al. (2007)
+		*tau_inhibitory = 20;		// elongated for winner take all action selection
 	}
 	return;
 }
