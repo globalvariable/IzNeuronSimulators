@@ -10,7 +10,6 @@ typedef unsigned int 	AxonalDelay;		// No problem would appear when adding to Ti
 #include "../../../BlueSpike/Library/Misc/Randn.h"
 #include "../Neuron/Neuron.h"
 #include "../Synapse/Synapse.h"
-#include "../../../BlueSpike/Applications/PCIe6259/BlueSpikeConfig.h"
 
 
 
