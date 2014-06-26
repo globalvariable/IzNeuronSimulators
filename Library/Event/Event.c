@@ -181,13 +181,11 @@ bool update_neuron_sorted_event_buffer_size(Neuron *neuron)
 		neuron->syn_list->synapses[i].event_buffer->read_idx = 0; 
 		total_num_of_synaptic_event_buffers += neuron->syn_list->synapses[i].event_buffer->buff_size;
 	}
-	neuron->trial_event_buffer->write_idx = 0;  // clear previously received events
-	neuron->trial_event_buffer->read_idx = 0; 
 
 	g_free(neuron->sorted_event_buffer->buff);
 
-	neuron->sorted_event_buffer->buff = g_new0(NeuronSortedEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE + total_num_of_synaptic_event_buffers);
-	neuron->sorted_event_buffer->buff_size = NEURON_TRIAL_EVENT_BUFFER_SIZE + total_num_of_synaptic_event_buffers;
+	neuron->sorted_event_buffer->buff = g_new0(NeuronSortedEventBufferItem, total_num_of_synaptic_event_buffers);
+	neuron->sorted_event_buffer->buff_size = total_num_of_synaptic_event_buffers;
 
 	neuron->sorted_event_buffer->write_idx = 0;   // for spike time insetion sorting.
 	neuron->sorted_event_buffer->read_idx = 0;	// reset event buffer, clear all data it has had.	
@@ -225,56 +223,8 @@ bool get_next_synaptic_event_buffer_item(NeuronSynapticEventBuffer *event_buffer
 	return TRUE;
 }
 
-NeuronTrialEventBuffer* allocate_neuron_trial_event_buffer(TimeStamp event_scheduling_delay)
-{
-	NeuronTrialEventBuffer *event_buffer; 
-	if (event_scheduling_delay < MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY)
-		return (NeuronTrialEventBuffer*)print_message(ERROR_MSG ,"IzNeuronSimulators", "Event", "allocate_neuron_trial_event_buffer", "event_scheduling_delay < MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY."); 
-	event_buffer = g_new0(NeuronTrialEventBuffer, 1); 
-	event_buffer->event_scheduling_delay = event_scheduling_delay;
-	event_buffer->buff = g_new0(NeuronTrialEventBufferItem, NEURON_TRIAL_EVENT_BUFFER_SIZE);
-	return event_buffer;
-}
 
-bool change_neuron_trial_event_buffer_scheduling_delay(Neuron *neuron, TimeStamp event_scheduling_delay)
-{
-	if (event_scheduling_delay < MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY)
-		return print_message(ERROR_MSG ,"IzNeuronSimulators", "Event", "change_neuron_trial_event_buffer_scheduling_delay", "event_scheduling_delay < MIN_NEURON_TRIAL_EVENT_SCHEDULING_DELAY."); 
-	neuron->trial_event_buffer->event_scheduling_delay = event_scheduling_delay;
-	return TRUE;
-}
 
-bool write_to_neuron_trial_event_buffer(Neuron *neuron, TimeStamp event_time, NeuronEventType event_type)
-{
-	NeuronTrialEventBuffer *event_buffer = neuron->trial_event_buffer;
-	unsigned int *idx = &(event_buffer->write_idx);
-	NeuronTrialEventBufferItem *item = &(event_buffer->buff[*idx]);		
-
-	item->time = event_time + event_buffer->event_scheduling_delay ;
-	item->event_type = event_type;
-
-	if ((*idx + 1) == NEURON_TRIAL_EVENT_BUFFER_SIZE)
-		*idx = 0;
-	else
-		(*idx)++;
-	if (*idx == event_buffer->read_idx)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "Event", "write_to_neuron_trial_event_buffer", "BUFFER IS FULL!!!.");    		
-	return TRUE;
-}
-bool get_next_trial_event_buffer_item(NeuronTrialEventBuffer *event_buffer, NeuronTrialEventBufferItem *item)  
-{
-	unsigned int *idx;
-	if (event_buffer->read_idx == event_buffer->write_idx)
-		return FALSE;
-	idx = &(event_buffer->read_idx);
-	item->time = event_buffer->buff[*idx].time;
-	item->event_type = event_buffer->buff[*idx].event_type;	
-	if ((*idx + 1) == NEURON_TRIAL_EVENT_BUFFER_SIZE)
-		*idx = 0;
-	else
-		(*idx)++;
-	return TRUE;
-}
 bool sort_neuron_events(Neuron *neuron)
 {
 	Synapse			*synapses = neuron->syn_list->synapses;
@@ -282,7 +232,7 @@ bool sort_neuron_events(Neuron *neuron)
 	NeuronSortedEventBuffer	*sorted_event_buffer = neuron->sorted_event_buffer;
 	NeuronSynapticEventBuffer	*synaptic_event_buffer;
 	NeuronSynapticEventBufferItem	synaptic_event_item;
-	NeuronTrialEventBufferItem trial_event_item;	
+
 	SynapseIndex i;
 
 	for (i = 0; i < num_of_synapses; i++)
@@ -294,11 +244,7 @@ bool sort_neuron_events(Neuron *neuron)
 				return print_message(ERROR_MSG ,"IzNeuronSimulators", "Event", "sort_neuron_events", "! sort_synaptic_event_for_neuron().");    		
 		}
 	}
-	while (get_next_trial_event_buffer_item(neuron->trial_event_buffer, &trial_event_item))
-	{
-		if (! sort_trial_event_for_neuron(sorted_event_buffer, trial_event_item.time, trial_event_item.event_type, num_of_synapses))
-			return print_message(ERROR_MSG ,"IzNeuronSimulators", "Event", "sort_neuron_events", "! sort_trial_event_for_neuron().");    		
-	}
+
 	return TRUE;
 }
 
@@ -359,76 +305,15 @@ bool sort_synaptic_event_for_neuron(NeuronSortedEventBuffer *sorted_event_buffer
 	return TRUE;
 }
 
-bool sort_trial_event_for_neuron(NeuronSortedEventBuffer *sorted_event_buffer, TimeStamp scheduled_time, NeuronEventType event_type, SynapseIndex null_synapse_num)
-{
-	unsigned int *write_idx = &(sorted_event_buffer->write_idx);
-	unsigned int idx = *write_idx;
-	unsigned int event_buff_size = sorted_event_buffer->buff_size;
-	NeuronSortedEventBufferItem *item_hand, *item_ins, *buff = sorted_event_buffer->buff;		
-
-	do {
-		if (idx == 0)
-		{	
-			item_hand = &(buff[event_buff_size-1]);
-			item_ins = &(buff[0]);
-			if (scheduled_time < item_hand->time)		// push buffered item to the next index
-			{
-				item_ins->time = item_hand->time;
-				item_ins->event_type = item_hand->event_type;
-				item_ins->syn_idx = item_hand->syn_idx;
-				idx = event_buff_size-1;
-			}
-			else
-			{
-				item_ins->time = scheduled_time;				// insert here & break;
-				item_ins->event_type = event_type;
-				item_ins->syn_idx = null_synapse_num;
-				break;			
-			}
-		}
-		else
-		{
-			item_hand = &(buff[idx-1]);
-			item_ins = &(buff[idx]);
-			if (scheduled_time < item_hand->time)		// push buffered item to the next index
-			{
-				item_ins->time = item_hand->time;
-				item_ins->event_type = item_hand->event_type;
-				item_ins->syn_idx = item_hand->syn_idx;
-				idx--;
-			}
-			else
-			{
-				item_ins->time = scheduled_time;				// insert here & break;
-				item_ins->event_type = event_type;
-				item_ins->syn_idx = null_synapse_num;
-				break;			
-			}			
-		}
-	} while (1);
-	
-	if ((*write_idx + 1) == event_buff_size)
-		*write_idx = 0;
-	else
-		(*write_idx)++;
-	if (*write_idx == sorted_event_buffer->read_idx)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "Event", "sort_synaptic_event_for_neuron", "BUFFER IS FULL!!!.");    		
-	return TRUE;
-}
-
 void reset_neuron_event_buffer(Neuron *neuron)
 {
 	NeuronSortedEventBuffer	*sorted_event_buffer = neuron->sorted_event_buffer;
 	NeuronSynapticEventBuffer	*synaptic_event_buffer;
-	NeuronTrialEventBuffer	*trial_event_buffer = neuron->trial_event_buffer;
 	SynapseIndex		i, num_of_synapses = neuron->syn_list->num_of_synapses; 
 
-	if (neuron->trial_event_buffer == NULL)	// maybe not an izhikevich neuron (or a neuron that can accept events, e.g. poisson neuron)
-		return;
 
 	num_of_synapses = neuron->syn_list->num_of_synapses;
 
-	trial_event_buffer->read_idx = trial_event_buffer->write_idx;
 	sorted_event_buffer->read_idx = sorted_event_buffer->write_idx;
 	for (i = 0; i < num_of_synapses; i++)
 	{

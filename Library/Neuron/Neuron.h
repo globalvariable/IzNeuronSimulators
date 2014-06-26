@@ -74,7 +74,6 @@ struct __Neuron
 //	NeuronEventBuffer				*event_buff;
 	ParkerSochackiPolynomialVals	*ps_vals;
 	SynapseList					*syn_list;
-	NeuronTrialEventBuffer			*trial_event_buffer;
 	NeuronSortedEventBuffer		*sorted_event_buffer;
 	PoissonNeuronParams			*poisson_params;
 };
