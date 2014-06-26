@@ -61,12 +61,6 @@ bool evaluate_neuron_dyn_pre_post_w_resetting_stdp_elig(Neuron *nrn, TimeStamp s
 			if (synapse->plastic)
 				synapse->ps_stdp_pre_post->now = synapse->ps_stdp_pre_post->change_amount;	// increment pre_post
 		}
-		else if (event_item->event_type == NEURON_EVENT_TYPE_REINFORCEMENT_SIGNAL)
-		{
-			if (!parker_sochacki_integration(nrn, integration_start_ns, event_time, spike_generated, spike_time))
-				return print_message(ERROR_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "! parker_sochacki_integration().");	
-	//		update_synaptic_weights(nrn);	
-		}
 		else
 		{
 			return print_message(BUG_MSG ,"IzNeuronSimulators", "ParkerSochacki", "evaluate_neuron_dyn", "Unknown neuron event type.");	
