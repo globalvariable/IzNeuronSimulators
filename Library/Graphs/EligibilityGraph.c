@@ -68,23 +68,17 @@ EligibilityGraphScrollLimited* allocate_eligibility_graph_scroll_limited(GtkWidg
 	return graph;				
 }
 
-bool determine_eligibility_graph_scroll_limited_start_indexes(EligibilityGraphScrollLimited *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int eligibility_limited_buffer_write_idx, unsigned int eligibility_limited_buffer_size)
+bool determine_eligibility_graph_scroll_limited_start_indexes(EligibilityGraphScrollLimited *graph, TimeStamp last_sample_time, unsigned int eligibility_limited_buffer_write_idx, unsigned int eligibility_limited_buffer_size)
 {
 	unsigned int last_sample_times_idx;
-	unsigned int current_system_times_idx;
+
 	if (eligibility_limited_buffer_write_idx == 0)
 		last_sample_times_idx = eligibility_limited_buffer_size - 1;
 	else
 		last_sample_times_idx = eligibility_limited_buffer_write_idx -1;
 
-	if ((current_system_time-last_sample_time) < 0)
-		return print_message(BUG_MSG ,"IzNeuronSimulators", "EligibilityGraph", "determine_eligibility_graph_scroll_limited_start_indexes", "(current_system_time-last_sample_time) < 0");
-	if ((((current_system_time-last_sample_time)/graph->sampling_interval) + last_sample_times_idx) > eligibility_limited_buffer_size)
-		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx - 	eligibility_limited_buffer_size;
-	else
-		current_system_times_idx = ((current_system_time-last_sample_time)/graph->sampling_interval)  + last_sample_times_idx;
-	graph->new_part_start_time = current_system_time;
-	graph->new_part_start_idx = current_system_times_idx;
+	graph->new_part_start_time = last_sample_time;	// last sample time (of the snn simulation) might be higher than current periodic system time (rt_tasks_data->current_system_time). It might lead to a little jitter in plot in orders of a few millisecond 
+	graph->new_part_start_idx = last_sample_times_idx;
 	graph->trial_status_event_buffer_read_idx = graph->trial_status_events->buff_write_idx;
 	return TRUE;
 }

@@ -1,7 +1,7 @@
 #include "NeuronNode.h"
 
 
-bool evaluate_node_inputs (Neuron *nrn, unsigned int *num_of_rxed_spikes, TimeStamp start_time, TimeStamp end_time)
+bool evaluate_node_inputs (Neuron *nrn, unsigned int *num_of_rxed_spikes, TimeStamp start_time, TimeStamp end_time)  // for brain machine interfaces which compares spike rates of neurons to control robot.
 {
 	NeuronSortedEventBuffer		*sorted_event_buffer = nrn->sorted_event_buffer;
 	NeuronSortedEventBufferItem	*event_item;	

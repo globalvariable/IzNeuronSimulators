@@ -68,6 +68,7 @@ struct __Neuron
 	unsigned int					neuron_group;
 	unsigned int					neuron_num;	
 	bool						inhibitory;	
+	bool						include;		// for bluespike (biological) neurons. marks the neurons which are synaptically connected to the SNN
 	LayerType					layer_type;
 	IzNeuronParams				*iz_params;
 	NeuronAxonList				*axon_list;

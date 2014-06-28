@@ -196,16 +196,17 @@ bool update_neuron_sorted_event_buffer_size(Neuron *neuron)
 bool write_to_neuron_synaptic_event_buffer(Neuron *neuron, TimeStamp scheduled_event_time, SynapseIndex syn_idx)
 {
 	NeuronSynapticEventBuffer *event_buffer = neuron->syn_list->synapses[syn_idx].event_buffer;
-	unsigned int *idx = &(event_buffer->write_idx);
+	unsigned int idx = event_buffer->write_idx;
 	
-	event_buffer->buff[*idx] = scheduled_event_time;		
+	event_buffer->buff[idx] = scheduled_event_time;		
 
-	if ((*idx + 1) == event_buffer->buff_size)
-		*idx = 0;
+	if ((idx + 1) == event_buffer->buff_size)
+		idx = 0;
 	else
-		(*idx)++;
-	if (*idx == event_buffer->read_idx)
+		idx++;
+	if (idx == event_buffer->read_idx)
 		return print_message(BUG_MSG ,"IzNeuronSimulators", "Event", "write_to_neuron_synaptic_event_buffer", "BUFFER IS FULL!!!.");    		
+	event_buffer->write_idx = idx;
 	return TRUE;
 }
 

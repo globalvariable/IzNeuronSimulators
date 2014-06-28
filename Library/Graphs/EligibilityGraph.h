@@ -44,7 +44,7 @@ struct  __EligibilityGraphScrollLimited		// To be faster when buffering. The mos
 };
 
 EligibilityGraphScrollLimited* allocate_eligibility_graph_scroll_limited(GtkWidget *hbox, EligibilityGraphScrollLimited *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, unsigned int num_of_data_points_to_scroll, TimeStamp buffer_followup_latency, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, EligibilityBufferLimited* limited_eligibility_buffer, unsigned int limited_eligibility_buffer_list_idx);
-bool determine_eligibility_graph_scroll_limited_start_indexes(EligibilityGraphScrollLimited *graph, TimeStamp current_system_time, TimeStamp last_sample_time, unsigned int eligibility_limited_buffer_write_idx, unsigned int eligibility_limited_buffer_size);
+bool determine_eligibility_graph_scroll_limited_start_indexes(EligibilityGraphScrollLimited *graph, TimeStamp last_sample_time, unsigned int eligibility_limited_buffer_write_idx, unsigned int eligibility_limited_buffer_size);
 bool handle_limited_eligibility_graph_scrolling_and_plotting(EligibilityGraphScrollLimited *graph, TimeStamp current_system_time);
 bool scroll_limited_eligibility_graph(EligibilityGraphScrollLimited *graph);
 bool set_total_limits_limited_eligibility_graph_scroll(EligibilityGraphScrollLimited *graph);
