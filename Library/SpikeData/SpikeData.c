@@ -74,7 +74,7 @@ bool write_to_spike_data_multi_threaded(SpikeData *spike_data, unsigned int laye
 	return TRUE;
 }
 
-bool write_to_spike_data_with_sorting(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time)
+bool write_to_spike_data_with_sorting_single_threaded(SpikeData *spike_data, unsigned int layer, unsigned int neuron_group, unsigned int neuron, TimeStamp spike_time)
 {
 	SpikeTimeStampItem		*buff;
 	SpikeTimeStampItem		*item, *item_insert;
