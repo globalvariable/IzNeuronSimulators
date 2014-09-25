@@ -161,7 +161,8 @@ bool set_neuron_excitatory_synaptic_weights(Neuron *neuron, double lower_limit, 
 		}
 		else if (synapse->type == INHIBITORY_SYNAPSE)
 		{
-			return print_message(BUG_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_excitatory_synaptic_weights", "synapse->type == INHIBITORY_SYNAPSE.");
+			print_message(WARNING_MSG ,"IzNeuronSimulators", "Synapse", "set_neuron_excitatory_synaptic_weights", "skipped this synapse since synapse->type == INHIBITORY_SYNAPSE.");
+			continue;
 		}
 		else
 		{		

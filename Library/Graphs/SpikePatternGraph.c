@@ -6,6 +6,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 {
 	GdkColor color_bg;
 	GdkColor color_line;
+	GdkColor color_grid;
 	GdkColor color_status_marker;
 	GtkWidget *vbox, *vbox1;
 	unsigned int num_of_layers, num_of_neuron_groups_in_layer, num_of_neurons_in_neuron_group;
@@ -43,6 +44,9 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 	color_line.green = 65535;
 	color_line.blue = 65535;
 
+	color_grid.red = 50000;
+	color_grid.green = 50000;
+	color_grid.blue = 50000;
 
 	vbox = gtk_vbox_new(FALSE, 0);
      	gtk_box_pack_start(GTK_BOX(hbox),vbox, TRUE,TRUE,0);
@@ -56,6 +60,12 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 		graph->status_markers->markers[i].y[1] = 1;
 		graph->status_markers->markers[i].x[0] = -100;
 		graph->status_markers->markers[i].x[1] = -100;
+	}
+
+	for (i = 0; i < NUM_OF_GRID_MARKERS; i++)
+	{
+		graph->X_grid_markers[i] = (graph->graph_len_ms/NUM_OF_GRID_MARKERS+1)*(i+1);
+		graph->Y_grid_markers[i] = 1;
 	}
 
 	num_of_all_neurons_in_network = get_num_of_neurons_in_network(network);
@@ -80,6 +90,7 @@ NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Netw
 				graph->neuron_graphs[i][j][k].databox = gtk_databox_new ();
 				gtk_box_pack_start (GTK_BOX (vbox1), graph->neuron_graphs[i][j][k].databox, TRUE, TRUE, 0);
   				gtk_widget_modify_bg (graph->neuron_graphs[i][j][k].databox, GTK_STATE_NORMAL, &color_bg);
+ 				gtk_databox_graph_add (GTK_DATABOX (graph->neuron_graphs[i][j][k].databox), gtk_databox_markers_new (NUM_OF_GRID_MARKERS, graph->X_grid_markers, graph->Y_grid_markers, &color_grid, 0, GTK_DATABOX_MARKERS_DASHED_LINE)); 	
 				graph->neuron_graphs[i][j][k].x = g_new0(float, num_of_data_points);  
 				graph->neuron_graphs[i][j][k].y = g_new0(float, num_of_data_points);
 				for (m = 0; m < num_of_data_points; m++)

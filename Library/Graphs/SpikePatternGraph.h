@@ -2,6 +2,8 @@
 #define SPIKE_PATTERN_GRAPH_H
 
 
+#define NUM_OF_GRID_MARKERS	9
+
 typedef struct __NetworkSpikePatternGraphScroll NetworkSpikePatternGraphScroll;
 typedef struct __NeuronSpikePatternGraphScroll NeuronSpikePatternGraphScroll;
 
@@ -11,6 +13,7 @@ typedef struct __NeuronSpikePatternGraphScroll NeuronSpikePatternGraphScroll;
 #include <gtkdatabox_ruler.h>
 #include <gtkdatabox_lines.h>
 #include <gtkdatabox_grid.h>
+#include <gtkdatabox_markers.h>
 #include "../../../BlueSpike/System/TimeStamp/TimeStamp.h"
 #include "../../../BlueSpike/Library/Misc/Misc.h"
 #include "../Network/Network.h"
@@ -50,6 +53,8 @@ struct  __NetworkSpikePatternGraphScroll		// when one needs real time scrolling 
 	unsigned int				trial_status_event_buffer_read_idx;
 	StatusMarkers 			*status_markers;
 	unsigned int				num_of_network_layers_to_be_handled; // it is placed here to exclude unnecessary network layers's plotting(e.g. layers with poisson neurons. these layers should be placed at end of layer array)
+	float					X_grid_markers[NUM_OF_GRID_MARKERS];
+	float					Y_grid_markers[NUM_OF_GRID_MARKERS];
 };
 
 NetworkSpikePatternGraphScroll* allocate_network_spike_pattern_graph_scroll(Network* network, GtkWidget *hbox, NetworkSpikePatternGraphScroll *graph, unsigned int num_of_data_points, TimeStamp sampling_interval, int graph_height, unsigned int num_of_data_points_to_scroll, TimeStamp spike_buffer_followup_latency, SpikeData **source_spike_data_to_plot, unsigned int num_of_markers, TrialStatusEvents *trial_status_events, unsigned int	num_of_spike_data_buffer);  // this height should be adjusted manually so that the graph size will be determined.
